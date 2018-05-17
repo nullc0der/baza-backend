@@ -1,0 +1,22 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Make Django DB Migrations",
+            "type": "shell",
+            "command": "pipenv run python manage.py makemigrations"
+        },
+        {
+            "label": "Migrate Django DB",
+            "type": "shell",
+            "command": "pipenv run python manage.py migrate"
+        },
+        {
+            "label": "Run Django Server",
+            "type": "shell",
+            "command": "pipenv run python manage.py runserver"
+        }
+    ]
+}
