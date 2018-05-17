@@ -60,6 +60,7 @@ THIRD_PARTY_APPS = [
 ]
 
 BAZA_APPS = [
+    'userprofile',
     'mockapi'
 ]
 
@@ -144,3 +145,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     )
 }
+
+
+# REST Framework Auth
+REST_SESSION_LOGIN = False

@@ -7,10 +7,12 @@ name = "pypi"
 django = "*"
 django-rest-framework = "*"
 django-rest-auth = {extras = ["with-social"]}
+django-cors-headers = "*"
 
 [dev-packages]
 "pep8" = "*"
 "autopep8" = "*"
+ipython = "*"
 
 [requires]
 python_version = "3.6"
