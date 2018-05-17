@@ -8,6 +8,8 @@ django = "*"
 django-rest-framework = "*"
 django-rest-auth = {extras = ["with-social"]}
 django-cors-headers = "*"
+"psycopg2" = "*"
+uwsgi = "*"
 
 [dev-packages]
 "pep8" = "*"
