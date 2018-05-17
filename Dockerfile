@@ -1,8 +1,8 @@
 FROM alpine:latest
 LABEL maintainer Prasanta Kakati <prasantakakati@ekata.social>
 RUN apk update
-RUN apk add build-base linux-headers postgresql-client postgresql-dev libpq python3 python3-dev py3-pip
-RUN pip install pipenv
+RUN apk add build-base linux-headers postgresql-client postgresql-dev libpq python3 python3-dev
+RUN pip3 install pipenv
 RUN mkdir /baza-back
 WORKDIR /baza-back
 COPY Pipfile /baza-back
