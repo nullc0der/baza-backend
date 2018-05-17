@@ -8,4 +8,4 @@ COPY Pipfile /baza-back
 COPY Pipfile.lock /baza-back
 RUN pipenv install --system
 COPY . /baza-back
-CMD [ "uwsgi", "uwsgi.ini" ]
+CMD [ "sh", "start.sh" ]
