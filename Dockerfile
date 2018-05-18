@@ -1,11 +1,12 @@
 FROM alpine:latest
 LABEL maintainer Prasanta Kakati <prasantakakati@ekata.social>
 RUN apk update
-RUN apk add libpq python python-dev py-pip
+RUN apk add build-base linux-headers postgresql-client postgresql-dev libpq python3 python3-dev
+RUN pip3 install pipenv
 RUN mkdir /baza-back
 WORKDIR /baza-back
 COPY Pipfile /baza-back
 COPY Pipfile.lock /baza-back
 RUN pipenv install --system
 COPY . /baza-back
-CMD [ "uwsgi", "uwsgi.ini" ]
+CMD [ "sh", "start.sh" ]
