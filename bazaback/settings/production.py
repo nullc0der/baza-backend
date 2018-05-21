@@ -50,8 +50,7 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Sentry
 RAVEN_CONFIG = {
-    'dsn': get_env_var('SENTRY_DSN'),
-    'release': raven.fetch_git_sha(BASE_DIR),
+    'dsn': get_env_var('SENTRY_DSN')
 }
 
 # Logging
