@@ -4,13 +4,14 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-Django = "*"
+django = "*"
 django-rest-framework = "*"
 django-rest-auth = {extras = ["with-social"]}
 django-cors-headers = "*"
-uWSGI = "*"
+uwsgi = "*"
 django-allauth = "*"
 "psycopg2-binary" = "*"
+raven = "*"
 
 [dev-packages]
 "pep8" = "*"

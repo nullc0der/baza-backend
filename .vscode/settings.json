@@ -12,5 +12,6 @@
         "**/*.pyc": true,
         "**/__pycache__": true
     },
-    "editor.formatOnPaste": true
+    "editor.formatOnPaste": true,
+    "editor.formatOnSave": true
 }
