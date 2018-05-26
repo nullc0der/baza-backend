@@ -17,21 +17,25 @@ class WalletAccounts(APIView):
             {
                 'id': 1,
                 'name': 'Baza',
+                'balance': request.user.proxcaccount.balance,
                 'image': '/public/img/baza_logo.svg'
             },
             {
                 'id': 2,
                 'name': 'Monero',
+                'balance': 'xxxxx',
                 'image': '/public/img/monero.svg'
             },
             {
                 'id': 3,
                 'name': 'Bitcoin',
+                'balance': 'xxxxx',
                 'image': '/public/img/bitcoin.svg'
             },
             {
                 'id': 4,
                 'name': 'Ether',
+                'balance': 'xxxxx',
                 'image': '/public/img/ethereum.svg'
             }
         ]
