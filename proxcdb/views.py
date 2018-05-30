@@ -43,9 +43,12 @@ class ProxcTransactionView(APIView):
                     context={'proxcaccount': request.user.proxcaccount}
                 )
                 if transaction.is_valid():
+                    totalamount = transaction.validated_data.get(
+                        'amount') + 0.01
                     transaction.save(
                         account=request.user.proxcaccount,
-                        to_account=to_user.proxcaccount
+                        to_account=to_user.proxcaccount,
+                        amount=totalamount
                     )
                     return Response(transaction.data)
                 return Response(transaction.errors,
