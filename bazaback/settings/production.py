@@ -1,4 +1,4 @@
-import channels
+import channels.apps
 import raven
 from .base import *
 
