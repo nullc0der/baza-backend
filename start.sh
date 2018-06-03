@@ -7,7 +7,7 @@ echo "Collecting static files"
 python manage.py collectstatic --noinput
 echo "Migrating DB"
 python manage.py migrate --noinput
-echo "Starting uwsgi server"
-uwsgi uwsgi.ini
 echo "Starting ASGI server"
 daphne -b 0.0.0.0 -p 8001 bazaback.asgi:application 
+echo "Starting uwsgi server"
+uwsgi uwsgi.ini
