@@ -49,7 +49,8 @@ DJANGO_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.sites'
+    'django.contrib.sites',
+    'channels'
 ]
 
 THIRD_PARTY_APPS = [
@@ -64,7 +65,8 @@ THIRD_PARTY_APPS = [
 BAZA_APPS = [
     'userprofile',
     'mockapi',
-    'proxcdb'
+    'proxcdb',
+    'notifications'
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + BAZA_APPS
@@ -158,3 +160,6 @@ REST_FRAMEWORK = {
 
 # REST Framework Auth
 REST_SESSION_LOGIN = False
+
+# Channels ASGI application
+ASGI_APPLICATION = 'bazaback.routing.application'

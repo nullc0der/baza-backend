@@ -18,7 +18,19 @@ DATABASES = {
     }
 }
 
+# CORS
 
 CORS_ORIGIN_WHITELIST = [
     'localhost:5100'
 ]
+
+# CHANNEL
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("localhost", 6379)],
+        },
+    },
+}

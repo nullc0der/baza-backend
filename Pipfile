@@ -12,6 +12,8 @@ uwsgi = "*"
 django-allauth = "*"
 "psycopg2-binary" = "*"
 raven = "*"
+channels = "*"
+channels-redis = "*"
 
 [dev-packages]
 "pep8" = "*"

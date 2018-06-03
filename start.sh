@@ -9,3 +9,5 @@ echo "Migrating DB"
 python manage.py migrate --noinput
 echo "Starting uwsgi server"
 uwsgi uwsgi.ini
+echo "Starting ASGI server"
+daphne -b 0.0.0.0 -p 8001 bazaback.asgi:application 

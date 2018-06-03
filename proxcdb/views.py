@@ -2,6 +2,9 @@ from django.db.models import Q
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
+
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -11,6 +14,8 @@ from proxcdb.models import ProxcAccount, ProxcTransaction
 from proxcdb.serializers import ProxcTransactionSerializer
 
 # Create your views here.
+
+channel_layer = get_channel_layer()
 
 
 class ProxcTransactionView(APIView):
@@ -49,6 +54,16 @@ class ProxcTransactionView(APIView):
                         account=request.user.proxcaccount,
                         to_account=to_user.proxcaccount,
                         amount=totalamount
+                    )
+                    async_to_sync(channel_layer.group_send)(
+                        'notifications_for_%s' % to_user.username,
+                        {
+                            'type': 'notification.message',
+                            'message': {
+                                'type': 'proxcdb-transaction',
+                                'data': transaction.data
+                            }
+                        }
                     )
                     return Response(transaction.data)
                 return Response(transaction.errors,
