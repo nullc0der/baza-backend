@@ -1,3 +1,4 @@
+import channels
 import raven
 from .base import *
 
