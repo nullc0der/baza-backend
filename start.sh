@@ -8,6 +8,4 @@ python manage.py collectstatic --noinput
 echo "Migrating DB"
 python manage.py migrate --noinput
 echo "Starting ASGI server"
-daphne -b 0.0.0.0 -p 8001 bazaback.asgi:application 
-echo "Starting uwsgi server"
-uwsgi uwsgi.ini
+daphne -b 0.0.0.0 -p 8000 bazaback.asgi:application 
