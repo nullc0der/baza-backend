@@ -7,5 +7,7 @@ echo "Collecting static files"
 python manage.py collectstatic --noinput
 echo "Migrating DB"
 python manage.py migrate --noinput
+# TODO: add circus here and serve both wsgi and asgi seperately when app grows
+# Another approach, you can setup two different container for asgi and wsgi
 echo "Starting ASGI server"
-daphne -b 0.0.0.0 -p 8000 bazaback.asgi:application 
+daphne -b 0.0.0.0 -p 8000 -v 1 bazaback.asgi:application
