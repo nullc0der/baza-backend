@@ -49,24 +49,20 @@ DJANGO_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.sites',
     'channels'
 ]
 
 THIRD_PARTY_APPS = [
-    'allauth',
-    'allauth.account',
     'rest_framework',
-    'rest_framework.authtoken',
-    'rest_auth',
-    'rest_auth.registration'
+    'oauth2_provider'
 ]
 
 BAZA_APPS = [
     'userprofile',
     'mockapi',
     'proxcdb',
-    'notifications'
+    'notifications',
+    'authclient'
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + BAZA_APPS
@@ -147,19 +143,75 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
 
-# Site Framwork
-SITE_ID = 1
-
 # REST Framework
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.TokenAuthentication',
+        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
     )
 }
 
 
-# REST Framework Auth
-REST_SESSION_LOGIN = False
-
 # Channels ASGI application
 ASGI_APPLICATION = 'bazaback.routing.application'
+
+
+# Email verification
+# Can be one of these 'none', 'mandatory', 'optional'
+EMAIL_VERIFICATION = 'mandatory'
+
+
+# Site type
+SITE_TYPE = get_env_var('SITE_TYPE')
+
+
+# Host URL
+HOST_URL = get_env_var('HOST')
+
+# Auth email address
+INITIATOR_EMAIL = get_env_var('INITIATOR_EMAIL')
+
+# Auth introspect
+CENTRAL_AUTH_INTROSPECT_URL = get_env_var('CENTRAL_AUTH_INTROSPECT_URL')
+CENTRAL_AUTH_INTROSPECT_CLIENT_ID = get_env_var(
+    'CENTRAL_AUTH_INTROSPECT_CLIENT_ID')
+CENTRAL_AUTH_INTROSPECT_CLIENT_SECRET = get_env_var(
+    'CENTRAL_AUTH_INTROSPECT_CLIENT_SECRET')
+CENTRAL_AUTH_USER_LOGIN_CLIENT_ID = get_env_var(
+    'CENTRAL_AUTH_USER_LOGIN_CLIENT_ID'
+)
+CENTRAL_AUTH_USER_LOGIN_CLIENT_SECRET = get_env_var(
+    'CENTRAL_AUTH_USER_LOGIN_CLIENT_SECRET'
+)
+
+
+# OAUTH2 Provider
+# TODO: Resource server token expires,
+# check dot source if they provide method to refresh,
+# Otherwise implement own
+OAUTH2_PROVIDER = {
+    'RESOURCE_SERVER_INTROSPECTION_URL': '%s://%s/o/introspect/' % (
+        'http' if SITE_TYPE == 'local' else 'https',
+        CENTRAL_AUTH_INTROSPECT_URL,
+    ),
+    'RESOURCE_SERVER_AUTH_TOKEN': get_env_var('RESOURCE_SERVER_AUTH_TOKEN'),
+}
+
+
+# DJANGO Cache
+CACHES = {
+    'default': {
+        'BACKEND': 'redis_cache.RedisCache',
+        'LOCATION': get_env_var('REDIS_HOST') + ':6379',
+    },
+}
+
+
+# CHANNEL
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [(get_env_var('REDIS_HOST'), 6379)],
+        },
+    },
+}

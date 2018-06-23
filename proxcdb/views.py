@@ -1,6 +1,7 @@
 from django.db.models import Q
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
+from django.conf import settings
 
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
@@ -10,6 +11,9 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+
+from oauth2_provider.contrib.rest_framework import TokenHasScope
+
 from proxcdb.models import ProxcAccount, ProxcTransaction
 from proxcdb.serializers import ProxcTransactionSerializer
 
@@ -19,7 +23,9 @@ channel_layer = get_channel_layer()
 
 
 class ProxcTransactionView(APIView):
-    permission_classes = (IsAuthenticated, )
+    permission_classes = (IsAuthenticated, TokenHasScope, )
+    required_scopes = [
+        'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
 
     def get(self, request, format=None):
         wallet_id = request.query_params.get('wallet_id', None)
@@ -74,6 +80,7 @@ class ProxcTransactionView(APIView):
                 status=status.HTTP_400_BAD_REQUEST)
 
 
+# TODO: Add required scopes here
 @api_view()
 @permission_classes([IsAuthenticated, ])
 def proxcdb_account_autocomplete(request):

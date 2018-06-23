@@ -1,6 +1,10 @@
+from django.conf import settings
+
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
+
+from oauth2_provider.contrib.rest_framework import TokenHasScope
 
 # Create your views here.
 
@@ -10,7 +14,9 @@ class WalletAccounts(APIView):
     API to get mock version of walletaccounts
     """
 
-    permission_classes = (IsAuthenticated, )
+    permission_classes = (IsAuthenticated, TokenHasScope, )
+    required_scopes = [
+        'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
 
     def get(self, request, format=None):
         datas = [
@@ -48,7 +54,9 @@ class WalletTransaction(APIView):
     transactions data(Currently empty data)
     """
 
-    permission_classes = (IsAuthenticated, )
+    permission_classes = (IsAuthenticated, TokenHasScope, )
+    required_scopes = [
+        'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
 
     def get(self, request, format=None):
         return Response()
