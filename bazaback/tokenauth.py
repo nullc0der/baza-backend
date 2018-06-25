@@ -1,6 +1,7 @@
 from channels.auth import AuthMiddlewareStack
-from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import AnonymousUser
+
+from oauth2_provider.models import get_access_token_model
 
 
 class TokenAuthMiddleware:
@@ -18,14 +19,15 @@ class TokenAuthMiddleware:
         # We will send token with sec-websocket-protocol
         # header from browser and parse here
         if b'sec-websocket-protocol' in headers:
+            AccessToken = get_access_token_model()
             try:
                 token_name, token_key = headers[
                     b'sec-websocket-protocol'].decode(
                 ).split('-')
-                if token_name == 'Token':
-                    token = Token.objects.get(key=token_key)
+                if token_name == 'Bearer':
+                    token = AccessToken.objects.get(token=token_key)
                     scope['user'] = token.user
-            except Token.DoesNotExist:
+            except AccessToken.DoesNotExist:
                 scope['user'] = AnonymousUser()
         return self.inner(scope)
 

@@ -1,4 +1,8 @@
+from datetime import timedelta
+
 from django.conf import settings
+from django.utils.timezone import now
+
 from rest_framework import views, status
 from rest_framework.response import Response
 
@@ -32,7 +36,8 @@ class LoginView(views.APIView):
             return Response({
                 'access_token': data['access_token'],
                 'email_verification': settings.EMAIL_VERIFICATION,
-                'email_verified': data['email_verified']
+                'email_verified': data['email_verified'],
+                'expires_in': now() + timedelta(seconds=data['expires_in'])
             })
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
