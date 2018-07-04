@@ -35,6 +35,7 @@ class LoginView(views.APIView):
                 }, status=status.HTTP_400_BAD_REQUEST)
             return Response({
                 'access_token': data['access_token'],
+                'email': data['email'],
                 'email_verification': settings.EMAIL_VERIFICATION,
                 'email_verified': data['email_verified'],
                 'expires_in': now() + timedelta(seconds=data['expires_in'])
@@ -154,6 +155,56 @@ class ForgotPasswordView(views.APIView):
             request.data.get('password'),
             request.data.get('password1'),
             request.data.get('reset_token')
+        )
+        if res_status != 200:
+            return Response(data, status=status.HTTP_400_BAD_REQUEST)
+        return Response(data)
+
+
+class ConvertTokenView(views.APIView):
+    """
+    TODO: Add documentation
+    """
+
+    def post(self, request, format=None):
+        authhelperclient = AuthHelperClient(
+            URL_PROTOCOL +
+            settings.CENTRAL_AUTH_INTROSPECT_URL +
+            '/authhelper/converttoken/'
+        )
+        res_status, data = authhelperclient.convert_social_user_token(
+            request.data.get('token'),
+            request.data.get('backend').lower()
+        )
+        if res_status == 200 and data['access_token_exist']:
+            return Response({
+                'access_token': data['access_token'],
+                'email': data['email'],
+                'email_verification': settings.EMAIL_VERIFICATION,
+                'email_verified': data['email_verified'],
+                'expires_in': now() + timedelta(seconds=data['expires_in']),
+                'email_exist': data['email_exist']
+            })
+        return Response(
+            {'non_field_errors': ['Unknown errors occured!']},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+class AddUserEmailView(views.APIView):
+    """
+    TODO: Add documentation
+    """
+
+    def post(self, request, format=None):
+        authhelperclient = AuthHelperClient(
+            URL_PROTOCOL +
+            settings.CENTRAL_AUTH_INTROSPECT_URL +
+            '/authhelper/addemail/'
+        )
+        res_status, data = authhelperclient.add_user_email(
+            request.data.get('email'),
+            request.data.get('access_token')
         )
         if res_status != 200:
             return Response(data, status=status.HTTP_400_BAD_REQUEST)

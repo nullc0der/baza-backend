@@ -11,5 +11,7 @@ urlpatterns = [
     path('isemailverified/', views.CheckEmailVerifiedView.as_view()),
     path('initiateforgotpassword/',
          views.InitiateForgotPasswordView.as_view()),
-    path('forgotpassword/', views.ForgotPasswordView.as_view())
+    path('forgotpassword/', views.ForgotPasswordView.as_view()),
+    path('converttoken/', views.ConvertTokenView.as_view()),
+    path('addemail/', views.AddUserEmailView.as_view())
 ]

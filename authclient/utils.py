@@ -153,3 +153,40 @@ class AuthHelperClient(object):
         }
         res = requests.post(self.url, headers=headers, data=data)
         return res.status_code, res.json()
+
+    def convert_social_user_token(self, token, backend):
+        data = {
+            'backend': backend,
+            'token': token,
+            'email_validation': settings.EMAIL_VERIFICATION,
+            'initiator_site': settings.HOST_URL,
+            'initiator_use_ssl':
+            False if settings.SITE_TYPE == 'local' else True,
+            'initiator_email': settings.INITIATOR_EMAIL,
+            'client_id': settings.CENTRAL_AUTH_USER_LOGIN_CLIENT_ID,
+            'client_secret': settings.CENTRAL_AUTH_USER_LOGIN_CLIENT_SECRET,
+            'scope':
+                'baza' if settings.SITE_TYPE == 'production' else 'baza-beta',
+            'grant_type': 'convert_token'
+        }
+        res = requests.post(
+            self.url,
+            data=data
+        )
+        return res.status_code, res.json()
+
+    def add_user_email(self, email, access_token):
+        token = get_authhelper_client_token()
+        headers = {
+            "Authorization": "Bearer %s" % token
+        }
+        data = {
+            'email': email,
+            'access_token': access_token,
+            'initiator_site': settings.HOST_URL,
+            'initiator_use_ssl':
+            False if settings.SITE_TYPE == 'local' else True,
+            'initiator_email': settings.INITIATOR_EMAIL
+        }
+        res = requests.post(self.url, headers=headers, data=data)
+        return res.status_code, res.json()
