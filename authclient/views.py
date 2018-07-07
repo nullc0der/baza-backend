@@ -185,6 +185,17 @@ class ConvertTokenView(views.APIView):
                 'expires_in': now() + timedelta(seconds=data['expires_in']),
                 'email_exist': data['email_exist']
             })
+        if res_status == 401 and \
+                data['error_description'].split(':')[0] == 'email_associated':
+            return Response(
+                {'non_field_errors': [
+                    'The fetched email id %s is associated with another'
+                    ' account, if you own that account please connect'
+                    ' this social id from profile section instead'
+                    % data['error_description'].split(':')[1]
+                ]},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         return Response(
             {'non_field_errors': ['Unknown errors occured!']},
             status=status.HTTP_400_BAD_REQUEST
