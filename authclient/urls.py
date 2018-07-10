@@ -13,5 +13,7 @@ urlpatterns = [
          views.InitiateForgotPasswordView.as_view()),
     path('forgotpassword/', views.ForgotPasswordView.as_view()),
     path('converttoken/', views.ConvertTokenView.as_view()),
-    path('addemail/', views.AddUserEmailView.as_view())
+    path('addemail/', views.AddUserEmailView.as_view()),
+    path('twitter/getrequesttoken/', views.GetTwitterRequestCode.as_view()),
+    path('twitter/login/', views.GetTwitterUserToken.as_view())
 ]

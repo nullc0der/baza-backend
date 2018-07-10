@@ -190,3 +190,31 @@ class AuthHelperClient(object):
         }
         res = requests.post(self.url, headers=headers, data=data)
         return res.status_code, res.json()
+
+    def get_twitter_request_code(self):
+        callback_uris = {
+            'local': 'http://localhost:5100/twicallback/',
+            'production': 'https://baza.foundation/twicallback/',
+            'development': 'https://beta.baza.foundation/twicallback/',
+        }
+        token = get_authhelper_client_token()
+        headers = {
+            "Authorization": "Bearer %s" % token
+        }
+        data = {
+            'callback_uri': callback_uris[settings.SITE_TYPE]
+        }
+        res = requests.post(self.url, headers=headers, data=data)
+        return res.status_code, res.json()
+
+    def get_twitter_user_token(self, oauth_token, oauth_verifier):
+        token = get_authhelper_client_token()
+        headers = {
+            "Authorization": "Bearer %s" % token
+        }
+        data = {
+            'oauth_token': oauth_token,
+            'oauth_verifier': oauth_verifier
+        }
+        res = requests.post(self.url, headers=headers, data=data)
+        return res.status_code, res.json()
