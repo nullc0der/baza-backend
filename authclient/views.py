@@ -14,10 +14,6 @@ URL_PROTOCOL = 'http://' if settings.SITE_TYPE == 'local' else 'https://'
 
 
 class LoginView(views.APIView):
-    """
-    TODO: Add documentation
-    """
-
     def post(self, request, format=None):
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
@@ -44,10 +40,6 @@ class LoginView(views.APIView):
 
 
 class LogoutView(views.APIView):
-    """
-    TODO: Add documentation
-    """
-
     def post(self, request, format=None):
         authhelperclient = AuthHelperClient(
             URL_PROTOCOL +
@@ -62,10 +54,6 @@ class LogoutView(views.APIView):
 
 
 class RegisterView(views.APIView):
-    """
-    TODO: Add documentation
-    """
-
     def post(self, request, format=None):
         authhelperclient = AuthHelperClient(
             URL_PROTOCOL +
@@ -86,10 +74,6 @@ class RegisterView(views.APIView):
 
 
 class ValidateEmailView(views.APIView):
-    """
-    TODO: Add documentation
-    """
-
     def post(self, request, format=None):
         authhelperclient = AuthHelperClient(
             URL_PROTOCOL +
@@ -103,10 +87,6 @@ class ValidateEmailView(views.APIView):
 
 
 class CheckEmailVerifiedView(views.APIView):
-    """
-    TODO: Add documentation
-    """
-
     def post(self, request, format=None):
         authhelperclient = AuthHelperClient(
             URL_PROTOCOL +
@@ -122,10 +102,6 @@ class CheckEmailVerifiedView(views.APIView):
 
 
 class InitiateForgotPasswordView(views.APIView):
-    """
-    TODO: Add documentation
-    """
-
     def post(self, request, format=None):
         authhelperclient = AuthHelperClient(
             URL_PROTOCOL +
@@ -141,10 +117,6 @@ class InitiateForgotPasswordView(views.APIView):
 
 
 class ForgotPasswordView(views.APIView):
-    """
-    TODO: Add documentation
-    """
-
     def post(self, request, format=None):
         authhelperclient = AuthHelperClient(
             URL_PROTOCOL +
@@ -198,19 +170,11 @@ def get_convert_token_response(request):
 
 
 class ConvertTokenView(views.APIView):
-    """
-    TODO: Add documentation
-    """
-
     def post(self, request, format=None):
         return get_convert_token_response(request)
 
 
 class AddUserEmailView(views.APIView):
-    """
-    TODO: Add documentation
-    """
-
     def post(self, request, format=None):
         authhelperclient = AuthHelperClient(
             URL_PROTOCOL +
@@ -227,10 +191,6 @@ class AddUserEmailView(views.APIView):
 
 
 class GetTwitterRequestCode(views.APIView):
-    """
-    TODO: Add documentation
-    """
-
     def post(self, request, format=None):
         authhelperclient = AuthHelperClient(
             URL_PROTOCOL +
@@ -242,10 +202,6 @@ class GetTwitterRequestCode(views.APIView):
 
 
 class GetTwitterUserToken(views.APIView):
-    """
-    TODO: Add documentation
-    """
-
     def post(self, request, format=None):
         authhelperclient = AuthHelperClient(
             URL_PROTOCOL +
