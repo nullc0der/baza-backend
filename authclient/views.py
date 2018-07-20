@@ -163,6 +163,9 @@ def get_convert_token_response(request):
             ]},
             status=status.HTTP_400_BAD_REQUEST
         )
+    if res_status == 403:
+        return Response({'non_field_errors': [data['error_description']]},
+                        status=status.HTTP_400_BAD_REQUEST)
     return Response(
         {'non_field_errors': ['Unknown errors occured!']},
         status=status.HTTP_400_BAD_REQUEST

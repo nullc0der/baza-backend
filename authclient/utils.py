@@ -46,8 +46,9 @@ class AuthHelperClient(object):
             'grant_type': 'password',
             'username': username,
             'password': password,
-            'scope':
+            'scope': [
                 'baza' if settings.SITE_TYPE == 'production' else 'baza-beta'
+            ]
         }
         res = requests.post(
             self.url,
@@ -165,8 +166,8 @@ class AuthHelperClient(object):
             'initiator_email': settings.INITIATOR_EMAIL,
             'client_id': settings.CENTRAL_AUTH_USER_LOGIN_CLIENT_ID,
             'client_secret': settings.CENTRAL_AUTH_USER_LOGIN_CLIENT_SECRET,
-            'scope':
-                'baza' if settings.SITE_TYPE == 'production' else 'baza-beta',
+            'scope': [
+                'baza' if settings.SITE_TYPE == 'production' else 'baza-beta'],
             'grant_type': 'convert_token'
         }
         res = requests.post(
@@ -218,3 +219,16 @@ class AuthHelperClient(object):
         }
         res = requests.post(self.url, headers=headers, data=data)
         return res.status_code, res.json()
+
+    def update_user_special_scope(self, update_type, scope, username):
+        token = get_authhelper_client_token()
+        headers = {
+            "Authorization": "Bearer %s" % token
+        }
+        data = {
+            'update_type': update_type,
+            'scope': scope,
+            'username': username
+        }
+        res = requests.post(self.url, headers=headers, data=data)
+        return res.status_code
