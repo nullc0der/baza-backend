@@ -5,6 +5,7 @@ from django.utils.timezone import now
 
 from rest_framework import views, status
 from rest_framework.response import Response
+from rest_framework.decorators import api_view
 
 from authclient.utils import AuthHelperClient
 from authclient.serializers import LoginSerializer
@@ -55,21 +56,27 @@ class LogoutView(views.APIView):
 
 class RegisterView(views.APIView):
     def post(self, request, format=None):
-        authhelperclient = AuthHelperClient(
-            URL_PROTOCOL +
-            settings.CENTRAL_AUTH_INTROSPECT_URL +
-            '/authhelper/registeruser/')
-        res_status, data = authhelperclient.register_user(
-            username=request.data.get('username'),
-            password=request.data.get('password'),
-            password1=request.data.get('password1'),
-            email=request.data.get('email')
-        )
-        if res_status != 200:
-            return Response(data, status=status.HTTP_400_BAD_REQUEST)
+        if settings.REGISTRATION_ENABLED:
+            authhelperclient = AuthHelperClient(
+                URL_PROTOCOL +
+                settings.CENTRAL_AUTH_INTROSPECT_URL +
+                '/authhelper/registeruser/')
+            res_status, data = authhelperclient.register_user(
+                username=request.data.get('username'),
+                password=request.data.get('password'),
+                password1=request.data.get('password1'),
+                email=request.data.get('email')
+            )
+            if res_status != 200:
+                data['is_registration_enabled'] = settings.REGISTRATION_ENABLED
+                return Response(data, status=status.HTTP_400_BAD_REQUEST)
+            return Response({
+                'status': 'success',
+                'email_verification': settings.EMAIL_VERIFICATION,
+                'is_registration_enabled': settings.REGISTRATION_ENABLED
+            })
         return Response({
-            'status': 'success',
-            'email_verification': settings.EMAIL_VERIFICATION
+            'is_registration_enabled': settings.REGISTRATION_ENABLED
         })
 
 
@@ -221,3 +228,10 @@ class GetTwitterUserToken(views.APIView):
             request.data['backend'] = 'twitter'
             return get_convert_token_response(request)
         return Response(res_status)
+
+
+@api_view(['GET'])
+def check_registration_enabled(request):
+    return Response({
+        'is_registration_enabled': settings.REGISTRATION_ENABLED
+    })

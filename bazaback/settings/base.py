@@ -215,3 +215,7 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+
+# Registration settings
+REGISTRATION_ENABLED = bool(get_env_var('REGISTRATION_ENABLED'))
