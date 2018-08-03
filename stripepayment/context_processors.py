@@ -1,0 +1,7 @@
+from django.conf import settings
+
+
+def stripe_public_key(request):
+    return {
+        'STRIPE_PUBLISHABLE_KEY': settings.STRIPE_PUBLISHABLE_KEY
+    }

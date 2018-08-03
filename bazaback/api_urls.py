@@ -6,5 +6,7 @@ urlpatterns = [
     path('profile/', include('userprofile.urls')),
     path('mock/', include('mockapi.urls')),
     path('proxc/', include('proxcdb.urls')),
-    path('auth/', include('authclient.urls'))
+    path('auth/', include('authclient.urls')),
+    path('donate/', include('donation.urls')),
+    path('purchasecoin/', include('coinpurchase.urls'))
 ]

@@ -62,7 +62,10 @@ BAZA_APPS = [
     'mockapi',
     'proxcdb',
     'notifications',
-    'authclient'
+    'authclient',
+    'stripepayment',
+    'donation',
+    'coinpurchase'
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + BAZA_APPS
@@ -219,3 +222,7 @@ CHANNEL_LAYERS = {
 
 # Registration settings
 REGISTRATION_ENABLED = bool(get_env_var('REGISTRATION_ENABLED'))
+
+
+# Stripe
+STRIPE_SECRET_KEY = get_env_var('STRIPE_SECRET_KEY')
