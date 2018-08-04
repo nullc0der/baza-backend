@@ -2,10 +2,12 @@ from rest_framework import serializers
 
 
 class CoinPurchaseSerializer(serializers.Serializer):
-    amount = serializers.FloatField()
+    price = serializers.FloatField()
+    currency = serializers.CharField()
+    coin_name = serializers.CharField()
     stripe_token = serializers.CharField()
 
-    def validate_amount(self, value):
+    def validate_price(self, value):
         if value == 0:
             raise serializers.ValidationError('Enter a non zero amount')
         if value < 0:

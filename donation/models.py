@@ -12,7 +12,7 @@ class Donation(models.Model):
     amount = models.FloatField()
     name = models.CharField(max_length=150)
     email = models.EmailField()
-    phone_no = models.CharField(max_length=20)
+    phone_no = models.CharField(max_length=20, default='')
     stripe_payment = models.OneToOneField(
         Payment, on_delete=models.CASCADE, null=True
     )

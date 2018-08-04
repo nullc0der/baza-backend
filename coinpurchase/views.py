@@ -45,14 +45,16 @@ class ProcessCoinPurchase(views.APIView):
             payment = stripe_payment.process_payment(
                 token=serializer.validated_data['stripe_token'],
                 payment_type='coin_purchase',
-                amount=serializer.validated_data['amount'],
+                amount=serializer.validated_data['price'],
                 message=''
             )
             if payment.is_success:
                 CoinPurchase.objects.create(
                     user=request.user,
-                    amount=serializer.validated_data['amount'],
-                    coin_name='proxcdb',
+                    price=serializer.validated_data['price'],
+                    amount=serializer.validated_data['price'] *
+                    get_coin_value(serializer.validated_data['coin_name']),
+                    coin_name=serializer.validated_data['coin_name'],
                     stripe_payment=payment
                 )
                 return Response()
