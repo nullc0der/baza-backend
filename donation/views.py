@@ -24,7 +24,8 @@ def get_donation_response(request, is_anonymous):
             token=serializer.validated_data['stripe_token'],
             payment_type='donation',
             amount=serializer.validated_data['amount'],
-            message=''
+            message='',
+            receipt_email=serializer.validated_data['email']
         )
         if payment.is_success:
             Donation.objects.create(

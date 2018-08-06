@@ -11,7 +11,9 @@ class StripePayment(object):
         self.user = user
         self.fullname = fullname
 
-    def process_payment(self, token, payment_type='', amount=0, message=''):
+    def process_payment(
+            self, token, payment_type='',
+            amount=0, message='', receipt_email=None):
         payment = Payment(
             amount=amount,
             payment_type=payment_type,
@@ -24,10 +26,6 @@ class StripePayment(object):
         payment.save()
         if amount >= 1:
             amount = int(amount * 100)
-        if self.user and self.user.email:
-            receipt_email = self.user.email
-        else:
-            receipt_email = None
         stripe.api_key = settings.STRIPE_SECRET_KEY
         try:
             charge = stripe.Charge.create(
@@ -39,7 +37,7 @@ class StripePayment(object):
                     "message": payment.message
                 },
                 source=token,
-                receipt_email=receipt_email if receipt_email else None
+                receipt_email=receipt_email
             )
             payment.charge_id = charge.id
             payment.is_success = True

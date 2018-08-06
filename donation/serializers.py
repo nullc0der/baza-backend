@@ -6,11 +6,11 @@ class DonationSerializer(serializers.Serializer):
     name = serializers.CharField()
     email = serializers.EmailField()
     phone_no = serializers.RegexField(
-        r'^(\+)(\d{12})$',
+        r'^(\+)(\d{11,15})$',
         allow_blank=True,
         error_messages={
             'invalid':
-                'Please enter a 10 digit phone number with your international code'
+                'Please enter a valid phone number'
         }
     )
     stripe_token = serializers.CharField()

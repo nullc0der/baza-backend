@@ -46,7 +46,8 @@ class ProcessCoinPurchase(views.APIView):
                 token=serializer.validated_data['stripe_token'],
                 payment_type='coin_purchase',
                 amount=serializer.validated_data['price'],
-                message=''
+                message='',
+                receipt_email=request.user.email if request.user.email else None
             )
             if payment.is_success:
                 CoinPurchase.objects.create(
