@@ -15,6 +15,7 @@ channels-redis = "*"
 django-oauth-toolkit = "*"
 django-redis-cache = "*"
 stripe = "*"
+pillow = "*"
 
 [dev-packages]
 "pep8" = "*"

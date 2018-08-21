@@ -8,5 +8,6 @@ urlpatterns = [
     path('proxc/', include('proxcdb.urls')),
     path('auth/', include('authclient.urls')),
     path('donate/', include('donation.urls')),
-    path('purchasecoin/', include('coinpurchase.urls'))
+    path('purchasecoin/', include('coinpurchase.urls')),
+    path('bazasignup/', include('bazasignup.urls'))
 ]
