@@ -17,6 +17,11 @@
             "label": "Run Django Server",
             "type": "shell",
             "command": "pipenv run python manage.py runserver"
+        },
+        {
+            "label": "Run Baza Celery",
+            "type": "shell",
+            "command": "pipenv run celery -A bazaback worker -l info"
         }
     ]
 }

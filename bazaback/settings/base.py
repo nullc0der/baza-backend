@@ -86,7 +86,7 @@ ROOT_URLCONF = 'bazaback.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -153,6 +153,12 @@ REST_FRAMEWORK = {
         'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
     )
 }
+
+
+# CELERY
+CELERY_BROKER_URL = 'redis://' + get_env_var('REDIS_HOST') + ':6379/0'
+CELERY_RESULT_BACKEND = 'redis://' + get_env_var('REDIS_HOST') + ':6379/0'
+CELERY_TIMEZONE = 'UTC'
 
 
 # Channels ASGI application
@@ -227,3 +233,11 @@ REGISTRATION_ENABLED = bool(get_env_var('REGISTRATION_ENABLED'))
 
 # Stripe
 STRIPE_SECRET_KEY = get_env_var('STRIPE_SECRET_KEY')
+
+# EMAIL_SERVER
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = get_env_var('DJANGO_EMAIL_HOST')
+EMAIL_PORT = 587
+EMAIL_HOST_USER = get_env_var('DJANGO_EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = get_env_var('DJANGO_EMAIL_HOST_PASSWORD')
+EMAIL_USE_TLS = True

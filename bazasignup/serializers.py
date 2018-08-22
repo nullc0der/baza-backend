@@ -1,6 +1,10 @@
+from datetime import timedelta
+from django.utils.timezone import now
+
 from rest_framework import serializers
 
 from bazasignup.countries import COUNTRIES
+from bazasignup.models import EmailVerification
 
 
 class UserInfoTabSerializer(serializers.Serializer):
@@ -29,3 +33,26 @@ class UserInfoTabSerializer(serializers.Serializer):
                 " leave this blank"
             )
         return value
+
+
+class EmailSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+
+class EmailVerificationSerializer(serializers.Serializer):
+    code = serializers.CharField(min_length=6, max_length=6)
+
+    def validate_code(self, value):
+        try:
+            emailverification = EmailVerification.objects.get(
+                verification_code=value
+            )
+            if emailverification.created_on + timedelta(seconds=120) > now():
+                return value
+            raise serializers.ValidationError(
+                "This code is expired, please click on try again"
+            )
+        except EmailVerification.DoesNotExist:
+            raise serializers.ValidationError(
+                "Code not found"
+            )

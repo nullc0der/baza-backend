@@ -22,6 +22,9 @@ class BazaSignup(models.Model):
     on_distribution = models.BooleanField(default=False)
     # Comma seprated string if multiple
     completed_steps = models.CharField(max_length=10)
+    logged_ip_address = models.GenericIPAddressField(null=True)
+    email_skipped = models.BooleanField(default=False)
+    phone_skipped = models.BooleanField(default=False)
 
     def get_completed_steps(self):
         return self.completed_steps.split(',')
@@ -65,11 +68,11 @@ class EmailVerification(models.Model):
     email = models.EmailField()
     signup = models.OneToOneField(BazaSignup, on_delete=models.CASCADE)
     verification_code = models.CharField(max_length=6)
-    created_on = models.DateTimeField()
+    created_on = models.DateTimeField(auto_now_add=True)
 
 
 class PhoneVerification(models.Model):
     phone_number = models.CharField(max_length=15)
     signup = models.OneToOneField(BazaSignup, on_delete=models.CASCADE)
     verification_code = models.CharField(max_length=6)
-    created_on = models.DateTimeField()
+    created_on = models.DateTimeField(auto_now_add=True)

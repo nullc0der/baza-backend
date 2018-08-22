@@ -16,6 +16,7 @@ django-oauth-toolkit = "*"
 django-redis-cache = "*"
 stripe = "*"
 pillow = "*"
+celery = "*"
 
 [dev-packages]
 "pep8" = "*"

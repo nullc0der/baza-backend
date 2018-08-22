@@ -9,10 +9,18 @@ from oauth2_provider.contrib.rest_framework import TokenHasScope
 
 from bazasignup.models import (
     BazaSignup,
-    BazaSignupAddress
+    BazaSignupAddress,
+    BazaSignupEmail,
+    EmailVerification
 )
 from bazasignup.serializers import (
     UserInfoTabSerializer,
+    EmailSerializer,
+    EmailVerificationSerializer,
+)
+from bazasignup.tasks import (
+    task_send_email_verification_code,
+    task_send_email_verification_code_again
 )
 
 
@@ -117,3 +125,100 @@ class UserInfoTabView(views.APIView):
             request.user.save()
             return get_step_response(signup, current_step=0)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SkipEmailTabView(views.APIView):
+    """
+    This API will let user skip email verification step
+    and let them continue to next step
+    """
+
+    permission_classes = (IsAuthenticated, TokenHasScope, )
+    required_scopes = [
+        'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
+
+    def post(self, request, format=None):
+        try:
+            signup = BazaSignup.objects.get(
+                user=request.user
+            )
+            signup.completed_steps = get_current_completed_steps(request, "1")
+            signup.email_skipped = True
+            signup.save()
+            return get_step_response(signup, current_step=1)
+        except BazaSignup.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+class InitiateEmailVerificationView(views.APIView):
+    """
+    This API will fetch the users email and send verification
+    code to user
+    """
+
+    permission_classes = (IsAuthenticated, TokenHasScope, )
+    required_scopes = [
+        'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
+
+    def post(self, request, format=None):
+        serializer = EmailSerializer(data=request.data)
+        if serializer.is_valid():
+            signup = BazaSignup.objects.get(
+                user=request.user
+            )
+            task_send_email_verification_code.delay(
+                serializer.validated_data['email'], signup.id
+            )
+            return Response()
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ValidateEmailVerificationCode(views.APIView):
+    """
+    This API will validate the verification code
+    and send user to next step
+    """
+
+    permission_classes = (IsAuthenticated, TokenHasScope, )
+    required_scopes = [
+        'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
+
+    def post(self, request, format=None):
+        serializer = EmailVerificationSerializer(data=request.data)
+        if serializer.is_valid():
+            emailverification = EmailVerification.objects.get(
+                verification_code=serializer.validated_data['code']
+            )
+            signup = emailverification.signup
+            signup.email = emailverification.email
+            signup.completed_steps = get_current_completed_steps(request, "1")
+            signup.save()
+            bazasignupemail, created = BazaSignupEmail.objects.get_or_create(
+                email=emailverification.email
+            )
+            bazasignupemail.signups.add(signup)
+            emailverification.delete()
+            return get_step_response(signup, current_step=1)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SendVerificationEmailAgain(views.APIView):
+    """
+    This API will send verification code for a user again
+    """
+
+    permission_classes = (IsAuthenticated, TokenHasScope, )
+    required_scopes = [
+        'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
+
+    def post(self, request, format=None):
+        try:
+            signup = BazaSignup.objects.get(
+                user=request.user
+            )
+            if hasattr(signup, 'emailverification'):
+                task_send_email_verification_code_again.delay(signup.id)
+                return Response()
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        except BazaSignup.DoesNotExist:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
