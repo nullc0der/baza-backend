@@ -14,5 +14,15 @@ urlpatterns = [
         views.ValidateEmailVerificationCode.as_view()),
     path(
         'sendverificationcodeagain/',
-        views.SendVerificationEmailAgain.as_view())
+        views.SendVerificationEmailAgain.as_view()),
+    path('skipphone/', views.SkipPhoneTabView.as_view()),
+    path(
+        'sendphoneverificationcode/',
+        views.InitiatePhoneVerificationView.as_view()),
+    path(
+        'validatesmscode/',
+        views.ValidatePhoneVerificationCode.as_view()),
+    path(
+        'sendphoneverificationcodeagain/',
+        views.SendVerificationSMSAgain.as_view()),
 ]

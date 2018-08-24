@@ -4,7 +4,9 @@ from celery import shared_task
 
 from bazasignup.utils import (
     send_email_verfication_code,
-    send_email_verfication_code_again
+    send_email_verfication_code_again,
+    send_phone_verification_code,
+    send_phone_verification_code_again
 )
 
 
@@ -16,3 +18,13 @@ def task_send_email_verification_code(email, signup_id):
 @shared_task
 def task_send_email_verification_code_again(signup_id):
     return send_email_verfication_code_again(signup_id)
+
+
+@shared_task
+def task_send_phone_verification_code(signup_id, phone_number):
+    return send_phone_verification_code(signup_id, phone_number)
+
+
+@shared_task
+def task_send_phone_verification_code_again(signup_id):
+    return send_phone_verification_code_again(signup_id)

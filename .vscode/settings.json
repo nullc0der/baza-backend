@@ -1,8 +1,7 @@
 {
   "python.linting.pylintEnabled": false,
   "python.linting.pep8Enabled": true,
-  "python.pythonPath":
-    "/home/prasanta/.virtualenvs/baza-backend-wRN7hA0Q/bin/python",
+  "python.pythonPath": "/home/prasanta/.virtualenvs/baza-backend-wRN7hA0Q/bin/python",
   "python.venvPath": "/home/prasanta/.virtualenvs/baza-back-MDggNLq6/",
   "files.exclude": {
     "**/.git": true,

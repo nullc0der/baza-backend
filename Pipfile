@@ -17,6 +17,7 @@ django-redis-cache = "*"
 stripe = "*"
 pillow = "*"
 celery = "*"
+twilio = "*"
 
 [dev-packages]
 "pep8" = "*"

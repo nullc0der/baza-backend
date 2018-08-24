@@ -11,16 +11,22 @@ from bazasignup.models import (
     BazaSignup,
     BazaSignupAddress,
     BazaSignupEmail,
-    EmailVerification
+    BazaSignupPhone,
+    EmailVerification,
+    PhoneVerification
 )
 from bazasignup.serializers import (
     UserInfoTabSerializer,
     EmailSerializer,
     EmailVerificationSerializer,
+    PhoneSerializer,
+    PhoneVerificationSerializer
 )
 from bazasignup.tasks import (
     task_send_email_verification_code,
-    task_send_email_verification_code_again
+    task_send_email_verification_code_again,
+    task_send_phone_verification_code,
+    task_send_phone_verification_code_again
 )
 
 
@@ -218,6 +224,103 @@ class SendVerificationEmailAgain(views.APIView):
             )
             if hasattr(signup, 'emailverification'):
                 task_send_email_verification_code_again.delay(signup.id)
+                return Response()
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        except BazaSignup.DoesNotExist:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+class SkipPhoneTabView(views.APIView):
+    """
+    This API will let user skip phone verification step
+    and let them continue to next step
+    """
+
+    permission_classes = (IsAuthenticated, TokenHasScope, )
+    required_scopes = [
+        'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
+
+    def post(self, request, format=None):
+        try:
+            signup = BazaSignup.objects.get(
+                user=request.user
+            )
+            signup.completed_steps = get_current_completed_steps(request, "2")
+            signup.phone_skipped = True
+            signup.save()
+            return get_step_response(signup, current_step=2)
+        except BazaSignup.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+class InitiatePhoneVerificationView(views.APIView):
+    """
+    This API will fetch the users phone number and send verification
+    code to user
+    """
+
+    permission_classes = (IsAuthenticated, TokenHasScope, )
+    required_scopes = [
+        'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
+
+    def post(self, request, format=None):
+        serializer = PhoneSerializer(data=request.data)
+        if serializer.is_valid():
+            signup = BazaSignup.objects.get(
+                user=request.user
+            )
+            task_send_phone_verification_code.delay(
+                signup.id, serializer.validated_data['phone']
+            )
+            return Response()
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ValidatePhoneVerificationCode(views.APIView):
+    """
+    This API will validate the verification code
+    and send user to next step
+    """
+
+    permission_classes = (IsAuthenticated, TokenHasScope, )
+    required_scopes = [
+        'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
+
+    def post(self, request, format=None):
+        serializer = PhoneVerificationSerializer(data=request.data)
+        if serializer.is_valid():
+            phoneverification = PhoneVerification.objects.get(
+                verification_code=serializer.validated_data['code']
+            )
+            signup = phoneverification.signup
+            signup.phone_number = phoneverification.phone_number
+            signup.completed_steps = get_current_completed_steps(request, "2")
+            signup.save()
+            bazasignupphone, created = BazaSignupPhone.objects.get_or_create(
+                phone_number=phoneverification.phone_number
+            )
+            bazasignupphone.signups.add(signup)
+            phoneverification.delete()
+            return get_step_response(signup, current_step=2)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SendVerificationSMSAgain(views.APIView):
+    """
+    This API will send verification code sms for an user again
+    """
+
+    permission_classes = (IsAuthenticated, TokenHasScope, )
+    required_scopes = [
+        'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
+
+    def post(self, request, format=None):
+        try:
+            signup = BazaSignup.objects.get(
+                user=request.user
+            )
+            if hasattr(signup, 'phoneverification'):
+                task_send_phone_verification_code_again.delay(signup.id)
                 return Response()
             return Response(status=status.HTTP_400_BAD_REQUEST)
         except BazaSignup.DoesNotExist:

@@ -4,7 +4,10 @@ from django.utils.timezone import now
 from rest_framework import serializers
 
 from bazasignup.countries import COUNTRIES
-from bazasignup.models import EmailVerification
+from bazasignup.models import (
+    EmailVerification,
+    PhoneVerification
+)
 
 
 class UserInfoTabSerializer(serializers.Serializer):
@@ -54,5 +57,28 @@ class EmailVerificationSerializer(serializers.Serializer):
             )
         except EmailVerification.DoesNotExist:
             raise serializers.ValidationError(
-                "Code not found"
+                "Invalid code"
+            )
+
+
+class PhoneSerializer(serializers.Serializer):
+    phone = serializers.CharField()
+
+
+class PhoneVerificationSerializer(serializers.Serializer):
+    code = serializers.CharField(min_length=6, max_length=6)
+
+    def validate_code(self, value):
+        try:
+            phoneverification = PhoneVerification.objects.get(
+                verification_code=value
+            )
+            if phoneverification.created_on + timedelta(seconds=120) > now():
+                return value
+            raise serializers.ValidationError(
+                "This code is expired, please click on try again"
+            )
+        except PhoneVerification.DoesNotExist:
+            raise serializers.ValidationError(
+                "Invalid code"
             )

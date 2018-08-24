@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "ae47969a33f2cc4a7d78551181408de962d7a617d0d90c512e749992e2de9b4f"
+            "sha256": "6422b9df93cb09d79c5c1b8a87dcbca26cff09905a04575c416b586b583a27b1"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -325,6 +325,20 @@
             "markers": "python_version != '3.2.*' and python_version != '3.3.*' and python_version != '3.1.*' and python_version >= '2.7' and python_version != '3.0.*'",
             "version": "==1.9.0"
         },
+        "pyjwt": {
+            "hashes": [
+                "sha256:30b1380ff43b55441283cc2b2676b755cca45693ae3097325dea01f3d110628c",
+                "sha256:4ee413b357d53fd3fb44704577afac88e72e878716116270d722723d65b42176"
+            ],
+            "version": "==1.6.4"
+        },
+        "pysocks": {
+            "hashes": [
+                "sha256:3fe52c55890a248676fd69dc9e3c4e811718b777834bcaab7a8125cf9deac672"
+            ],
+            "markers": "python_version >= '3.0'",
+            "version": "==1.6.8"
+        },
         "pytz": {
             "hashes": [
                 "sha256:a061aa0a9e06881eb8b3b2b43f05b9439d6583c206d0a6c340ff72a7b6669053",
@@ -364,11 +378,19 @@
         },
         "stripe": {
             "hashes": [
-                "sha256:61d6be45d25849336745e480d0033931348cc72c94e343bf04590b9a44d2c13a",
-                "sha256:c8dc000091aac8aed4547a6185f84ea594c1f1ced1cf4cded80ee1fb12a11dde"
+                "sha256:506e26639bca77a8044425027003e4df0fb28fda7de385d71727e1bd00d4410d",
+                "sha256:ce8fc8af33e12d3d92b083b86952227e9af6854eaf6a044a7725ac543b0582f8"
             ],
             "index": "pypi",
-            "version": "==2.5.0"
+            "version": "==2.6.0"
+        },
+        "twilio": {
+            "hashes": [
+                "sha256:75a00ebe6f5054204d4dfa2ce44f695c1071be910f4ed37738ee8e8f1b8492ee",
+                "sha256:8d254aee5c064d91f76da807e3760c22a53e1a32aeb6b1924c8bde8344fcd92b"
+            ],
+            "index": "pypi",
+            "version": "==6.16.3"
         },
         "twisted": {
             "hashes": [
