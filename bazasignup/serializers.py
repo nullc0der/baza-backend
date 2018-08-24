@@ -82,3 +82,7 @@ class PhoneVerificationSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 "Invalid code"
             )
+
+
+class SignupImageSerializer(serializers.Serializer):
+    image = serializers.ImageField()

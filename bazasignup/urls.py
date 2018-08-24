@@ -25,4 +25,8 @@ urlpatterns = [
     path(
         'sendphoneverificationcodeagain/',
         views.SendVerificationSMSAgain.as_view()),
+    path(
+        'uploadsignupimage/',
+        views.SignupImageUploadView.as_view()
+    )
 ]

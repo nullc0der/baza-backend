@@ -2,8 +2,8 @@ from django.conf import settings
 
 from rest_framework import views, status
 from rest_framework.response import Response
-
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.parsers import FormParser, MultiPartParser
 
 from oauth2_provider.contrib.rest_framework import TokenHasScope
 
@@ -20,7 +20,8 @@ from bazasignup.serializers import (
     EmailSerializer,
     EmailVerificationSerializer,
     PhoneSerializer,
-    PhoneVerificationSerializer
+    PhoneVerificationSerializer,
+    SignupImageSerializer
 )
 from bazasignup.tasks import (
     task_send_email_verification_code,
@@ -325,3 +326,25 @@ class SendVerificationSMSAgain(views.APIView):
             return Response(status=status.HTTP_400_BAD_REQUEST)
         except BazaSignup.DoesNotExist:
             return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+class SignupImageUploadView(views.APIView):
+    """
+    This API will be used to upload an image document or photo
+    of the user
+    """
+
+    parser_classes = (FormParser, MultiPartParser, )
+    permission_classes = (IsAuthenticated, TokenHasScope, )
+    required_scopes = [
+        'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
+
+    def post(self, request, format=None):
+        serializer = SignupImageSerializer(data=request.data)
+        if serializer.is_valid():
+            signup = BazaSignup.objects.get(user=request.user)
+            signup.photo = serializer.validated_data['image']
+            signup.completed_steps = get_current_completed_steps(request, "3")
+            signup.save()
+            return get_step_response(signup, current_step=3)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
