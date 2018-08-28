@@ -49,7 +49,7 @@ def get_current_completed_steps(request, current_step):
 
 
 def get_step_response(signup, current_step=0):
-    next_step_index = current_step + 1
+    next_step_index = get_next_step_index(signup.get_completed_steps())
     data = {
         'status': signup.status,
         'completed_steps': signup.get_completed_steps(),
@@ -59,6 +59,15 @@ def get_step_response(signup, current_step=0):
         }
     }
     return Response(data)
+
+
+def get_next_step_index(completed_steps):
+    completed_steps = list(map(lambda x: int(x), completed_steps))
+    not_completed_steps = []
+    for i in range(4):
+        if i not in completed_steps:
+            not_completed_steps.append(i)
+    return min(not_completed_steps) if len(not_completed_steps) else None
 
 
 class CheckCompletedTab(views.APIView):
@@ -74,15 +83,14 @@ class CheckCompletedTab(views.APIView):
         try:
             signup = BazaSignup.objects.get(
                 user=request.user)
-            last_completed_step = max(list(map(
-                lambda x: int(x), signup.get_completed_steps())))
+            next_step_index = get_next_step_index(signup.get_completed_steps())
             data = {
                 'status': signup.status,
                 'completed_steps': signup.get_completed_steps(),
                 'next_step': {
-                    'index': last_completed_step + 1,
+                    'index': next_step_index,
                     'is_skippable':
-                    last_completed_step + 1 in SKIPPABLE_INDEXES
+                    next_step_index in SKIPPABLE_INDEXES
                 }
             }
         except BazaSignup.DoesNotExist:
