@@ -29,11 +29,11 @@ def send_email_verfication_code(email, signup_id):
         'verification_code': verification_code
     }), "text/html")
     msg.send()
-    email_verification = EmailVerification(
-        email=email,
-        signup=signup,
-        verification_code=verification_code
+    email_verification, created = EmailVerification.objects.get_or_create(
+        signup=signup
     )
+    email_verification.email = email
+    email_verification.verification_code = verification_code
     email_verification.save()
     return True
 
@@ -75,11 +75,11 @@ def send_phone_verification_code(signup_id, phone_number):
         to=phone_number,
         from_=settings.TWILIO_PHONE_NO
     )
-    phone_verification = PhoneVerification(
-        phone_number=phone_number,
-        signup=signup,
-        verification_code=verification_code
+    phone_verification, created = PhoneVerification.objects.get_or_create(
+        signup=signup
     )
+    phone_verification.verification_code = verification_code
+    phone_verification.phone_number = phone_number
     phone_verification.save()
     return message.status
 
