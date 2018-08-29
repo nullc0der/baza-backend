@@ -15,8 +15,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from bazasignup.views import reset_signup
 
 urlpatterns = [
     path('djadmin/', admin.site.urls),
     path('api/v1/', include('bazaback.api_urls')),
+    path('resetsignupform/', reset_signup)
 ]
