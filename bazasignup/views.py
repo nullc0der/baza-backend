@@ -436,7 +436,7 @@ class BazaSignupDetailsView(views.APIView):
             'full_name': signup.user.get_full_name(),
             'email': signup.email,
             'phone_number': signup.phone_number,
-            'photo': signup.photo.url,
+            'photo': signup.photo.url if signup.photo else '',
             'birthdate': signup.bazasignupadditionalinfo.birth_date,
             'user_addresses': [
                 self.get_address_data(address)
