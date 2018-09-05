@@ -23,3 +23,8 @@ DATABASES = {
 CORS_ORIGIN_WHITELIST = [
     'localhost:5100'
 ]
+
+
+# CELERY
+CELERY_BROKER_URL = 'redis://' + get_env_var('REDIS_HOST') + ':6379/1'
+CELERY_RESULT_BACKEND = 'redis://' + get_env_var('REDIS_HOST') + ':6379/1'

@@ -12,6 +12,7 @@ from oauth2_provider.contrib.rest_framework import TokenHasScope
 from bazasignup.models import (
     BazaSignup,
     BazaSignupAddress,
+    BazaSignupAdditionalInfo,
     BazaSignupEmail,
     BazaSignupPhone,
     EmailVerification,
@@ -23,7 +24,9 @@ from bazasignup.serializers import (
     EmailVerificationSerializer,
     PhoneSerializer,
     PhoneVerificationSerializer,
-    SignupImageSerializer
+    SignupImageSerializer,
+    BazaSignupListSerializer,
+    BazaSignupSerializer
 )
 from bazasignup.tasks import (
     task_send_email_verification_code,
@@ -137,6 +140,11 @@ class UserInfoTabView(views.APIView):
                 country=serializer.validated_data['country']
             )
             bazasignupaddress.save()
+            bazasignupadditionalinfo = BazaSignupAdditionalInfo(
+                signup=signup,
+                birth_date=serializer.validated_data['birthdate']
+            )
+            bazasignupadditionalinfo.save()
             request.user.first_name = serializer.validated_data['first_name']
             request.user.last_name = serializer.validated_data['last_name']
             request.user.save()
@@ -373,3 +381,80 @@ def reset_signup(request):
     except User.DoesNotExist:
         return HttpResponse('The user can\'t be found '
                             'please check username')
+
+
+class BazaSignupListView(views.APIView):
+    """
+    This API will be used to get all the signups list
+    """
+
+    permission_classes = (IsAuthenticated, TokenHasScope, )
+    required_scopes = [
+        'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
+
+    def get(self, request, format=None):
+        datas = []
+        signups = BazaSignup.objects.all()
+        for signup in signups:
+            data = {
+                'id_': signup.id,
+                'username': signup.user.username,
+                'status': signup.status
+            }
+            datas.append(data)
+        serializer = BazaSignupListSerializer(datas, many=True)
+        return Response(serializer.data)
+
+
+class BazaSignupDetailsView(views.APIView):
+    """
+    This API will be used to get data for a specific signup id
+    """
+
+    permission_classes = (IsAuthenticated, TokenHasScope, )
+    required_scopes = [
+        'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
+
+    def get_address_data(self, address):
+        data = {
+            'address_type': address.address_type,
+            'country': address.country,
+            'city': address.city,
+            'state': address.state,
+            'house_number': address.house_number,
+            'street_name': address.street,
+            'zip_code': address.zip_code,
+            'latitude': address.latitude,
+            'longitude': address.longitude
+        }
+        return data
+
+    def get_signup_data(self, signup):
+        data = {
+            'id_': signup.id,
+            'username': signup.user.username,
+            'full_name': signup.user.get_full_name(),
+            'email': signup.email,
+            'phone_number': signup.phone_number,
+            'photo': signup.photo.url,
+            'birthdate': signup.bazasignupadditionalinfo.birth_date,
+            'user_addresses': [
+                self.get_address_data(address)
+                for address in signup.addresses.all()],
+            'status': signup.status,
+            'signup_date': signup.signup_date,
+            'verified_date': signup.verified_date,
+            'referral_code': signup.referral_code,
+            'wallet_address': signup.wallet_address,
+            'on_distribution': signup.on_distribution
+        }
+        return data
+
+    def get(self, request, signup_id, format=None):
+        try:
+            bazasignup = BazaSignup.objects.get(id=signup_id)
+            datas = self.get_signup_data(bazasignup)
+            serializer = BazaSignupSerializer(datas)
+            return Response(serializer.data)
+        except BazaSignup.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)

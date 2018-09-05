@@ -4,17 +4,17 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Make Django DB Migrations",
+            "label": "Make Baza Django DB Migrations",
             "type": "shell",
             "command": "pipenv run python manage.py makemigrations"
         },
         {
-            "label": "Migrate Django DB",
+            "label": "Migrate Baza Django DB",
             "type": "shell",
             "command": "pipenv run python manage.py migrate"
         },
         {
-            "label": "Run Django Server",
+            "label": "Run Baza Django Server",
             "type": "shell",
             "command": "pipenv run python manage.py runserver"
         },

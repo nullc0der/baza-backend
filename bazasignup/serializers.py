@@ -10,7 +10,20 @@ from bazasignup.models import (
 )
 
 
+class AddressSerializer(serializers.Serializer):
+    address_type = serializers.CharField(allow_blank=True)
+    country = serializers.CharField()
+    city = serializers.CharField()
+    state = serializers.CharField()
+    house_number = serializers.IntegerField()
+    street_name = serializers.CharField()
+    zip_code = serializers.CharField()
+    latitude = serializers.CharField()
+    longitude = serializers.CharField()
+
+
 class UserInfoTabSerializer(serializers.Serializer):
+    # TODO: Use AddressSerializer here for address section
     first_name = serializers.CharField()
     last_name = serializers.CharField()
     referral_code = serializers.CharField(allow_blank=True)
@@ -53,7 +66,7 @@ class EmailVerificationSerializer(serializers.Serializer):
             if emailverification.created_on + timedelta(seconds=120) > now():
                 return value
             raise serializers.ValidationError(
-                "This code is expired, please click on try again"
+                "This code is expired, please click on send email again"
             )
         except EmailVerification.DoesNotExist:
             raise serializers.ValidationError(
@@ -76,7 +89,7 @@ class PhoneVerificationSerializer(serializers.Serializer):
             if phoneverification.created_on + timedelta(seconds=120) > now():
                 return value
             raise serializers.ValidationError(
-                "This code is expired, please click on try again"
+                "This code is expired, please click on send SMS again"
             )
         except PhoneVerification.DoesNotExist:
             raise serializers.ValidationError(
@@ -86,3 +99,26 @@ class PhoneVerificationSerializer(serializers.Serializer):
 
 class SignupImageSerializer(serializers.Serializer):
     image = serializers.ImageField()
+
+
+class BazaSignupSerializer(serializers.Serializer):
+    id_ = serializers.IntegerField()
+    username = serializers.CharField()
+    full_name = serializers.CharField()
+    email = serializers.EmailField()
+    phone_number = serializers.CharField()
+    photo = serializers.CharField()
+    birthdate = serializers.DateField()
+    user_addresses = AddressSerializer(many=True)
+    status = serializers.CharField()
+    signup_date = serializers.DateTimeField()
+    verified_date = serializers.DateTimeField()
+    referral_code = serializers.CharField()
+    wallet_address = serializers.CharField()
+    on_distribution = serializers.BooleanField()
+
+
+class BazaSignupListSerializer(serializers.Serializer):
+    id_ = serializers.IntegerField()
+    username = serializers.CharField()
+    status = serializers.CharField()

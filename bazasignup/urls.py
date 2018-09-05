@@ -28,5 +28,13 @@ urlpatterns = [
     path(
         'uploadsignupimage/',
         views.SignupImageUploadView.as_view()
+    ),
+    path(
+        'signups/',
+        views.BazaSignupListView.as_view()
+    ),
+    path(
+        'signup/<int:signup_id>/',
+        views.BazaSignupDetailsView.as_view()
     )
 ]
