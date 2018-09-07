@@ -458,3 +458,21 @@ class BazaSignupDetailsView(views.APIView):
             return Response(serializer.data)
         except BazaSignup.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
+
+    def post(self, request, signup_id, format=None):
+        try:
+            bazasignup = BazaSignup.objects.get(id=signup_id)
+            serializer = BazaSignupSerializer(data=request.data, partial=True)
+            if serializer.is_valid():
+                if 'on_distribution' in serializer.validated_data:
+                    bazasignup.on_distribution = serializer.validated_data[
+                        'on_distribution']
+                if 'status' in serializer.validated_data:
+                    bazasignup.status = serializer.validated_data['status']
+                bazasignup.save()
+                serializer.validated_data['id_'] = bazasignup.id
+                return Response(serializer.validated_data)
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except BazaSignup.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)

@@ -102,6 +102,12 @@ class SignupImageSerializer(serializers.Serializer):
 
 
 class BazaSignupSerializer(serializers.Serializer):
+    STATUS_CHOICES = (
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('declined', 'Declined'),
+        ('incomplete', 'Incomplete')
+    )
     id_ = serializers.IntegerField()
     username = serializers.CharField()
     full_name = serializers.CharField()
@@ -110,7 +116,7 @@ class BazaSignupSerializer(serializers.Serializer):
     photo = serializers.CharField()
     birthdate = serializers.DateField()
     user_addresses = AddressSerializer(many=True)
-    status = serializers.CharField()
+    status = serializers.ChoiceField(choices=STATUS_CHOICES)
     signup_date = serializers.DateTimeField()
     verified_date = serializers.DateTimeField()
     referral_code = serializers.CharField()
