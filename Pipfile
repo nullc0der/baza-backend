@@ -18,6 +18,7 @@ stripe = "*"
 pillow = "*"
 celery = "*"
 twilio = "*"
+django-simple-history = "*"
 
 [dev-packages]
 "pep8" = "*"

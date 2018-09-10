@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+from simple_history.models import HistoricalRecords
+
 
 class BazaSignup(models.Model):
     STATUS_CHOICES = (
@@ -25,9 +27,17 @@ class BazaSignup(models.Model):
     logged_ip_address = models.GenericIPAddressField(null=True)
     email_skipped = models.BooleanField(default=False)
     phone_skipped = models.BooleanField(default=False)
+    changed_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True,
+        related_name='bazasignupchanges')
+    history = HistoricalRecords()
 
     def get_completed_steps(self):
         return self.completed_steps.split(',')
+
+    @property
+    def _history_user(self):
+        return self.changed_by
 
 
 class BazaSignupAddress(models.Model):
@@ -47,11 +57,27 @@ class BazaSignupAddress(models.Model):
     country = models.CharField(max_length=100, default='', blank=True)
     latitude = models.CharField(max_length=100, default='', blank=True)
     longitude = models.CharField(max_length=100, default='', blank=True)
+    changed_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True,
+        related_name='bazasignupaddresschanges')
+    history = HistoricalRecords()
+
+    @property
+    def _history_user(self):
+        return self.changed_by
 
 
 class BazaSignupAdditionalInfo(models.Model):
     signup = models.OneToOneField(BazaSignup, on_delete=models.CASCADE)
     birth_date = models.DateField()
+    changed_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True,
+        related_name='bazasignupaddinfochanges')
+    history = HistoricalRecords()
+
+    @property
+    def _history_user(self):
+        return self.changed_by
 
 
 class BazaSignupEmail(models.Model):

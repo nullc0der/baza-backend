@@ -127,7 +127,8 @@ class UserInfoTabView(views.APIView):
             signup, created = BazaSignup.objects.get_or_create(
                 user=request.user,
                 referral_code=serializer.validated_data['referral_code'],
-                completed_steps=get_current_completed_steps(request, "0")
+                completed_steps=get_current_completed_steps(request, "0"),
+                changed_by=request.user
             )
             bazasignupaddress = BazaSignupAddress(
                 signup=signup,
@@ -137,12 +138,14 @@ class UserInfoTabView(views.APIView):
                 zip_code=serializer.validated_data['zip_code'],
                 city=serializer.validated_data['city'],
                 state=serializer.validated_data['state'],
-                country=serializer.validated_data['country']
+                country=serializer.validated_data['country'],
+                changed_by=request.user
             )
             bazasignupaddress.save()
             bazasignupadditionalinfo = BazaSignupAdditionalInfo(
                 signup=signup,
-                birth_date=serializer.validated_data['birthdate']
+                birth_date=serializer.validated_data['birthdate'],
+                changed_by=request.user
             )
             bazasignupadditionalinfo.save()
             request.user.first_name = serializer.validated_data['first_name']
@@ -169,6 +172,7 @@ class SkipEmailTabView(views.APIView):
             )
             signup.completed_steps = get_current_completed_steps(request, "1")
             signup.email_skipped = True
+            signup.changed_by = request.user
             signup.save()
             return get_step_response(signup, current_step=1)
         except BazaSignup.DoesNotExist:
@@ -217,6 +221,7 @@ class ValidateEmailVerificationCode(views.APIView):
             signup = emailverification.signup
             signup.email = emailverification.email
             signup.completed_steps = get_current_completed_steps(request, "1")
+            signup.changed_by = request.user
             signup.save()
             bazasignupemail, created = BazaSignupEmail.objects.get_or_create(
                 email=emailverification.email
@@ -266,6 +271,7 @@ class SkipPhoneTabView(views.APIView):
             )
             signup.completed_steps = get_current_completed_steps(request, "2")
             signup.phone_skipped = True
+            signup.changed_by = request.user
             signup.save()
             return get_step_response(signup, current_step=2)
         except BazaSignup.DoesNotExist:
@@ -314,6 +320,7 @@ class ValidatePhoneVerificationCode(views.APIView):
             signup = phoneverification.signup
             signup.phone_number = phoneverification.phone_number
             signup.completed_steps = get_current_completed_steps(request, "2")
+            signup.changed_by = request.user
             signup.save()
             bazasignupphone, created = BazaSignupPhone.objects.get_or_create(
                 phone_number=phoneverification.phone_number
@@ -363,6 +370,8 @@ class SignupImageUploadView(views.APIView):
             signup = BazaSignup.objects.get(user=request.user)
             signup.photo = serializer.validated_data['image']
             signup.completed_steps = get_current_completed_steps(request, "3")
+            signup.logged_ip_address = request.META.get('X-Real-IP', '')
+            signup.changed_by = request.user
             signup.save()
             return get_step_response(signup, current_step=3)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -469,6 +478,7 @@ class BazaSignupDetailsView(views.APIView):
                         'on_distribution']
                 if 'status' in serializer.validated_data:
                     bazasignup.status = serializer.validated_data['status']
+                bazasignup.changed_by = request.user
                 bazasignup.save()
                 serializer.validated_data['id_'] = bazasignup.id
                 return Response(serializer.validated_data)

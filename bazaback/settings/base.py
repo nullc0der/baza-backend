@@ -54,7 +54,8 @@ DJANGO_APPS = [
 
 THIRD_PARTY_APPS = [
     'rest_framework',
-    'oauth2_provider'
+    'oauth2_provider',
+    'simple_history'
 ]
 
 BAZA_APPS = [
