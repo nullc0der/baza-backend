@@ -5,13 +5,15 @@ from django.utils.timezone import now
 from django.core.mail import EmailMultiAlternatives
 from django.template import loader, Context
 from django.conf import settings
+from django.contrib.auth.models import User
 
 from twilio.rest import Client
 
 from bazasignup.models import (
     PhoneVerification,
     EmailVerification,
-    BazaSignup
+    BazaSignup,
+    BazaSignupReferralCode
 )
 
 
@@ -105,3 +107,37 @@ def send_phone_verification_code_again(signup_id):
         from_=settings.TWILIO_PHONE_NO
     )
     return message.status
+
+
+def get_unique_referral_code():
+    referral_code = get_random_string(length=6)
+    ref_code_exist = BazaSignupReferralCode.objects.filter(
+        code=referral_code).exists()
+    if ref_code_exist:
+        return get_unique_referral_code()
+    return referral_code
+
+
+def process_after_approval(signup_id):
+    system_user = User.objects.get(username='system')
+    signup = BazaSignup.objects.get(id=signup_id)
+    referral_code = get_unique_referral_code()
+    bazasignupreferralcode = BazaSignupReferralCode(
+        signup=signup,
+        code=referral_code
+    )
+    bazasignupreferralcode.save()
+    email_template = loader.get_template('bazasignup/approval_mail.html')
+    msg = EmailMultiAlternatives(
+        'You are approved for Baza Distribution'
+        'Your referral code is %s' % referral_code,
+        'distsignup-noreply@baza.foundation',
+        [signup.email])
+    msg.attach_alternative(email_template.render({
+        'referral_code': referral_code
+    }), "text/html")
+    msg.send()
+    signup.verified_date = now()
+    signup.changed_by = system_user
+    signup.save()
+    return True

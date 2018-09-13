@@ -148,6 +148,14 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
 
+# Fixture dirs
+
+FIXTURE_DIRS = [os.path.join(BASE_DIR, 'fixtures')]
+
+# GEOIP files
+GEOIP_PATH = os.path.join(BASE_DIR, 'geoip')
+
+
 # REST Framework
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -247,3 +255,12 @@ EMAIL_USE_TLS = True
 TWILIO_ACCOUNT_SID = get_env_var('TWILIO_ACCOUNT_SID')
 TWILIO_AUTH_TOKEN = get_env_var('TWILIO_AUTH_TOKEN')
 TWILIO_PHONE_NO = get_env_var('TWILIO_PHONE_NO')
+
+
+# GOOGLE
+GOOGLE_GEOLOCATION_API_KEY = get_env_var('GOOGLE_GEOLOCATION_API_KEY')
+
+# Baza Signup
+# In km
+MAXIMUM_ALLOWED_DISTANCE_FOR_SIGNUP = int(get_env_var(
+    'MAXIMUM_ALLOWED_DISTANCE_FOR_SIGNUP'))

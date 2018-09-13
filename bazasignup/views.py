@@ -32,7 +32,8 @@ from bazasignup.tasks import (
     task_send_email_verification_code,
     task_send_email_verification_code_again,
     task_send_phone_verification_code,
-    task_send_phone_verification_code_again
+    task_send_phone_verification_code_again,
+    task_process_autoapproval
 )
 
 
@@ -126,7 +127,6 @@ class UserInfoTabView(views.APIView):
         if serializer.is_valid():
             signup, created = BazaSignup.objects.get_or_create(
                 user=request.user,
-                referral_code=serializer.validated_data['referral_code'],
                 completed_steps=get_current_completed_steps(request, "0"),
                 changed_by=request.user
             )
@@ -373,6 +373,7 @@ class SignupImageUploadView(views.APIView):
             signup.logged_ip_address = request.META.get('X-Real-IP', '')
             signup.changed_by = request.user
             signup.save()
+            task_process_autoapproval.delay(signup.id)
             return get_step_response(signup, current_step=3)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -439,12 +440,26 @@ class BazaSignupDetailsView(views.APIView):
         return data
 
     def get_signup_data(self, signup):
+        email_used_before = False
+        phone_used_before = False
+        if signup.email:
+            bazasignupemail = BazaSignupEmail.objects.get(
+                email=signup.email
+            )
+            email_used_before = bazasignupemail.signups.count() > 1
+        if signup.phone_number:
+            bazasignupphone = BazaSignupPhone.objects.get(
+                phone_number=signup.phone_number
+            )
+            phone_used_before = bazasignupphone.signups.count() > 1
         data = {
             'id_': signup.id,
             'username': signup.user.username,
             'full_name': signup.user.get_full_name(),
             'email': signup.email,
+            'email_used_before': email_used_before,
             'phone_number': signup.phone_number,
+            'phone_used_before': phone_used_before,
             'photo': signup.photo.url if signup.photo else '',
             'birthdate': signup.bazasignupadditionalinfo.birth_date,
             'user_addresses': [
@@ -453,7 +468,8 @@ class BazaSignupDetailsView(views.APIView):
             'status': signup.status,
             'signup_date': signup.signup_date,
             'verified_date': signup.verified_date,
-            'referral_code': signup.referral_code,
+            'referral_code': signup.bazasignupreferralcode.code
+            if hasattr(signup, 'bazasignupreferralcode') else '',
             'wallet_address': signup.wallet_address,
             'on_distribution': signup.on_distribution
         }

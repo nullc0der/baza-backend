@@ -19,7 +19,6 @@ class BazaSignup(models.Model):
     phone_number = models.CharField(max_length=15, default='')
     signup_date = models.DateTimeField(auto_now_add=True)
     verified_date = models.DateTimeField(null=True)
-    referral_code = models.CharField(max_length=6, default='')
     wallet_address = models.CharField(max_length=40, default='')
     on_distribution = models.BooleanField(default=False)
     # Comma seprated string if multiple
@@ -78,6 +77,24 @@ class BazaSignupAdditionalInfo(models.Model):
     @property
     def _history_user(self):
         return self.changed_by
+
+
+class BazaSignupAutoApprovalFailReason(models.Model):
+    signup = models.ForeignKey(BazaSignup, on_delete=models.CASCADE)
+    reason = models.TextField()
+    changed_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True,
+        related_name='bazasignupfailreasonchanges')
+    history = HistoricalRecords()
+
+    @property
+    def _history_user(self):
+        return self.changed_by
+
+
+class BazaSignupReferralCode(models.Model):
+    signup = models.OneToOneField(BazaSignup, on_delete=models.CASCADE)
+    code = models.CharField(max_length=6)
 
 
 class BazaSignupEmail(models.Model):

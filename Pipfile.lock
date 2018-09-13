@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "8ce2e53ea433aa190c072af09528bbcfccfb39e7d033a73ab1946b36e27ef76a"
+            "sha256": "3ffeafa19b8acbbfc68935bf3ecefe5c42e83d3e9926acb85686cb42b2180c75"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -56,10 +56,10 @@
         },
         "autobahn": {
             "hashes": [
-                "sha256:829fbeb08b7e0f7e8cd14d9d169043a861075c3f6e5e2739d564dc985b5e7015",
-                "sha256:ef29f48d9375e20de4d60d63ca3feae330213421c3c3a7319014e1d21db7dfe8"
+                "sha256:3d3e16b5f5ec36cad9e38536e11688346b8a78e09b551bada541d8476ac33f54",
+                "sha256:d98b924f06865700116ee616027e4a6d678004a7b44e0d01cb262eab333112d6"
             ],
-            "version": "==18.9.1"
+            "version": "==18.9.2"
         },
         "automat": {
             "hashes": [
@@ -180,6 +180,28 @@
             "markers": "python_version != '3.2.*' and python_version != '3.3.*' and python_version != '3.1.*' and python_version >= '2.7' and python_version != '3.0.*'",
             "version": "==3.8.2"
         },
+        "geographiclib": {
+            "hashes": [
+                "sha256:635da648fce80a57b81b28875d103dacf7deb12a3f5f7387ba7d39c51e096533"
+            ],
+            "version": "==1.49"
+        },
+        "geoip2": {
+            "hashes": [
+                "sha256:a37ddac2d200ffb97c736da8b8ba9d5d8dc47da6ec0f162a461b681ecac53a14",
+                "sha256:f7ffe9d258e71a42cf622ce6350d976de1d0312b9f2fbce3975c7d838b57ecf0"
+            ],
+            "index": "pypi",
+            "version": "==2.9.0"
+        },
+        "geopy": {
+            "hashes": [
+                "sha256:1bbea0efc5af91e0a7d4c2b31650f61667bcc1d0d717784d78c03f0ed13bb374",
+                "sha256:59ddda52c62e5ebddda76c53b7b644bb0922f3f594aa350cc62cce7d8ea6afcc"
+            ],
+            "index": "pypi",
+            "version": "==1.17.0"
+        },
         "hiredis": {
             "hashes": [
                 "sha256:013c4e31be95bd5d9e45a0f830743458249012dc1691b45b1710976c280074a0",
@@ -219,12 +241,25 @@
             ],
             "version": "==17.5.0"
         },
+        "iso3166": {
+            "hashes": [
+                "sha256:545a9dbf57b56acfa0dad7978cae2bdd8e0ef4c48cd8aab50c335f0d46eda042"
+            ],
+            "index": "pypi",
+            "version": "==0.9"
+        },
         "kombu": {
             "hashes": [
                 "sha256:86adec6c60f63124e2082ea8481bbe4ebe04fde8ebed32c177c7f0cd2c1c9082",
                 "sha256:b274db3a4eacc4789aeb24e1de3e460586db7c4fc8610f7adcc7a3a1709a60af"
             ],
             "version": "==4.2.1"
+        },
+        "maxminddb": {
+            "hashes": [
+                "sha256:df1451bcd848199905ac0de4631b3d02d6a655ad28ba5e5a4ca29a23358db712"
+            ],
+            "version": "==1.4.1"
         },
         "msgpack": {
             "hashes": [
@@ -386,11 +421,11 @@
         },
         "stripe": {
             "hashes": [
-                "sha256:076ace4a6e39b7ab4a450edf015909a8dbed7287d7468f3e7e1c3c2f200c1919",
-                "sha256:20240d32915f88db5a0011509ae89cff522be936a4cef4afca19d93573173b64"
+                "sha256:7593897620492a3154f9f74f5d18850a87f690068cc36552ee16a7e9d6f7d458",
+                "sha256:c48e5fbbe3f68ef86c1a5fa04a2c31914ac7aa8b771c38c23d812c6bdc3e947a"
             ],
             "index": "pypi",
-            "version": "==2.7.0"
+            "version": "==2.8.0"
         },
         "twilio": {
             "hashes": [

@@ -19,6 +19,9 @@ pillow = "*"
 celery = "*"
 twilio = "*"
 django-simple-history = "*"
+"iso3166" = "*"
+geopy = "*"
+"geoip2" = "*"
 
 [dev-packages]
 "pep8" = "*"
