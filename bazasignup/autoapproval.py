@@ -23,51 +23,54 @@ class BazaSignupAutoApproval(object):
         self.autoapproval_fail_reason = []
 
     def __get_twilio_data(self):
-        client = Client(
-            settings.TWILIO_ACCOUNT_SID,
-            settings.TWILIO_AUTH_TOKEN
-        )
-        lookup = client.lookups.phone_numbers(
-            self.signup.phone_number).fetch(add_ons='whitepages_pro_caller_id')
-        if lookup.add_ons['results'][
-                'whitepages_pro_caller_id']['status'] == 'successful':
-            address_data = lookup.add_ons['results'][
-                'whitepages_pro_caller_id']['result']['current_addresses'][0]
-            lat_long = address_data.get('lat_long', '')
-            bazasignupaddress = BazaSignupAddress(
-                signup=self.signup,
-                address_type='twilio_db',
-                changed_by=self.system_user,
-                zip_code=address_data.get('postal_code', ''),
-                city=address_data.get('city', ''),
-                state=address_data.get('state_code', ''),
-                country=countries.get(address_data.get(
-                    'country_code', '').lower()),
-                latitude=lat_long.get('latitude', ''),
-                longitude=lat_long.get('longitude', '')
+        if self.signup.phone_number:
+            client = Client(
+                settings.TWILIO_ACCOUNT_SID,
+                settings.TWILIO_AUTH_TOKEN
             )
-            bazasignupaddress.save()
-            return True
+            lookup = client.lookups.phone_numbers(
+                self.signup.phone_number).fetch(add_ons='whitepages_pro_caller_id')
+            if lookup.add_ons['results'][
+                    'whitepages_pro_caller_id']['status'] == 'successful':
+                address_data = lookup.add_ons['results'][
+                    'whitepages_pro_caller_id']['result']['current_addresses'][0]
+                lat_long = address_data.get('lat_long', '')
+                bazasignupaddress = BazaSignupAddress(
+                    signup=self.signup,
+                    address_type='twilio_db',
+                    changed_by=self.system_user,
+                    zip_code=address_data.get('postal_code', ''),
+                    city=address_data.get('city', ''),
+                    state=address_data.get('state_code', ''),
+                    country=countries.get(address_data.get(
+                        'country_code', '').lower()),
+                    latitude=lat_long.get('latitude', ''),
+                    longitude=lat_long.get('longitude', '')
+                )
+                bazasignupaddress.save()
+                return True
         return False
 
     def __get_geoip_data(self):
-        try:
-            geoip2 = GeoIP2()
-            address_data = geoip2.city(self.signup.logged_ip_address)
-            bazasignupaddress = BazaSignupAddress(
-                signup=self.signup,
-                address_type='geoip_db',
-                changed_by=self.system_user,
-                city=address_data.get('city', ''),
-                country=address_data.get('country_name', ''),
-                zip_code=address_data.get('postal_code', ''),
-                latitude=address_data.get('latitude', ''),
-                longitude=address_data.get('longitude', '')
-            )
-            bazasignupaddress.save()
-            return True
-        except:
-            return False
+        if self.signup.logged_ip_address:
+            try:
+                geoip2 = GeoIP2()
+                address_data = geoip2.city(self.signup.logged_ip_address)
+                bazasignupaddress = BazaSignupAddress(
+                    signup=self.signup,
+                    address_type='geoip_db',
+                    changed_by=self.system_user,
+                    city=address_data.get('city', ''),
+                    country=address_data.get('country_name', ''),
+                    zip_code=address_data.get('postal_code', ''),
+                    latitude=address_data.get('latitude', ''),
+                    longitude=address_data.get('longitude', '')
+                )
+                bazasignupaddress.save()
+                return True
+            except:
+                pass
+        return False
 
     def __get_coordinates(self, addresses):
         google_geolocation_api_key = settings.GOOGLE_GEOLOCATION_API_KEY
