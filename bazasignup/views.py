@@ -370,7 +370,8 @@ class SignupImageUploadView(views.APIView):
             signup = BazaSignup.objects.get(user=request.user)
             signup.photo = serializer.validated_data['image']
             signup.completed_steps = get_current_completed_steps(request, "3")
-            signup.logged_ip_address = request.META.get('X-Real-IP', '')
+            signup.logged_ip_address = request.META.get(
+                'HTTP_CF_CONNECTING_IP', '')
             signup.changed_by = request.user
             signup.save()
             task_process_autoapproval.delay(signup.id)
