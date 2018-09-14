@@ -87,6 +87,7 @@ class CheckCompletedTab(views.APIView):
 
     def get(self, request, format=None):
         try:
+            print(request.META['X-Real-Ip'])
             signup = BazaSignup.objects.get(
                 user=request.user)
             next_step_index = get_next_step_index(signup.get_completed_steps())
