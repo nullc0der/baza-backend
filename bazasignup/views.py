@@ -471,7 +471,9 @@ class BazaSignupDetailsView(views.APIView):
             'referral_code': signup.bazasignupreferralcode.code
             if hasattr(signup, 'bazasignupreferralcode') else '',
             'wallet_address': signup.wallet_address,
-            'on_distribution': signup.on_distribution
+            'on_distribution': signup.on_distribution,
+            'auto_approval_fail_reasons':
+            signup.bazasignupautoapprovalfailreason_set.all()
         }
         return data
 

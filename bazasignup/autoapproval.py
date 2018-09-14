@@ -202,14 +202,14 @@ class BazaSignupAutoApproval(object):
         else:
             score -= 1
             self.autoapproval_fail_reason.append(
-                'No twilio data'
+                'No twilio data could be fetched'
             )
         if data_collection_status['geoip']:
             score += 1
         else:
             score -= 1
             self.autoapproval_fail_reason.append(
-                'No geoip data'
+                'No geoip data could be fetched'
             )
         if address_distances['geoip_vs_userinput']:
             if address_distances['geoip_vs_userinput'] <\
@@ -219,13 +219,13 @@ class BazaSignupAutoApproval(object):
                 score -= 1
                 self.autoapproval_fail_reason.append(
                     'Geoip and user inputed address difference exceeds'
-                    'maximum allowed distance'
+                    ' maximum allowed distance'
                 )
         else:
             score -= 1
             self.autoapproval_fail_reason.append(
                 'No distance could be fetched'
-                'between geoip and user inputed address'
+                ' between geoip and user inputed address'
             )
         if address_distances['twilio_vs_userinput']:
             if address_distances['twilio_vs_userinput'] <\
@@ -235,13 +235,13 @@ class BazaSignupAutoApproval(object):
                 score -= 1
                 self.autoapproval_fail_reason.append(
                     'Twilio and user inputed address difference exceeds'
-                    'maximum allowed distance'
+                    ' maximum allowed distance'
                 )
         else:
             score -= 1
             self.autoapproval_fail_reason.append(
                 'No distance could be fetched'
-                'between twilio and user inputed address'
+                ' between twilio and user inputed address'
             )
         if score >= 3:
             self.signup.status == 'approved'

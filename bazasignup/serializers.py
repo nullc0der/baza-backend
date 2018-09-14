@@ -6,7 +6,8 @@ from rest_framework import serializers
 from bazasignup.countries import COUNTRIES
 from bazasignup.models import (
     EmailVerification,
-    PhoneVerification
+    PhoneVerification,
+    BazaSignupAutoApprovalFailReason
 )
 
 
@@ -101,6 +102,12 @@ class SignupImageSerializer(serializers.Serializer):
     image = serializers.ImageField()
 
 
+class AutoApprovalFailReasonSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BazaSignupAutoApprovalFailReason
+        fields = ('reason', )
+
+
 class BazaSignupSerializer(serializers.Serializer):
     STATUS_CHOICES = (
         ('pending', 'Pending'),
@@ -124,6 +131,9 @@ class BazaSignupSerializer(serializers.Serializer):
     referral_code = serializers.CharField()
     wallet_address = serializers.CharField()
     on_distribution = serializers.BooleanField()
+    auto_approval_fail_reasons = AutoApprovalFailReasonSerializer(
+        many=True
+    )
 
 
 class BazaSignupListSerializer(serializers.Serializer):
