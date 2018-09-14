@@ -405,7 +405,7 @@ class BazaSignupListView(views.APIView):
 
     def get(self, request, format=None):
         datas = []
-        signups = BazaSignup.objects.all()
+        signups = BazaSignup.objects.all().order_by('-id')
         for signup in signups:
             data = {
                 'id_': signup.id,
@@ -505,10 +505,3 @@ class BazaSignupDetailsView(views.APIView):
                 serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except BazaSignup.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-
-
-def print_meta(request):
-    lines = []
-    for k in request.META:
-        lines.append("%s:%s" % (k, request.META[k]))
-    return HttpResponse('<br/>'.join(lines))
