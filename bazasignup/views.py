@@ -87,7 +87,6 @@ class CheckCompletedTab(views.APIView):
 
     def get(self, request, format=None):
         try:
-            print(request.META)
             signup = BazaSignup.objects.get(
                 user=request.user)
             next_step_index = get_next_step_index(signup.get_completed_steps())
@@ -505,3 +504,7 @@ class BazaSignupDetailsView(views.APIView):
                 serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except BazaSignup.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+def print_meta(request):
+    return HttpResponse(request.META)
