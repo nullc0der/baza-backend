@@ -507,4 +507,7 @@ class BazaSignupDetailsView(views.APIView):
 
 
 def print_meta(request):
-    return HttpResponse(request.META)
+    lines = []
+    for k in request.META:
+        lines.append("%s:%s" % (k, request.META[k]))
+    return HttpResponse('<br/>'.join(lines))
