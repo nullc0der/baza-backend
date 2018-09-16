@@ -9,5 +9,6 @@ urlpatterns = [
     path('auth/', include('authclient.urls')),
     path('donate/', include('donation.urls')),
     path('purchasecoin/', include('coinpurchase.urls')),
-    path('bazasignup/', include('bazasignup.urls'))
+    path('bazasignup/', include('bazasignup.urls')),
+    path('landingcontact/', include('landingcontact.urls'))
 ]

@@ -67,7 +67,8 @@ BAZA_APPS = [
     'stripepayment',
     'donation',
     'coinpurchase',
-    'bazasignup'
+    'bazasignup',
+    'landingcontact'
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + BAZA_APPS
@@ -264,3 +265,8 @@ GOOGLE_GEOLOCATION_API_KEY = get_env_var('GOOGLE_GEOLOCATION_API_KEY')
 # In km
 MAXIMUM_ALLOWED_DISTANCE_FOR_SIGNUP = int(get_env_var(
     'MAXIMUM_ALLOWED_DISTANCE_FOR_SIGNUP'))
+
+
+# Baza Site Owners emails
+# If multiple separate by comma
+SITE_OWNER_EMAILS = get_env_var('SITE_OWNER_EMAILS')
