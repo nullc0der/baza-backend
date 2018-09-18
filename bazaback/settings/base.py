@@ -68,7 +68,8 @@ BAZA_APPS = [
     'donation',
     'coinpurchase',
     'bazasignup',
-    'landingcontact'
+    'landingcontact',
+    'taigaissuecreator'
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + BAZA_APPS
@@ -270,3 +271,7 @@ MAXIMUM_ALLOWED_DISTANCE_FOR_SIGNUP = int(get_env_var(
 # Baza Site Owners emails
 # If multiple separate by comma
 SITE_OWNER_EMAILS = get_env_var('SITE_OWNER_EMAILS')
+
+# Taiga Issue Creator
+TAIGA_USERNAME = get_env_var('TAIGA_USERNAME')
+TAIGA_PASSWORD = get_env_var('TAIGA_PASSWORD')

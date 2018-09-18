@@ -1,0 +1,87 @@
+import requests
+import json
+from django.conf import settings
+from django.contrib.auth.models import User
+
+from taigaissuecreator.models import TaigaIssue, TaigaIssueAttachment
+
+API_BASE_URL = 'https://taiga.ekata.social/api/v1'
+LOGIN_URL = API_BASE_URL + '/auth'
+ISSUE_URL = API_BASE_URL + '/issues'
+ATTACHMENT_URL = ISSUE_URL + '/attachments'
+
+
+def get_auth_token():
+    """ Returns auth_token if success else None """
+    data = {
+        'username': settings.TAIGA_USERNAME,
+        'password': settings.TAIGA_PASSWORD,
+        'type': 'normal'
+    }
+    login_res = requests.post(LOGIN_URL, data=data)
+    if login_res.status_code == 200:
+        res_data = json.loads(login_res.content)
+        if res_data['auth_token']:
+            return res_data['auth_token']
+    return None
+
+
+def post_issue(posted_by_id, subject, description, attachments_ids):
+    posted_by = User.objects.get(id=posted_by_id)
+    auth_token = get_auth_token()
+    taigaissue = TaigaIssue(
+        posted_by=posted_by,
+        subject=subject,
+        description=description
+    )
+    # public_profile_chunk = posted_by.profile.get_public_profile_url().split(
+    #     '/')[2:]
+    # public_profile = \
+    #     "https://development.ekata.social/"\
+    #     + '/'.join(public_profile_chunk)
+    extra_info = \
+        '\n\n\n####Extra Info\n Bug posted by:' + \
+        '%s\n User ID: %s'\
+        % (
+            posted_by.username,
+            posted_by.id
+        )
+    if auth_token:
+        headers = {
+            "Authorization": "Bearer " + auth_token
+        }
+        data = {
+            'subject': subject,
+            'description': description + extra_info,
+            'project': 9
+        }
+        issue_res = requests.post(ISSUE_URL, headers=headers, data=data)
+        issue_res_data = json.loads(issue_res.content)
+        taigaissue.taiga_issue_id = issue_res_data.get('id', None)
+        # HACK: to prevent ValueError, investigate more on this
+        taigaissue.save()
+        if 'id' in issue_res_data and attachments_ids:
+            for attachment_id in attachments_ids:
+                post_attachment(
+                    auth_token, issue_res_data['id'],
+                    attachment_id, taigaissue)
+        taigaissue.posted = True
+    taigaissue.save()
+
+
+def post_attachment(token, object_id, attachment_id, taigaissue):
+    headers = {
+        "Authorization": "Bearer " + token
+    }
+    data = {
+        'object_id': object_id,
+        'project': 9
+    }
+    taigaissueattachment = TaigaIssueAttachment.objects.get(id=attachment_id)
+    files = {
+        'attached_file': taigaissueattachment.attachment
+    }
+    attachment_res = requests.post(
+        ATTACHMENT_URL, headers=headers, data=data, files=files)
+    taigaissueattachment.issue = taigaissue
+    taigaissueattachment.save()
