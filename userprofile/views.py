@@ -58,13 +58,14 @@ class UserDocumentView(views.APIView):
     and save/delete user document
     """
 
+    parser_classes = (FormParser, MultiPartParser, JSONParser, )
     permission_classes = (IsAuthenticated, TokenHasScope, )
     required_scopes = [
         'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
 
     def get(self, request, format=None):
         userdocuments = request.user.profile.documents.all()
-        serializer = UserDocumentSerializer(data=userdocuments, many=True)
+        serializer = UserDocumentSerializer(userdocuments, many=True)
         return Response(serializer.data)
 
     def post(self, request, format=None):
@@ -76,10 +77,11 @@ class UserDocumentView(views.APIView):
 
     def delete(self, request, format=None):
         try:
-            document = UserDocument.objects.get(id=request.data['document_id'])
+            document = UserDocument.objects.get(
+                id=request.query_params['document_id'])
             if document.profile == request.user.profile:
                 document.delete()
-                return Response(request.data['document_id'])
+                return Response(request.query_params['document_id'])
             return Response(
                 "You can't delete this file",
                 status=status.HTTP_400_BAD_REQUEST
@@ -96,13 +98,14 @@ class UserPhotoView(views.APIView):
     and save/delete user photo
     """
 
+    parser_classes = (FormParser, MultiPartParser, JSONParser, )
     permission_classes = (IsAuthenticated, TokenHasScope, )
     required_scopes = [
         'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
 
     def get(self, request, format=None):
         userphotos = request.user.profile.photos.all()
-        serializer = UserPhotoSerializer(data=userphotos, many=True)
+        serializer = UserPhotoSerializer(userphotos, many=True)
         return Response(serializer.data)
 
     def post(self, request, format=None):
@@ -114,10 +117,10 @@ class UserPhotoView(views.APIView):
 
     def delete(self, request, format=None):
         try:
-            photo = UserPhoto.objects.get(id=request.data['photo_id'])
+            photo = UserPhoto.objects.get(id=request.query_params['photo_id'])
             if photo.profile == request.user.profile:
                 photo.delete()
-                return Response(request.data['photo_id'])
+                return Response(request.query_params['photo_id'])
             return Response(
                 "You can't delete this photo",
                 status=status.HTTP_400_BAD_REQUEST
