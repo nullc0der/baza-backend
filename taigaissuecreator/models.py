@@ -20,4 +20,4 @@ class TaigaIssueAttachment(models.Model):
     issue = models.ForeignKey(
         TaigaIssue, on_delete=models.CASCADE,
         related_name='attachments', null=True)
-    attachment = models.ImageField()
+    attachment = models.ImageField(upload_to='taiga_issue_images')
