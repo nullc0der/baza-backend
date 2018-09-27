@@ -10,19 +10,6 @@ from userprofile.models import (
 
 
 class UserSerializer(serializers.ModelSerializer):
-    username = serializers.CharField()
-
-    def validate_username(self, value):
-        try:
-            user = User.objects.get(username=value)
-            if user == self.context['request'].user:
-                return value
-            raise serializers.ValidationError(
-                'A user with that name already exist'
-            )
-        except User.DoesNotExist:
-            return value
-
     class Meta:
         model = User
         fields = ('id', 'username', 'first_name', 'last_name', 'date_joined')
@@ -51,14 +38,24 @@ class UserDocumentSerializer(serializers.ModelSerializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer()
 
+    def validate_username(self, value):
+        try:
+            userprofile = UserProfile.objects.get(username=value)
+            if userprofile == self.context['request'].user.userprofile:
+                return value
+            raise serializers.ValidationError(
+                'A user with that name already exist'
+            )
+        except UserProfile.DoesNotExist:
+            return value
+
     def update(self, instance, validated_data):
         user = validated_data.get('user', {})
         instance.user.first_name = user.get(
             'first_name', instance.user.first_name)
         instance.user.last_name = user.get(
             'last_name', instance.user.last_name)
-        instance.user.username = user.get(
-            'username', instance.user.username)
+        instance.username = validated_data.get('username', instance.username)
         instance.gender = validated_data.get('gender', instance.gender)
         instance.about_me = validated_data.get('about_me', instance.about_me)
         instance.website = validated_data.get('website', instance.website)
@@ -70,5 +67,5 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = (
-            'id', 'user', 'gender', 'about_me', 'website',
+            'id', 'user', 'username', 'gender', 'about_me', 'website',
             'location', 'phone_number', 'default_avatar_color')

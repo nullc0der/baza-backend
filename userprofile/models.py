@@ -10,6 +10,7 @@ class UserProfile(models.Model):
     )
     user = models.OneToOneField(
         User, on_delete=models.CASCADE, related_name='profile')
+    username = models.CharField(max_length=20, default='', blank=True)
     gender = models.CharField(
         max_length=10, choices=GENDER_CHOICES, default='male'
     )
