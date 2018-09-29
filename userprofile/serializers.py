@@ -5,14 +5,16 @@ from userprofile.models import (
     UserProfile,
     UserPhoto,
     UserProfilePhoto,
-    UserDocument
+    UserDocument,
+    UserPhone
 )
 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'username', 'first_name', 'last_name', 'date_joined')
+        fields = ('id', 'username', 'first_name',
+                  'last_name', 'date_joined', 'last_login')
 
 
 class UserPhotoSerializer(serializers.ModelSerializer):
@@ -35,13 +37,19 @@ class UserDocumentSerializer(serializers.ModelSerializer):
         fields = ('id', 'document')
 
 
+class UserPhoneSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserPhone
+        fields = ('id', 'phone_number', 'phone_number_type')
+
+
 class UserProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer()
 
     def validate_username(self, value):
         try:
             userprofile = UserProfile.objects.get(username=value)
-            if userprofile == self.context['request'].user.userprofile:
+            if userprofile == self.context['request'].user.profile:
                 return value
             raise serializers.ValidationError(
                 'A user with that name already exist'

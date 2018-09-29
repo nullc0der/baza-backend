@@ -9,10 +9,11 @@ from rest_framework.parsers import (
 from oauth2_provider.contrib.rest_framework import TokenHasScope
 
 from userprofile.models import (
-    UserDocument, UserPhoto, UserProfilePhoto)
+    UserDocument, UserPhoto, UserProfilePhoto, UserPhone)
 from userprofile.serializers import (
     UserProfileSerializer, UserDocumentSerializer,
-    UserPhotoSerializer, UserProfilePhotoSerializer)
+    UserPhotoSerializer, UserProfilePhotoSerializer,
+    UserPhoneSerializer)
 
 
 def get_profile_photo(user):
@@ -207,4 +208,63 @@ class UserProfilePhotoView(views.APIView):
             return Response(
                 "Requested profile photo can't be found",
                 status=status.HTTP_404_NOT_FOUND
+            )
+
+
+class UserPhoneView(views.APIView):
+    """
+    This view will be used for CRUD of user phone number
+    """
+
+    permission_classes = (IsAuthenticated, TokenHasScope, )
+    required_scopes = [
+        'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
+
+    def get(self, request, format=None):
+        phones = request.user.profile.phones.all()
+        serializer = UserPhoneSerializer(phones, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, format=None):
+        serializer = UserPhoneSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(profile=request.user.profile)
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, format=None):
+        try:
+            phone = UserPhone.objects.get(id=request.query_params['id'])
+            if phone.profile == request.user.profile:
+                phone.delete()
+                return Response(request.query_params['id'])
+            return Response(
+                "You can't delete this phone number",
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except UserPhone.DoesNotExist:
+            return Response(
+                "Requested phone number can't be found",
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    def put(self, request, format=None):
+        try:
+            phone = UserPhone.objects.get(id=request.data['id'])
+            if phone.profile == request.user.profile:
+                serializer = UserPhoneSerializer(
+                    data=request.data, instance=phone, partial=True)
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(serializer.data)
+                return Response(
+                    serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                "You can't update this phone number",
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except UserPhone.DoesNotExist:
+            return Response(
+                "Requested phone number can't be found",
+                status=status.HTTP_400_BAD_REQUEST
             )

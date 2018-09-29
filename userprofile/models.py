@@ -42,3 +42,18 @@ class UserDocument(models.Model):
     profile = models.ForeignKey(
         UserProfile, on_delete=models.CASCADE, related_name='documents')
     document = models.FileField(upload_to='userdocuments')
+
+
+class UserPhone(models.Model):
+    PHONE_NUMBER_CHOICES = (
+        ('office', 'Office'),
+        ('home', 'Home'),
+        ('mobile', 'Mobile'),
+        ('emergency', 'Emergency')
+    )
+    profile = models.ForeignKey(
+        UserProfile, on_delete=models.CASCADE, related_name='phones'
+    )
+    phone_number = models.CharField(max_length=15, default='')
+    phone_number_type = models.CharField(
+        max_length=10, default='office', choices=PHONE_NUMBER_CHOICES)
