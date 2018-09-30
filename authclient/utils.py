@@ -176,7 +176,7 @@ class AuthHelperClient(object):
         )
         return res.status_code, res.json()
 
-    def add_user_email(self, email, access_token):
+    def add_user_email(self, email, access_token, from_social=True):
         token = get_authhelper_client_token()
         headers = {
             "Authorization": "Bearer %s" % token
@@ -187,7 +187,8 @@ class AuthHelperClient(object):
             'initiator_site': settings.HOST_URL,
             'initiator_use_ssl':
             False if settings.SITE_TYPE == 'local' else True,
-            'initiator_email': settings.INITIATOR_EMAIL
+            'initiator_email': settings.INITIATOR_EMAIL,
+            'from_social': from_social
         }
         res = requests.post(self.url, headers=headers, data=data)
         return res.status_code, res.json()
@@ -232,3 +233,26 @@ class AuthHelperClient(object):
         }
         res = requests.post(self.url, headers=headers, data=data)
         return res.status_code
+
+    def get_user_emails(self, access_token):
+        token = get_authhelper_client_token()
+        headers = {
+            "Authorization": "Bearer %s" % token
+        }
+        data = {
+            'access_token': access_token
+        }
+        res = requests.get(self.url, headers=headers, data=data)
+        return res.status_code, res.json()
+
+    def delete_or_update_user_email(self, access_token, email_id):
+        token = get_authhelper_client_token()
+        headers = {
+            "Authorization": "Bearer %s" % token
+        }
+        data = {
+            'access_token': access_token,
+            'email_id': email_id
+        }
+        res = requests.post(self.url, headers=headers, data=data)
+        return res.status_code, res.json()

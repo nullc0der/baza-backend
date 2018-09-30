@@ -8,12 +8,16 @@ from rest_framework.parsers import (
 
 from oauth2_provider.contrib.rest_framework import TokenHasScope
 
+from authclient.utils import AuthHelperClient
 from userprofile.models import (
     UserDocument, UserPhoto, UserProfilePhoto, UserPhone)
 from userprofile.serializers import (
     UserProfileSerializer, UserDocumentSerializer,
     UserPhotoSerializer, UserProfilePhotoSerializer,
     UserPhoneSerializer)
+
+
+URL_PROTOCOL = 'http://' if settings.SITE_TYPE == 'local' else 'https://'
 
 
 def get_profile_photo(user):
@@ -49,7 +53,9 @@ class UserProfileView(views.APIView):
             })
         if serializer.is_valid():
             profile = serializer.save()
-            return Response(UserProfileSerializer(profile).data)
+            data = UserProfileSerializer(profile).data
+            data['profile_photo'] = get_profile_photo(request.user)
+            return Response(data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -268,3 +274,59 @@ class UserPhoneView(views.APIView):
                 "Requested phone number can't be found",
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+
+class UserEmailView(views.APIView):
+    """
+    This view will be used to crud user emails
+    """
+    permission_classes = (IsAuthenticated, TokenHasScope, )
+    required_scopes = [
+        'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
+
+    def get(self, request, format=None):
+        authhelperclient = AuthHelperClient(
+            URL_PROTOCOL +
+            settings.CENTRAL_AUTH_INTROSPECT_URL +
+            '/authhelper/useremails/'
+        )
+        res_status, data = authhelperclient.get_user_emails(
+            request.query_params['access_token'])
+        return Response(data, res_status)
+
+    def post(self, request, format=None):
+        authhelperclient = AuthHelperClient(
+            URL_PROTOCOL +
+            settings.CENTRAL_AUTH_INTROSPECT_URL +
+            '/authhelper/addemail/'
+        )
+        res_status, data = authhelperclient.add_user_email(
+            request.data.get('email'),
+            request.data['access_token'],
+            from_social=False
+        )
+        if res_status != 200:
+            return Response(data, status=status.HTTP_400_BAD_REQUEST)
+        return Response(data)
+
+    def delete(self, request, format=None):
+        authhelperclient = AuthHelperClient(
+            URL_PROTOCOL +
+            settings.CENTRAL_AUTH_INTROSPECT_URL +
+            '/authhelper/deleteemail/'
+        )
+        res_status, data = authhelperclient.delete_or_update_user_email(
+            request.query_params['access_token'],
+            request.query_params['email_id']
+        )
+        return Response(data, res_status)
+
+    def put(self, request, format=None):
+        authhelperclient = AuthHelperClient(
+            URL_PROTOCOL +
+            settings.CENTRAL_AUTH_INTROSPECT_URL +
+            '/authhelper/updateemail/'
+        )
+        res_status, data = authhelperclient.delete_or_update_user_email(
+            request.data['access_token'], request.data['email_id'])
+        return Response(data, res_status)
