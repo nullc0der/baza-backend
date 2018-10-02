@@ -40,7 +40,7 @@ class UserDocumentSerializer(serializers.ModelSerializer):
 class UserPhoneSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserPhone
-        fields = ('id', 'phone_number', 'phone_number_type')
+        fields = ('id', 'phone_number', 'phone_number_type', 'primary')
 
 
 class UserProfileSerializer(serializers.ModelSerializer):

@@ -57,3 +57,13 @@ class UserPhone(models.Model):
     phone_number = models.CharField(max_length=15, default='')
     phone_number_type = models.CharField(
         max_length=10, default='office', choices=PHONE_NUMBER_CHOICES)
+    primary = models.BooleanField(default=False)
+
+    def save(self, *args, **kwargs):
+        if self.primary:
+            qs = type(self).objects.filter(primary=True)
+            if self.pk:
+                qs = qs.exclude(pk=self.pk)
+            qs.update(primary=False)
+
+        super(UserPhone, self).save(*args, **kwargs)
