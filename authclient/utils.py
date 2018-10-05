@@ -256,3 +256,44 @@ class AuthHelperClient(object):
         }
         res = requests.post(self.url, headers=headers, data=data)
         return res.status_code, res.json()
+
+    def get_user_social_auths(self, access_token):
+        token = get_authhelper_client_token()
+        headers = {
+            "Authorization": "Bearer %s" % token
+        }
+        data = {
+            'access_token': access_token
+        }
+        res = requests.get(self.url, headers=headers, data=data)
+        return res.status_code, res.json()
+
+    def connect_social_auth(self, access_token, provider, **kwargs):
+        token = get_authhelper_client_token()
+        headers = {
+            "Authorization": "Bearer %s" % token
+        }
+        data = {
+            'access_token': access_token,
+            'provider': provider
+        }
+        if provider == 'twitter':
+            data['oauth_token'] = kwargs['oauth_token']
+            data['oauth_token_secret'] = kwargs['oauth_token_secret']
+        else:
+            data['provider_access_token'] = kwargs['provider_access_token']
+        res = requests.post(self.url, headers=headers, data=data)
+        return res.status_code, res.json()
+
+    def disconnect_social_auth(self, access_token, provider, association_id):
+        token = get_authhelper_client_token()
+        headers = {
+            "Authorization": "Bearer %s" % token
+        }
+        data = {
+            'access_token': access_token,
+            'provider': provider,
+            'association_id': association_id
+        }
+        res = requests.post(self.url, headers=headers, data=data)
+        return res.status_code, res.json()

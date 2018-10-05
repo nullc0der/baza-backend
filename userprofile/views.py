@@ -330,3 +330,85 @@ class UserEmailView(views.APIView):
         res_status, data = authhelperclient.delete_or_update_user_email(
             request.data['access_token'], request.data['email_id'])
         return Response(data, res_status)
+
+
+class UserSocialView(views.APIView):
+    """
+    This view will be used to get, connect, disconnect user
+    social auth
+    """
+    permission_classes = (IsAuthenticated, TokenHasScope, )
+    required_scopes = [
+        'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
+
+    def connect_account(self, request):
+        authhelperclient = AuthHelperClient(
+            URL_PROTOCOL +
+            settings.CENTRAL_AUTH_INTROSPECT_URL +
+            '/authhelper/connectsocialauth/'
+        )
+        return authhelperclient.connect_social_auth(
+            access_token=request.data['access_token'],
+            provider=request.data['provider'],
+            provider_access_token=request.data['provider_access_token']
+        )
+
+    def disconnect_account(self, request):
+        authhelperclient = AuthHelperClient(
+            URL_PROTOCOL +
+            settings.CENTRAL_AUTH_INTROSPECT_URL +
+            '/authhelper/disconnectsocialauth/'
+        )
+        return authhelperclient.disconnect_social_auth(
+            access_token=request.data['access_token'],
+            provider=request.data['provider'],
+            association_id=request.data['association_id']
+        )
+
+    def get(self, request, format=None):
+        authhelperclient = AuthHelperClient(
+            URL_PROTOCOL +
+            settings.CENTRAL_AUTH_INTROSPECT_URL +
+            '/authhelper/getsocialauths/'
+        )
+        res_status, data = authhelperclient.get_user_social_auths(
+            request.query_params['access_token'])
+        return Response(data, res_status)
+
+    def post(self, request, format=None):
+        if request.data['req_type'] == 'connect':
+            res_status, data = self.connect_account(request)
+        if request.data['req_type'] == 'disconnect':
+            res_status, data = self.disconnect_account(request)
+        return Response(data, res_status)
+
+
+class ConnectTwitterView(views.APIView):
+    """
+    This view will be used to connect twitter account
+    """
+
+    def post(self, request, format=None):
+        authhelperclient = AuthHelperClient(
+            URL_PROTOCOL +
+            settings.CENTRAL_AUTH_INTROSPECT_URL +
+            '/authhelper/twitter/getusertoken/'
+        )
+        res_status, data = authhelperclient.get_twitter_user_token(
+            request.query_params['oauth_token'],
+            request.query_params['oauth_verifier']
+        )
+        if res_status == 200:
+            authhelperclient = AuthHelperClient(
+                URL_PROTOCOL +
+                settings.CENTRAL_AUTH_INTROSPECT_URL +
+                '/authhelper/connectsocialauth/'
+            )
+            res_status, data = authhelperclient.connect_social_auth(
+                access_token=request.META['HTTP_ACCESS_TOKEN'],
+                provider='twitter',
+                oauth_token=data['oauth_token'],
+                oauth_token_secret=data['oauth_token_secret']
+            )
+            return Response(data, res_status)
+        return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)

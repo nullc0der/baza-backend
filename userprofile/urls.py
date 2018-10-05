@@ -8,5 +8,7 @@ urlpatterns = [
     path('photos/', views.UserPhotoView.as_view()),
     path('documents/', views.UserDocumentView.as_view()),
     path('phonenumbers/', views.UserPhoneView.as_view()),
-    path('emails/', views.UserEmailView.as_view())
+    path('emails/', views.UserEmailView.as_view()),
+    path('socialauths/', views.UserSocialView.as_view()),
+    path('socialauths/connecttwitter/', views.ConnectTwitterView.as_view())
 ]

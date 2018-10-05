@@ -24,6 +24,16 @@ CORS_ORIGIN_WHITELIST = [
     'localhost:5100'
 ]
 
+CORS_ALLOW_HEADERS = (
+    'x-requested-with',
+    'content-type',
+    'accept',
+    'origin',
+    'authorization',
+    'x-csrftoken',
+    'access-token'
+)
+
 
 # CELERY
 CELERY_BROKER_URL = 'redis://' + get_env_var('REDIS_HOST') + ':6379/1'
