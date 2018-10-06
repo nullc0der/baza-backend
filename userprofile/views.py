@@ -412,3 +412,26 @@ class ConnectTwitterView(views.APIView):
             )
             return Response(data, res_status)
         return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class SetUserPasswordView(views.APIView):
+    """
+    This view will be used to set new password for an user
+    """
+    permission_classes = (IsAuthenticated, TokenHasScope, )
+    required_scopes = [
+        'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
+
+    def post(self, request, format=None):
+        authhelperclient = AuthHelperClient(
+            URL_PROTOCOL +
+            settings.CENTRAL_AUTH_INTROSPECT_URL +
+            '/authhelper/setpassword/'
+        )
+        res_status, data = authhelperclient.set_user_password(
+            access_token=request.data['access_token'],
+            current_password=request.data['current_password'],
+            new_password_1=request.data['new_password_1'],
+            new_password_2=request.data['new_password_2']
+        )
+        return Response(data, res_status)

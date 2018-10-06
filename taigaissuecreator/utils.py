@@ -79,9 +79,9 @@ def post_attachment(token, object_id, attachment_id, taigaissue):
     }
     taigaissueattachment = TaigaIssueAttachment.objects.get(id=attachment_id)
     files = {
-        'attached_file': taigaissueattachment.attachment
+        'attached_file': taigaissueattachment.attachment.path
     }
-    attachment_res = requests.post(
+    requests.post(
         ATTACHMENT_URL, headers=headers, data=data, files=files)
     taigaissueattachment.issue = taigaissue
     taigaissueattachment.save()

@@ -297,3 +297,17 @@ class AuthHelperClient(object):
         }
         res = requests.post(self.url, headers=headers, data=data)
         return res.status_code, res.json()
+
+    def set_user_password(self, access_token, **kwargs):
+        token = get_authhelper_client_token()
+        headers = {
+            "Authorization": "Bearer %s" % token
+        }
+        data = {
+            'access_token': access_token,
+            'current_password': kwargs['current_password'],
+            'new_password_1': kwargs['new_password_1'],
+            'new_password_2': kwargs['new_password_2']
+        }
+        res = requests.post(self.url, headers=headers, data=data)
+        return res.status_code, res.json()

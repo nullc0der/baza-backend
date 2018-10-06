@@ -38,6 +38,16 @@ class UserDocumentSerializer(serializers.ModelSerializer):
 
 
 class UserPhoneSerializer(serializers.ModelSerializer):
+
+    def validate_phone_number(self, value):
+        userphones = UserPhone.objects.filter(
+            phone_number=value)
+        if userphones.count() >= 1:
+            raise serializers.ValidationError(
+                'Double entry is not allowed'
+            )
+        return value
+
     class Meta:
         model = UserPhone
         fields = ('id', 'phone_number', 'phone_number_type', 'primary')

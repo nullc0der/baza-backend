@@ -10,6 +10,8 @@ from rest_framework.decorators import api_view
 from authclient.utils import AuthHelperClient
 from authclient.serializers import LoginSerializer
 
+from userprofile.models import UserProfile
+
 
 URL_PROTOCOL = 'http://' if settings.SITE_TYPE == 'local' else 'https://'
 
@@ -18,12 +20,20 @@ class LoginView(views.APIView):
     def post(self, request, format=None):
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
+            # TODO: Test this code, this may break
+            username = serializer.validated_data.get('username')
+            if len(username):
+                try:
+                    username = UserProfile.objects.get(
+                        username=username).user.username
+                except UserProfile.DoesNotExist:
+                    pass
             authhelperclient = AuthHelperClient(
                 URL_PROTOCOL +
                 settings.CENTRAL_AUTH_INTROSPECT_URL +
                 '/authhelper/loginuser/')
             res_status, data = authhelperclient.login_user(
-                serializer.validated_data.get('username'),
+                username,
                 serializer.validated_data.get('password')
             )
             if res_status != 200:
