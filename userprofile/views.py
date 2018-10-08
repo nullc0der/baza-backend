@@ -1,4 +1,7 @@
 from django.conf import settings
+from django.template import loader
+from django.http import HttpResponse
+from django.utils.crypto import get_random_string
 
 from rest_framework import views, status
 from rest_framework.response import Response
@@ -10,7 +13,8 @@ from oauth2_provider.contrib.rest_framework import TokenHasScope
 
 from authclient.utils import AuthHelperClient
 from userprofile.models import (
-    UserDocument, UserPhoto, UserProfilePhoto, UserPhone)
+    UserDocument, UserPhoto, UserProfilePhoto, UserPhone,
+    UserTwoFactor, UserTwoFactorRecovery)
 from userprofile.serializers import (
     UserProfileSerializer, UserDocumentSerializer,
     UserPhotoSerializer, UserProfilePhotoSerializer,
@@ -435,3 +439,92 @@ class SetUserPasswordView(views.APIView):
             new_password_2=request.data['new_password_2']
         )
         return Response(data, res_status)
+
+
+class UserTwoFactorView(views.APIView):
+    """
+    This view will be used to get info about user's
+    two factor and set two factor
+    """
+    permission_classes = (IsAuthenticated, TokenHasScope, )
+    required_scopes = [
+        'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
+
+    def get_create_totp_response(self, twofactor):
+        return Response({
+            'provisioning_uri': twofactor.get_totp_provisioning_uri()
+        })
+
+    def get_verify_totp_response(self, twofactor, otp):
+        verified = twofactor.verify_totp(otp)
+        if verified:
+            twofactor.enabled = True
+            twofactor.save()
+            UserTwoFactorRecovery.objects.filter(
+                user=twofactor.user
+            ).delete()
+            strings = [get_random_string(
+                length=6, allowed_chars='0123456789') for i in range(10)]
+            for string in strings:
+                UserTwoFactorRecovery.objects.create(
+                    user=twofactor.user,
+                    code=string
+                )
+            return Response({
+                'two_factor_enabled': twofactor.enabled
+            })
+        return Response({
+            'two_factor_enabled': twofactor.enabled,
+            'error': 'Code invalid'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    def get_recovery_codes_response(self, user):
+        template = loader.get_template('userprofile/twofactor.txt')
+        recovery_codes = user.two_factor_recovery.all()
+        text = template.render({
+            'site': settings.HOST_URL,
+            'twofactorrecoveries': recovery_codes
+        })
+        response = HttpResponse(text, content_type='text/plain')
+        response['Content-Disposition'] = 'attachment; filename={0}'.format(
+            'recovery-codes.txt')
+        return response
+
+    def get_disable_two_factor_code_response(self, user):
+        try:
+            twofactor = UserTwoFactor.objects.get(
+                user=user
+            )
+            twofactor.delete()
+            user.two_factor_recovery.all().delete()
+        except UserTwoFactor.DoesNotExist:
+            pass
+        return Response({
+            'two_factor_enabled': False
+        })
+
+    def get(self, request, format=None):
+        if request.query_params['type'] == 'getcodes':
+            return self.get_recovery_codes_response(request.user)
+        two_factor_enabled = False
+        try:
+            usertwofactor = UserTwoFactor.objects.get(
+                user=request.user
+            )
+            two_factor_enabled = usertwofactor.enabled
+        except UserTwoFactor.DoesNotExist:
+            pass
+        return Response({
+            'two_factor_enabled': two_factor_enabled
+        })
+
+    def post(self, request, format=None):
+        usertwofactor, created = UserTwoFactor.objects.get_or_create(
+            user=request.user
+        )
+        if request.data['type'] == 'verify':
+            return self.get_verify_totp_response(
+                usertwofactor, request.data['otp'])
+        if request.data['type'] == 'disable':
+            return self.get_disable_two_factor_code_response(request.user)
+        return self.get_create_totp_response(usertwofactor)

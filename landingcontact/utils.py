@@ -1,4 +1,4 @@
-from django.template import loader, Context
+from django.template import loader
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
 

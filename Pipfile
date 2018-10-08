@@ -22,6 +22,7 @@ django-simple-history = "*"
 "iso3166" = "*"
 geopy = "*"
 "geoip2" = "*"
+pyotp = "*"
 
 [dev-packages]
 "pep8" = "*"

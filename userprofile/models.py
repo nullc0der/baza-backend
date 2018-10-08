@@ -1,5 +1,8 @@
 from django.db import models
+from django.conf import settings
 from django.contrib.auth.models import User
+
+from pyotp import random_base32, totp
 
 
 class UserProfile(models.Model):
@@ -21,6 +24,9 @@ class UserProfile(models.Model):
         max_length=15, default='')
     default_avatar_color = models.CharField(
         max_length=8, default='#7b1fa2')
+
+    def __str__(self):
+        return self.user.username
 
 
 class UserPhoto(models.Model):
@@ -67,3 +73,35 @@ class UserPhone(models.Model):
             qs.update(primary=False)
 
         super(UserPhone, self).save(*args, **kwargs)
+
+
+class UserTwoFactor(models.Model):
+    TWO_FACTOR_TYPE_CHOICES = (
+        ('totp', 'Totp'),
+        ('hotp', 'Hotp'),
+        ('email', 'Email'),
+        ('sms', 'SMS'),
+        ('voice', 'Voice')
+    )
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name='two_factor')
+    two_factor_type = models.CharField(
+        default='totp', max_length=10, choices=TWO_FACTOR_TYPE_CHOICES)
+    secret_key = models.CharField(max_length=50, default=random_base32)
+    enabled = models.BooleanField(default=False)
+
+    def get_totp_provisioning_uri(self):
+        return totp.TOTP(self.secret_key).provisioning_uri(
+            name=self.user.profile.username or self.user.username,
+            issuer_name=settings.HOST_URL
+        )
+
+    def verify_totp(self, otp):
+        return totp.TOTP(self.secret_key).verify(otp)
+
+
+class UserTwoFactorRecovery(models.Model):
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='two_factor_recovery')
+    code = models.CharField(max_length=6)
+    valid = models.BooleanField(default=True)
