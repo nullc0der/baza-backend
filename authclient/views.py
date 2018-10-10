@@ -2,13 +2,15 @@ from datetime import timedelta
 
 from django.conf import settings
 from django.utils.timezone import now
+from django.contrib.auth.models import User
 
 from rest_framework import views, status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
 from authclient.utils import AuthHelperClient
-from authclient.serializers import LoginSerializer
+from authclient.serializers import (
+    LoginSerializer, TwoFactorSerializer)
 
 from userprofile.models import UserProfile
 
@@ -16,38 +18,74 @@ from userprofile.models import UserProfile
 URL_PROTOCOL = 'http://' if settings.SITE_TYPE == 'local' else 'https://'
 
 
+def get_login_response(request):
+    serializer = LoginSerializer(data=request.data)
+    if serializer.is_valid():
+        username = serializer.validated_data.get('username')
+        if len(username):
+            try:
+                username = UserProfile.objects.get(
+                    username=username).user.username
+            except UserProfile.DoesNotExist:
+                pass
+        authhelperclient = AuthHelperClient(
+            URL_PROTOCOL +
+            settings.CENTRAL_AUTH_INTROSPECT_URL +
+            '/authhelper/loginuser/')
+        res_status, data = authhelperclient.login_user(
+            username,
+            serializer.validated_data.get('password')
+        )
+        if res_status != 200:
+            return ({
+                'non_field_errors': [data['error_description']]
+            }, status.HTTP_400_BAD_REQUEST)
+        return ({
+            'from_social': False,
+            'two_factor_enabled': False,
+            'username': data['username'],
+            'access_token': data['access_token'],
+            'email': data['email'],
+            'email_verification': settings.EMAIL_VERIFICATION,
+            'email_verified': data['email_verified'],
+            'expires_in': now() + timedelta(seconds=data['expires_in'])
+        }, status.HTTP_200_OK)
+    return (serializer.errors, status.HTTP_400_BAD_REQUEST)
+
+
 class LoginView(views.APIView):
     def post(self, request, format=None):
-        serializer = LoginSerializer(data=request.data)
-        if serializer.is_valid():
-            # TODO: Test this code, this may break
-            username = serializer.validated_data.get('username')
-            if len(username):
-                try:
-                    username = UserProfile.objects.get(
-                        username=username).user.username
-                except UserProfile.DoesNotExist:
-                    pass
-            authhelperclient = AuthHelperClient(
-                URL_PROTOCOL +
-                settings.CENTRAL_AUTH_INTROSPECT_URL +
-                '/authhelper/loginuser/')
-            res_status, data = authhelperclient.login_user(
-                username,
-                serializer.validated_data.get('password')
-            )
-            if res_status != 200:
-                return Response({
-                    'non_field_errors': [data['error_description']]
-                }, status=status.HTTP_400_BAD_REQUEST)
-            return Response({
-                'access_token': data['access_token'],
-                'email': data['email'],
-                'email_verification': settings.EMAIL_VERIFICATION,
-                'email_verified': data['email_verified'],
-                'expires_in': now() + timedelta(seconds=data['expires_in'])
+        data, status = get_login_response(request)
+        if status == 200:
+            try:
+                user = User.objects.get(username=data['username'])
+                if hasattr(user, 'two_factor'):
+                    if user.two_factor.enabled:
+                        data['access_token'] = ''
+                        data['expires_in'] = ''
+                        data['two_factor_enabled'] = True
+                return Response(data, status)
+            except User.DoesNotExist:
+                pass
+        return Response(data, status)
+
+
+class TwoFactorView(views.APIView):
+    def post(self, request, format=None):
+        if not request.data['from_social']:
+            data, status = get_login_response(request)
+        else:
+            data, status = get_convert_token_response(request)
+        if status == 200:
+            user = User.objects.get(username=data['username'])
+            serializer = TwoFactorSerializer(data=request.data, context={
+                'user': user
             })
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            if serializer.is_valid():
+                data['two_factor_enabled'] = True
+                return Response(data, status)
+            return Response(serializer.errors, status=400)
+        return Response(data, status)
 
 
 class LogoutView(views.APIView):
@@ -161,37 +199,52 @@ def get_convert_token_response(request):
         request.data.get('backend').lower()
     )
     if res_status == 200 and data['access_token_exist']:
-        return Response({
+        return ({
+            'from_social': True,
+            'two_factor_enabled': False,
+            'username': data['username'],
             'access_token': data['access_token'],
             'email': data['email'],
             'email_verification': settings.EMAIL_VERIFICATION,
             'email_verified': data['email_verified'],
             'expires_in': now() + timedelta(seconds=data['expires_in']),
             'email_exist': data['email_exist']
-        })
+        }, status.HTTP_200_OK)
     if res_status == 401 and \
             data['error_description'].split(':')[0] == 'email_associated':
-        return Response(
+        return (
             {'non_field_errors': [
                 'The fetched email id %s is associated with another'
                 ' account, if you own that account please connect'
                 ' this social id from profile section instead'
                 % data['error_description'].split(':')[1]
-            ]},
-            status=status.HTTP_400_BAD_REQUEST
+            ]}, status.HTTP_400_BAD_REQUEST
         )
     if res_status == 403:
-        return Response({'non_field_errors': [data['error_description']]},
-                        status=status.HTTP_400_BAD_REQUEST)
-    return Response(
+        return (
+            {'non_field_errors': [data['error_description']]},
+            status.HTTP_400_BAD_REQUEST)
+    return (
         {'non_field_errors': ['Unknown errors occured!']},
-        status=status.HTTP_400_BAD_REQUEST
+        status.HTTP_400_BAD_REQUEST
     )
 
 
 class ConvertTokenView(views.APIView):
     def post(self, request, format=None):
-        return get_convert_token_response(request)
+        data, status = get_convert_token_response(request)
+        if status == 200:
+            try:
+                user = User.objects.get(username=data['username'])
+                if hasattr(user, 'two_factor'):
+                    if user.two_factor.enabled:
+                        data['access_token'] = ''
+                        data['expires_in'] = ''
+                        data['two_factor_enabled'] = True
+                return Response(data, status)
+            except User.DoesNotExist:
+                pass
+        return Response(data, status)
 
 
 class AddUserEmailView(views.APIView):
@@ -233,10 +286,28 @@ class GetTwitterUserToken(views.APIView):
             request.query_params['oauth_verifier']
         )
         if res_status == 200:
-            request.data['token'] = 'oauth_token=%s&oauth_token_secret=%s' % (
+            # HACK: This is a hack, the oauth token and
+            # secret shouldn't be exposed, in future
+            # version store it in server temp datastore
+            oauth_token = 'oauth_token=%s&oauth_token_secret=%s' % (
                 data['oauth_token'], data['oauth_token_secret'])
+            request.data['token'] = oauth_token
             request.data['backend'] = 'twitter'
-            return get_convert_token_response(request)
+            data, status = get_convert_token_response(request)
+            if status == 200:
+                try:
+                    user = User.objects.get(username=data['username'])
+                    if hasattr(user, 'two_factor'):
+                        if user.two_factor.enabled:
+                            data['token'] = oauth_token
+                            data['backend'] = 'twitter'
+                            data['access_token'] = ''
+                            data['expires_in'] = ''
+                            data['two_factor_enabled'] = True
+                    return Response(data, status)
+                except User.DoesNotExist:
+                    pass
+            return Response(data, status)
         return Response(res_status)
 
 
