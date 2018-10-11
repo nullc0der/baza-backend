@@ -34,6 +34,26 @@ def get_authhelper_client_token():
     return cache.get('authhelper_client_token')
 
 
+def save_user_auth_data(data):
+    user_auths = cache.get('user_auths')
+    user_auths[data['uuid']] = data
+    cache.set('user_auths', user_auths, None)
+
+
+def get_user_auth_data(uuid):
+    user_auths = cache.get('user_auths')
+    try:
+        return user_auths[uuid]
+    except KeyError:
+        return False
+
+
+def delete_user_auth_data(uuid):
+    user_auths = cache.get('user_auths')
+    user_auths.pop(uuid)
+    cache.set('user_auths', user_auths, None)
+
+
 class AuthHelperClient(object):
     def __init__(self, url):
         self.url = url

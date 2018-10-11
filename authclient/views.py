@@ -1,3 +1,4 @@
+import uuid
 from datetime import timedelta
 
 from django.conf import settings
@@ -8,7 +9,9 @@ from rest_framework import views, status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
-from authclient.utils import AuthHelperClient
+from authclient.utils import (
+    AuthHelperClient, save_user_auth_data, get_user_auth_data,
+    delete_user_auth_data)
 from authclient.serializers import (
     LoginSerializer, TwoFactorSerializer)
 
@@ -41,6 +44,7 @@ def get_login_response(request):
                 'non_field_errors': [data['error_description']]
             }, status.HTTP_400_BAD_REQUEST)
         return ({
+            'uuid': '',
             'from_social': False,
             'two_factor_enabled': False,
             'username': data['username'],
@@ -61,6 +65,8 @@ class LoginView(views.APIView):
                 user = User.objects.get(username=data['username'])
                 if hasattr(user, 'two_factor'):
                     if user.two_factor.enabled:
+                        data['uuid'] = str(uuid.uuid4())
+                        save_user_auth_data(data)
                         data['access_token'] = ''
                         data['expires_in'] = ''
                         data['two_factor_enabled'] = True
@@ -72,20 +78,21 @@ class LoginView(views.APIView):
 
 class TwoFactorView(views.APIView):
     def post(self, request, format=None):
-        if not request.data['from_social']:
-            data, status = get_login_response(request)
-        else:
-            data, status = get_convert_token_response(request)
-        if status == 200:
+        data = get_user_auth_data(request.data['uuid'])
+        if data:
             user = User.objects.get(username=data['username'])
             serializer = TwoFactorSerializer(data=request.data, context={
                 'user': user
             })
             if serializer.is_valid():
-                data['two_factor_enabled'] = True
-                return Response(data, status)
-            return Response(serializer.errors, status=400)
-        return Response(data, status)
+                delete_user_auth_data(request.data['uuid'])
+                return Response(data)
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({
+            'non_field_errors':
+                ['Something went wrong! Please try to login again']
+        }, status=status.HTTP_400_BAD_REQUEST)
 
 
 class LogoutView(views.APIView):
@@ -200,6 +207,7 @@ def get_convert_token_response(request):
     )
     if res_status == 200 and data['access_token_exist']:
         return ({
+            'uuid': '',
             'from_social': True,
             'two_factor_enabled': False,
             'username': data['username'],
@@ -238,6 +246,8 @@ class ConvertTokenView(views.APIView):
                 user = User.objects.get(username=data['username'])
                 if hasattr(user, 'two_factor'):
                     if user.two_factor.enabled:
+                        data['uuid'] = str(uuid.uuid4())
+                        save_user_auth_data(data)
                         data['access_token'] = ''
                         data['expires_in'] = ''
                         data['two_factor_enabled'] = True
@@ -286,12 +296,8 @@ class GetTwitterUserToken(views.APIView):
             request.query_params['oauth_verifier']
         )
         if res_status == 200:
-            # HACK: This is a hack, the oauth token and
-            # secret shouldn't be exposed, in future
-            # version store it in server temp datastore
-            oauth_token = 'oauth_token=%s&oauth_token_secret=%s' % (
+            request.data['token'] = 'oauth_token=%s&oauth_token_secret=%s' % (
                 data['oauth_token'], data['oauth_token_secret'])
-            request.data['token'] = oauth_token
             request.data['backend'] = 'twitter'
             data, status = get_convert_token_response(request)
             if status == 200:
@@ -299,8 +305,8 @@ class GetTwitterUserToken(views.APIView):
                     user = User.objects.get(username=data['username'])
                     if hasattr(user, 'two_factor'):
                         if user.two_factor.enabled:
-                            data['token'] = oauth_token
-                            data['backend'] = 'twitter'
+                            data['uuid'] = str(uuid.uuid4())
+                            save_user_auth_data(data)
                             data['access_token'] = ''
                             data['expires_in'] = ''
                             data['two_factor_enabled'] = True

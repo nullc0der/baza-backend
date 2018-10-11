@@ -10,6 +10,7 @@ class LoginSerializer(serializers.Serializer):
 
 class TwoFactorSerializer(serializers.Serializer):
     code = serializers.CharField()
+    uuid = serializers.UUIDField()
 
     def validate_code(self, value):
         user = self.context['user']
