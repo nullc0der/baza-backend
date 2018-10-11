@@ -19,6 +19,7 @@ from userprofile.serializers import (
     UserProfileSerializer, UserDocumentSerializer,
     UserPhotoSerializer, UserProfilePhotoSerializer,
     UserPhoneSerializer)
+from userprofile.tasks import task_send_two_factor_email
 
 
 URL_PROTOCOL = 'http://' if settings.SITE_TYPE == 'local' else 'https://'
@@ -455,7 +456,7 @@ class UserTwoFactorView(views.APIView):
             'provisioning_uri': twofactor.get_totp_provisioning_uri()
         })
 
-    def get_verify_totp_response(self, twofactor, otp):
+    def get_verify_totp_response(self, twofactor, otp, username, access_token):
         verified = twofactor.verify_totp(otp)
         if verified:
             twofactor.enabled = True
@@ -470,6 +471,9 @@ class UserTwoFactorView(views.APIView):
                     user=twofactor.user,
                     code=string
                 )
+            task_send_two_factor_email.delay(
+                username, access_token, 0
+            )
             return Response({
                 'two_factor_enabled': twofactor.enabled
             })
@@ -478,25 +482,31 @@ class UserTwoFactorView(views.APIView):
             'error': 'Code invalid'
         }, status=status.HTTP_400_BAD_REQUEST)
 
-    def get_recovery_codes_response(self, user):
+    def get_recovery_codes_response(self, user, access_token):
         template = loader.get_template('userprofile/twofactor.txt')
         recovery_codes = user.two_factor_recovery.all()
         text = template.render({
             'site': settings.HOST_URL,
             'twofactorrecoveries': recovery_codes
         })
+        task_send_two_factor_email.delay(
+            user.profile.username or user.username, access_token, 2
+        )
         response = HttpResponse(text, content_type='text/plain')
         response['Content-Disposition'] = 'attachment; filename={0}'.format(
             'recovery-codes.txt')
         return response
 
-    def get_disable_two_factor_code_response(self, user):
+    def get_disable_two_factor_code_response(self, user, access_token):
         try:
             twofactor = UserTwoFactor.objects.get(
                 user=user
             )
             twofactor.delete()
             user.two_factor_recovery.all().delete()
+            task_send_two_factor_email.delay(
+                user.profile.username or user.username, access_token, 1
+            )
         except UserTwoFactor.DoesNotExist:
             pass
         return Response({
@@ -505,7 +515,10 @@ class UserTwoFactorView(views.APIView):
 
     def get(self, request, format=None):
         if request.query_params['type'] == 'getcodes':
-            return self.get_recovery_codes_response(request.user)
+            return self.get_recovery_codes_response(
+                request.user,
+                request.META['HTTP_AUTHORIZATION'].split(' ')[1]
+            )
         two_factor_enabled = False
         try:
             usertwofactor = UserTwoFactor.objects.get(
@@ -524,7 +537,13 @@ class UserTwoFactorView(views.APIView):
         )
         if request.data['type'] == 'verify':
             return self.get_verify_totp_response(
-                usertwofactor, request.data['otp'])
+                usertwofactor,
+                request.data['otp'],
+                request.user.profile.username or request.user.username,
+                request.META['HTTP_AUTHORIZATION'].split(' ')[1])
         if request.data['type'] == 'disable':
-            return self.get_disable_two_factor_code_response(request.user)
+            return self.get_disable_two_factor_code_response(
+                request.user,
+                request.META['HTTP_AUTHORIZATION'].split(' ')[1]
+            )
         return self.get_create_totp_response(usertwofactor)
