@@ -542,8 +542,19 @@ class UserTwoFactorView(views.APIView):
                 request.user.profile.username or request.user.username,
                 request.META['HTTP_AUTHORIZATION'].split(' ')[1])
         if request.data['type'] == 'disable':
-            return self.get_disable_two_factor_code_response(
-                request.user,
-                request.META['HTTP_AUTHORIZATION'].split(' ')[1]
+            authhelperclient = AuthHelperClient(
+                URL_PROTOCOL +
+                settings.CENTRAL_AUTH_INTROSPECT_URL +
+                '/authhelper/checkpassword/'
             )
+            res_status, data = authhelperclient.check_user_password(
+                request.META['HTTP_AUTHORIZATION'].split(' ')[1],
+                request.data['password']
+            )
+            if data['password_valid']:
+                return self.get_disable_two_factor_code_response(
+                    request.user,
+                    request.META['HTTP_AUTHORIZATION'].split(' ')[1]
+                )
+            return Response(data, res_status)
         return self.get_create_totp_response(usertwofactor)
