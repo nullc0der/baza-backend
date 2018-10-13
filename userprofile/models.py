@@ -18,7 +18,7 @@ class UserProfile(models.Model):
         max_length=10, choices=GENDER_CHOICES, default='male'
     )
     about_me = models.TextField(null=True, blank=True)
-    website = models.URLField(null=True, blank=True)
+    website = models.TextField(null=True, blank=True)
     location = models.TextField(null=True, blank=True)
     phone_number = models.CharField(
         max_length=15, default='')
