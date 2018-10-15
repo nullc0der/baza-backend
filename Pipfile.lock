@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "399498737bc5f7e09b48769d90fdb6e1486a24a2a581c67427d2684e0338ad49"
+            "sha256": "c9516abdeb0cb551a4ef2a42e71dad8756cf4baf6d69579fa2ccf2292efb3c98"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -143,6 +143,13 @@
             "index": "pypi",
             "version": "==2.4.0"
         },
+        "django-oauth-toolkit": {
+            "hashes": [
+                "sha256:ad1b76275950ebbff708222cec57bbdb879f89bac7df6b9dee0f4b9db485c264"
+            ],
+            "index": "pypi",
+            "version": "==1.2.0"
+        },
         "django-redis-cache": {
             "hashes": [
                 "sha256:2b4e3510bbcaf3d331975717afd6f15a36fbaf7622504599d2727dc99f90c64d"
@@ -172,9 +179,6 @@
             ],
             "markers": "python_version != '3.2.*' and python_version != '3.3.*' and python_version != '3.1.*' and python_version >= '2.7' and python_version != '3.0.*'",
             "version": "==3.8.2"
-        },
-        "e687458": {
-            "path": "./django-oauth-toolkit"
         },
         "geographiclib": {
             "hashes": [
