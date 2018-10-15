@@ -69,7 +69,8 @@ BAZA_APPS = [
     'coinpurchase',
     'bazasignup',
     'landingcontact',
-    'taigaissuecreator'
+    'taigaissuecreator',
+    'publicusers'
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + BAZA_APPS

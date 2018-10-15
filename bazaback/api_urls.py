@@ -11,5 +11,6 @@ urlpatterns = [
     path('purchasecoin/', include('coinpurchase.urls')),
     path('bazasignup/', include('bazasignup.urls')),
     path('landingcontact/', include('landingcontact.urls')),
-    path('postissue/', include('taigaissuecreator.urls'))
+    path('postissue/', include('taigaissuecreator.urls')),
+    path('members/', include('publicusers.urls'))
 ]
