@@ -23,6 +23,7 @@ geopy = "*"
 "geoip2" = "*"
 pyotp = "*"
 "e687458" = {path = "./django-oauth-toolkit"}
+oauthlib = "*"
 
 [dev-packages]
 "pep8" = "*"
