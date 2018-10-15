@@ -54,6 +54,9 @@ DJANGO_APPS = [
 
 THIRD_PARTY_APPS = [
     'rest_framework',
+    # TODO: This is installed from a cloned
+    # copy until 1.2.x is released
+    # keep an eye on changelog
     'oauth2_provider',
     'simple_history'
 ]
