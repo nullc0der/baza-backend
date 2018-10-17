@@ -6,6 +6,7 @@ from channels.security.websocket import AllowedHostsOriginValidator
 from bazaback.tokenauth import TokenAuthMiddlewareStack
 from notifications.consumers import NotificationConsumer
 from publicusers.consumers import PublicusersConsumer
+from messenger.consumers import MessengerConsumer
 
 
 application = ProtocolTypeRouter({
@@ -13,7 +14,8 @@ application = ProtocolTypeRouter({
         TokenAuthMiddlewareStack(
             URLRouter([
                 path('ws/notifications/', NotificationConsumer),
-                path('ws/users/', PublicusersConsumer)
+                path('ws/users/', PublicusersConsumer),
+                path('ws/messenger/', MessengerConsumer)
             ])
         )
     )
