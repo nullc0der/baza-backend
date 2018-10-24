@@ -125,9 +125,10 @@ class ChatRoomsView(APIView):
         datas = []
         for message in messages:
             datas.append(_make_message_serializable(message))
-        return Response(
-            MessageSerializer(datas, many=True).data
-        )
+        return Response({
+            'chat_id': chat.id,
+            'message': MessageSerializer(datas, many=True).data
+        })
 
 
 class ChatRoomDetailsView(APIView):
