@@ -11,13 +11,25 @@ from publicusers.serializers import UserSerializer
 from userprofile.views import get_profile_photo
 
 
+def get_username(user):
+    if hasattr(user, 'profile'):
+        return user.profile.username or user.username
+    return user.username
+
+
+def get_avatar_color(user):
+    if hasattr(user, 'profile'):
+        return user.profile.default_avatar_color
+    return '#000000'
+
+
 def make_user_serializeable(user):
     data = {
         'id': user.id,
-        'username': user.profile.username or user.username,
+        'username': get_username(user),
         'fullname': user.get_full_name(),
         'user_image_url': get_profile_photo(user),
-        'user_avatar_color': user.profile.default_avatar_color
+        'user_avatar_color': get_avatar_color(user)
     }
     return data
 

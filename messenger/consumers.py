@@ -9,7 +9,7 @@ from messenger.models import ChatRoom
 class MessengerConsumer(JsonWebsocketConsumer):
     def connect(self):
         self.user = self.scope['user']
-        self.room_group_name = '%_messages' % self.user.username
+        self.room_group_name = '%s_messages' % self.user.username
         if not isinstance(self.user, AnonymousUser):
             async_to_sync(self.channel_layer.group_add)(
                 self.room_group_name,
@@ -38,10 +38,10 @@ class MessengerConsumer(JsonWebsocketConsumer):
                 for otheruser in otherusers:
                     message_dict = {
                         'chatroom_id': chatroom.id,
-                        'typing': True
+                        'type': 'set_typing'
                     }
                     async_to_sync(self.channel_layer.group_send)(
-                        self.room_group_name,
+                        '%s_messages' % otheruser.username,
                         {
                             'type': 'messenger.message',
                             'message': message_dict

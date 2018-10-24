@@ -3,6 +3,7 @@ from mimetypes import MimeTypes
 
 from django.conf import settings
 from django.utils.crypto import get_random_string
+from django.contrib.auth.models import User
 
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
@@ -83,17 +84,50 @@ class ChatRoomsView(APIView):
                         chat.messages.filter(read=False).exclude(
                             user=request.user).count()
                     data['user'] = {
-                        'id': otheruser.id,
-                        'username': otheruser.profile.username
-                        or otheruser.username,
-                        'user_image_url': get_profile_photo(otheruser),
+                        'id': otheruser[0].id,
+                        'username': otheruser[0].profile.username
+                        or otheruser[0].username,
+                        'user_image_url': get_profile_photo(otheruser[0]),
                         'user_avatar_color':
-                            otheruser.profile.default_avatar_color
+                            otheruser[0].profile.default_avatar_color
                     }
                     datas.append(data)
             serializer = ChatRoomSerializer(datas, many=True)
             return Response(serializer.data)
-        return Response(data=None, status=status.HTTP_204_NO_CONTENT)
+        return Response([])
+
+    def post(self, request, to_user, format=None):
+        user = User.objects.get(id=to_user)
+        label = request.user.username + user.username
+        label1 = user.username + request.user.username
+        try:
+            room1 = ChatRoom.objects.get(name=label)
+        except ChatRoom.DoesNotExist:
+            room1 = None
+        try:
+            room2 = ChatRoom.objects.get(name=label1)
+        except ChatRoom.DoesNotExist:
+            room2 = None
+        if room1 or room2:
+            if room1:
+                chat = room1
+            else:
+                chat = room2
+            if request.user in chat.unsubscribers.all():
+                chat.unsubscribers.remove(request.user)
+                chat.subscribers.add(request.user)
+        else:
+            chat, created = ChatRoom.objects.get_or_create(name=label)
+            if created:
+                chat.subscribers.add(request.user)
+                chat.subscribers.add(user)
+        messages = chat.messages.all().order_by('timestamp')
+        datas = []
+        for message in messages:
+            datas.append(_make_message_serializable(message))
+        return Response(
+            MessageSerializer(datas, many=True).data
+        )
 
 
 class ChatRoomDetailsView(APIView):
@@ -127,9 +161,11 @@ class ChatRoomDetailsView(APIView):
         for message in messages:
             data = _make_message_serializable(message)
             datas.append(data)
-        datas.append({'room_id': chatroom.id})
-        serializer = MessageSerializer(datas, many=True)
-        return Response(serializer.data)
+        serializer_data = MessageSerializer(datas, many=True).data
+        return Response({
+            'room_id': chatroom.id,
+            'chats': serializer_data
+        })
 
     def post(self, request, chat_id, format=None):
         try:
@@ -158,24 +194,26 @@ class ChatRoomDetailsView(APIView):
                 message.attachment_type = filetype
             message.save()
             data = _make_message_serializable(message)
-            data['room_id'] = chatroom.id
             serializer = MessageSerializer(data=data)
             if serializer.is_valid():
                 if otherusers:
                     message_dict = {
                         'chatroom': chatroom.id,
                         'message': serializer.data,
-                        'add_message': True
+                        'type': 'add_message'
                     }
                     for otheruser in otherusers:
                         async_to_sync(channel_layer.group_send)(
-                            '%_messages' % otheruser.username,
+                            '%s_messages' % otheruser.username,
                             {
                                 'type': 'messenger.message',
                                 'message': message_dict
                             }
                         )
-                return Response(serializer.data)
+                return Response({
+                    'room_id': chatroom.id,
+                    'chat': serializer.data
+                })
             return Response(
                 serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -194,7 +232,6 @@ class DeleteMessageView(APIView):
     def post(self, request, format=None):
         messages = Message.objects.filter(id__in=request.data.get('ids'))
         otherusers = set()
-        data = []
         message_ids = []
         for message in messages:
             if message.user == request.user:
@@ -202,21 +239,19 @@ class DeleteMessageView(APIView):
                 for user in chatroom.subscribers.all():
                     if user != request.user:
                         otherusers.add(user)
-                message_dict = {
-                    'chatroom': chatroom.id,
-                    'message_id': message.id,
-                    'add_message': False
-                }
-                data.append(message_dict)
                 message_ids.append(message.id)
                 message.delete()
         if otherusers:
             for otheruser in otherusers:
                 async_to_sync(channel_layer.group_send)(
-                    '%_messages' % otheruser.username,
+                    '%s_messages' % otheruser.username,
                     {
                         'type': 'messenger.message',
-                        'message': data
+                        'message': {
+                            'chatroom': chatroom.id,
+                            'message_ids': message_ids,
+                            'type': 'delete_message'
+                        }
                     }
                 )
         return Response({
@@ -274,7 +309,10 @@ def handle_attachment(attachment, chatroom_name):
     if os.path.isfile(dest_file_path):
         attachment_s = attachment.name.split('.')
         attachment_s[0] = attachment_s[0] + '-' + get_random_string(length=6)
-        attachment_name = attachment_s[0] + '.' + attachment_s[1]
+        if len(attachment_s) > 1:
+            attachment_name = attachment_s[0] + '.' + attachment_s[1]
+        else:
+            attachment_name = attachment_s[0]
         dest_file_path = os.path.join(attachment_dir, attachment_name)
     with open(dest_file_path, 'wb') as attachment_file:
         for chunk in attachment.chunks():
@@ -282,4 +320,4 @@ def handle_attachment(attachment, chatroom_name):
     file_type = MimeTypes().guess_type(dest_file_path)[0]
     file_url = "%smessenger/%s/%s" % (
         settings.MEDIA_URL, chatroom_name, dest_file_path.split('/')[-1])
-    return file_url, file_type
+    return file_url, file_type or 'Unknown'
