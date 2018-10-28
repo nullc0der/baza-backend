@@ -51,6 +51,36 @@ def _make_message_serializable(message):
     return data
 
 
+def _make_chatroom_serializable(request, chat, for_ws=False):
+    data = {}
+    if not for_ws:
+        otheruser = [user for user in chat.subscribers.all()
+                     if user != request.user] or [
+            user for user in chat.unsubscribers.all()
+            if user != request.user]
+    else:
+        otheruser = [request.user]
+        ws_user = [user for user in chat.subscribers.all()
+                   if user != request.user] or [
+            user for user in chat.unsubscribers.all()
+            if user != request.user]
+    if otheruser:
+        data["id"] = chat.id
+        data["unread_count"] = \
+            chat.messages.filter(read=False).exclude(
+                user=request.user).count() if not for_ws else\
+            chat.messages.filter(read=False).exclude(user=ws_user[0]).count()
+        data['user'] = {
+            'id': otheruser[0].id,
+            'username': otheruser[0].profile.username
+            or otheruser[0].username,
+            'user_image_url': get_profile_photo(otheruser[0]),
+            'user_avatar_color':
+                otheruser[0].profile.default_avatar_color
+        }
+    return data
+
+
 class ChatRoomsView(APIView):
     """
     View to return all available chat rooms for an user
@@ -71,27 +101,8 @@ class ChatRoomsView(APIView):
         if chats:
             datas = []
             for chat in chats:
-                data = {}
-                otheruser = [user for user in chat.subscribers.all()
-                             if user != request.user]
-                if not otheruser:
-                    otheruser = [
-                        user for user in chat.unsubscribers.all()
-                        if user != request.user]
-                if otheruser:
-                    data["id"] = chat.id
-                    data["unread_count"] = \
-                        chat.messages.filter(read=False).exclude(
-                            user=request.user).count()
-                    data['user'] = {
-                        'id': otheruser[0].id,
-                        'username': otheruser[0].profile.username
-                        or otheruser[0].username,
-                        'user_image_url': get_profile_photo(otheruser[0]),
-                        'user_avatar_color':
-                            otheruser[0].profile.default_avatar_color
-                    }
-                    datas.append(data)
+                data = _make_chatroom_serializable(request, chat)
+                datas.append(data)
             serializer = ChatRoomSerializer(datas, many=True)
             return Response(serializer.data)
         return Response([])
@@ -126,7 +137,8 @@ class ChatRoomsView(APIView):
         for message in messages:
             datas.append(_make_message_serializable(message))
         return Response({
-            'chat_id': chat.id,
+            'room': ChatRoomSerializer(
+                _make_chatroom_serializable(request, chat)).data,
             'messages': MessageSerializer(datas, many=True).data
         })
 
@@ -194,13 +206,15 @@ class ChatRoomDetailsView(APIView):
                 message.attachment_path = path
                 message.attachment_type = filetype
             message.save()
-            data = _make_message_serializable(message)
-            serializer = MessageSerializer(data=data)
-            if serializer.is_valid():
+            message_data = _make_message_serializable(message)
+            message_serializer = MessageSerializer(data=message_data)
+            if message_serializer.is_valid():
                 if otherusers:
                     message_dict = {
-                        'chatroom': chatroom.id,
-                        'message': serializer.data,
+                        'chatroom': ChatRoomSerializer(
+                            _make_chatroom_serializable(
+                                request, chatroom, for_ws=True)).data,
+                        'message': message_serializer.data,
                         'type': 'add_message'
                     }
                     for otheruser in otherusers:
@@ -212,11 +226,12 @@ class ChatRoomDetailsView(APIView):
                             }
                         )
                 return Response({
-                    'room_id': chatroom.id,
-                    'chat': serializer.data
+                    'room': ChatRoomSerializer(_make_chatroom_serializable(
+                        request, chatroom)).data,
+                    'chat': message_serializer.data
                 })
             return Response(
-                serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                message_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -295,9 +310,9 @@ class UpdateReadStatusView(APIView):
         message_ids = request.data.get('message_ids')
         for message_id in message_ids:
             message = Message.objects.get(id=message_id)
-            # TODO: Check if request coming from right user
-            message.read = True
-            message.save()
+            if message.user != request.user:
+                message.read = True
+                message.save()
         return Response()
 
 
