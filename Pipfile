@@ -24,6 +24,7 @@ geopy = "*"
 pyotp = "*"
 oauthlib = "*"
 django-oauth-toolkit = "*"
+django-versatileimagefield = "*"
 
 [dev-packages]
 "pep8" = "*"

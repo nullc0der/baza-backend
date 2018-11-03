@@ -71,7 +71,8 @@ BAZA_APPS = [
     'landingcontact',
     'taigaissuecreator',
     'publicusers',
-    'messenger'
+    'messenger',
+    'group'
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + BAZA_APPS
