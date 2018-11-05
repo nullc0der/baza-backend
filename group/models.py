@@ -43,12 +43,12 @@ class BasicGroup(models.Model):
         default='open', choices=JOIN_STATUS, max_length=30
     )
     header_image = VersatileImageField(
-        upload_to='group_headers',
+        upload_to='group_headers/',
         null=True,
         blank=True
     )
     logo = VersatileImageField(
-        upload_to='group_logos',
+        upload_to='group_logos/',
         null=True,
         blank=True
     )

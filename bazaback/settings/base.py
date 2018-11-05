@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 import os
 from django.core.exceptions import ImproperlyConfigured
 
+from celery.schedules import crontab
+
 
 def get_env_var(name):
     try:
@@ -55,7 +57,8 @@ DJANGO_APPS = [
 THIRD_PARTY_APPS = [
     'rest_framework',
     'oauth2_provider',
-    'simple_history'
+    'simple_history',
+    'versatileimagefield'
 ]
 
 BAZA_APPS = [
@@ -173,7 +176,12 @@ REST_FRAMEWORK = {
 CELERY_BROKER_URL = 'redis://' + get_env_var('REDIS_HOST') + ':6379/0'
 CELERY_RESULT_BACKEND = 'redis://' + get_env_var('REDIS_HOST') + ':6379/0'
 CELERY_TIMEZONE = 'UTC'
-
+CELERY_BEAT_SCHEDULE = {
+    'process_flagged_for_delete_group': {
+        'task': 'group.tasks.task_process_flagged_for_delete_group',
+        'schedule': crontab(minute=0, hour=12)
+    }
+}
 
 # Channels ASGI application
 ASGI_APPLICATION = 'bazaback.routing.application'

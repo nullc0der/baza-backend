@@ -1,26 +1,47 @@
+from django.utils.translation import ugettext_lazy as _
+
 from rest_framework import serializers
-from versatileimagefield.serializers import VersatileImageFieldSerializer
 
 from group.models import BasicGroup
 
 
 class BasicGroupSerializer(serializers.ModelSerializer):
+    GROUP_TYPES = (
+        ('1', _('Art')),
+        ('2', _('Activist')),
+        ('3', _('Political')),
+        ('4', _('News')),
+        ('5', _('Business')),
+        ('6', _('Government')),
+        ('7', _('Blog')),
+        ('8', _('Nonprofit Organization')),
+        ('9', _('Other')),
+    )
     members = serializers.SerializerMethodField()
     subscribers = serializers.SerializerMethodField()
-    header_image_url = VersatileImageFieldSerializer(
-        sizes=[
-            ('full_size', 'url')
-        ],
-        allow_null=True
-    )
-    logo_url = VersatileImageFieldSerializer(
-        sizes=[
-            ('full_size', 'url')
-        ],
-        allow_null=True
-    )
+    header_image_url = serializers.SerializerMethodField()
+    logo_url = serializers.SerializerMethodField()
     group_type = serializers.SerializerMethodField()
     user_permission_set = serializers.SerializerMethodField()
+    logo = serializers.ImageField(write_only=True)
+    header_image = serializers.ImageField(write_only=True)
+    group_type_value = serializers.ChoiceField(
+        choices=GROUP_TYPES, write_only=True, required=True,
+        error_messages={"invalid_choice": "Please select a group type"}
+    )
+
+    def get_header_image_url(self, obj):
+        datas = {}
+        if obj.header_image:
+            datas['full_size'] = obj.header_image.url
+        return datas
+
+    def get_logo_url(self, obj):
+        datas = {}
+        if obj.logo:
+            datas['full_size'] = obj.logo.url,
+            datas['thumbnail_92'] = obj.logo.thumbnail['92x92'].url
+        return datas
 
     def get_members(self, obj):
         return [
@@ -60,6 +81,7 @@ class BasicGroupSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         owner = self.context['user']
+        validated_data['group_type'] = validated_data.pop('group_type_value')
         basicgroup = BasicGroup.objects.create(**validated_data)
         basicgroup.super_admins.add(owner)
         basicgroup.admins.add(owner)
@@ -67,12 +89,39 @@ class BasicGroupSerializer(serializers.ModelSerializer):
         basicgroup.subscribers.add(owner)
         return basicgroup
 
+    def update(self, instance, validated_data):
+        if 'group_type_value' in validated_data:
+            validated_data['group_type'] = validated_data.pop(
+                'group_type_value')
+        instance = super(BasicGroupSerializer, self).update(
+            instance, validated_data)
+        if instance.flagged_for_deletion:
+            instance.flagged_for_deletion = False
+            instance.flagged_for_deletion_on = None
+            instance.save()
+        return instance
+
+    def validate(self, data):
+        if 'group_type_value' in data:
+            if data['group_type_value'] == '9' and\
+                    not data['group_type_other']:
+                raise serializers.ValidationError(
+                    "You must specify the group type if you select other"
+                )
+            if data['group_type_value'] != '9' and data['group_type_other']:
+                raise serializers.ValidationError(
+                    "Other type must be blank if group type is not other"
+                )
+        return data
+
     class Meta:
         model = BasicGroup
         fields = (
             'id', 'name', 'short_about', 'long_about',
-            'group_type', 'group_type_other', 'header_image_url', 'logo_url',
-            'members', 'subscribers', 'auto_approve_post',
-            'auto_approve_comment', 'join_status', 'flagged_for_deletion',
-            'flagged_for_deletion_on', 'user_permission_set'
+            'group_type', 'group_type_value', 'group_type_other',
+            'header_image_url', 'logo_url',
+            'logo', 'header_image', 'members', 'subscribers',
+            'auto_approve_post', 'auto_approve_comment', 'join_status',
+            'flagged_for_deletion', 'flagged_for_deletion_on',
+            'user_permission_set'
         )
