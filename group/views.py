@@ -149,7 +149,7 @@ class GroupMembersView(APIView):
             for member in set(members):
                 data = {}
                 data['user'] = make_user_serializeable(member)
-                data['subscribed_groups'] = calculate_subscribed_group(
+                data['user_permission_set'] = calculate_subscribed_group(
                     basicgroup, member)
                 datas.append(data)
             serializer = GroupMemberSerializer(datas, many=True)
