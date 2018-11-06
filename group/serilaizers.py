@@ -3,6 +3,7 @@ from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 
 from group.models import BasicGroup
+from publicusers.serializers import UserSerializer
 
 
 class BasicGroupSerializer(serializers.ModelSerializer):
@@ -125,3 +126,8 @@ class BasicGroupSerializer(serializers.ModelSerializer):
             'flagged_for_deletion', 'flagged_for_deletion_on',
             'user_permission_set'
         )
+
+
+class GroupMemberSerializer(serializers.Serializer):
+    user = UserSerializer()
+    user_permission_set = serializers.ListField()

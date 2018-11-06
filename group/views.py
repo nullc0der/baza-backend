@@ -10,11 +10,15 @@ from rest_framework.permissions import IsAuthenticated
 
 from oauth2_provider.contrib.rest_framework import TokenHasScope
 
+from publicusers.views import make_user_serializeable
+
 from group.models import BasicGroup
-from group.serilaizers import BasicGroupSerializer
+from group.serilaizers import (
+    BasicGroupSerializer, GroupMemberSerializer)
 from group.permissions import (
-    IsAdminOfGroup
+    IsAdminOfGroup, IsMemberOfGroup
 )
+from group.utils import calculate_subscribed_group
 
 
 class GroupsView(APIView):
@@ -117,3 +121,38 @@ class CreateGroupView(APIView):
                 'user': request.user
             }).data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class GroupMembersView(APIView):
+    """
+    This view returns all members in group with
+    their role
+
+    * Required logged in user
+    * Permission Required
+        * Member role
+    """
+    permission_classes = (IsAuthenticated, TokenHasScope, IsMemberOfGroup)
+    required_scopes = [
+        'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
+
+    def get(self, request, group_id, format=None):
+        try:
+            datas = []
+            basicgroup = BasicGroup.objects.get(id=group_id)
+            self.check_object_permissions(request, basicgroup)
+            members = basicgroup.super_admins.all() |\
+                basicgroup.admins.all() |\
+                basicgroup.moderators.all() |\
+                basicgroup.staffs.all() |\
+                basicgroup.members.all()
+            for member in set(members):
+                data = {}
+                data['user'] = make_user_serializeable(member)
+                data['subscribed_groups'] = calculate_subscribed_group(
+                    basicgroup, member)
+                datas.append(data)
+            serializer = GroupMemberSerializer(datas, many=True)
+            return Response(serializer.data)
+        except BasicGroup.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
