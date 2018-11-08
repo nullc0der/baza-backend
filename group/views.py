@@ -2,6 +2,7 @@ from datetime import timedelta
 
 from django.conf import settings
 from django.utils.timezone import now
+from django.contrib.auth.models import User
 
 from rest_framework import status, parsers
 from rest_framework.views import APIView
@@ -18,7 +19,8 @@ from group.serilaizers import (
 from group.permissions import (
     IsAdminOfGroup, IsMemberOfGroup
 )
-from group.utils import calculate_subscribed_group
+from group.utils import (
+    calculate_subscribed_group, change_user_role)
 
 
 class GroupsView(APIView):
@@ -154,5 +156,38 @@ class GroupMembersView(APIView):
                 datas.append(data)
             serializer = GroupMemberSerializer(datas, many=True)
             return Response(serializer.data)
+        except BasicGroup.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+class GroupMemberChangeRoleView(APIView):
+    """
+    This view changes groups member roles
+
+    * Required:
+        * Logged in user
+        * Permission set (TODO: Decide permission set)
+    * Returns:
+        * user: Member data
+        * user_permission_set: Member roles
+    """
+    permission_classes = (IsAuthenticated, TokenHasScope, IsAdminOfGroup)
+    required_scopes = [
+        'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
+
+    def post(self, request, group_id, format=None):
+        try:
+            basicgroup = BasicGroup.objects.get(id=group_id)
+            self.check_object_permissions(request, basicgroup)
+            member = User.objects.get(id=request.data['member_id'])
+            user_permission_set = request.data.get('user_permission_set', None)
+            change_user_role(
+                basicgroup, member, user_permission_set, request.user)
+            data = {
+                'user_permission_set': calculate_subscribed_group(
+                    basicgroup, member),
+                'user': make_user_serializeable(member)
+            }
+            return Response(GroupMemberSerializer(data).data)
         except BasicGroup.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
