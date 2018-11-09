@@ -125,6 +125,26 @@ class CreateGroupView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class SiteOwnerGroupView(APIView):
+    """
+    This view returns the site owner group
+    details
+
+    * Required logged in user
+    """
+    permission_classes = (IsAuthenticated, TokenHasScope, )
+    required_scopes = [
+        'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
+
+    def get(self, request, format=None):
+        site_owner_group = BasicGroup.objects.filter(is_site_owner_group=True)
+        if len(site_owner_group):
+            return Response(BasicGroupSerializer(site_owner_group[0], context={
+                'user': request.user
+            }).data)
+        return Response()
+
+
 class GroupMembersView(APIView):
     """
     This view returns all members in group with
