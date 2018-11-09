@@ -8,7 +8,10 @@ ALLOWED_HOSTS = [get_env_var('HOST')]
 
 INSTALLED_APPS += [
     'raven.contrib.django.raven_compat',
+    'corsheaders'
 ]
+
+MIDDLEWARE.insert(2, 'corsheaders.middleware.CorsMiddleware')
 
 DATABASES = {
     'default': {
@@ -100,3 +103,21 @@ LOGGING = {
         },
     },
 }
+
+# CORS
+# TODO: Move this settings to develop branch
+
+CORS_ORIGIN_WHITELIST = [
+    'localhost:5100',
+    'baza-demo.herokuapp.com'
+]
+
+CORS_ALLOW_HEADERS = (
+    'x-requested-with',
+    'content-type',
+    'accept',
+    'origin',
+    'authorization',
+    'x-csrftoken',
+    'access-token'
+)
