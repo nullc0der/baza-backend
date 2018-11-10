@@ -13,9 +13,9 @@ from oauth2_provider.contrib.rest_framework import TokenHasScope
 
 from publicusers.views import make_user_serializeable
 
-from group.models import BasicGroup
+from group.models import (BasicGroup, GroupNotification)
 from group.serilaizers import (
-    BasicGroupSerializer, GroupMemberSerializer)
+    BasicGroupSerializer, GroupMemberSerializer, GroupNotificationSerializer)
 from group.permissions import (
     IsAdminOfGroup, IsMemberOfGroup
 )
@@ -211,3 +211,94 @@ class GroupMemberChangeRoleView(APIView):
             return Response(GroupMemberSerializer(data).data)
         except BasicGroup.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+class GroupNotificationsView(APIView):
+    """
+    This view returns all groups notifications
+    and let the admin create, update and delete
+
+    * Permission Required:
+        * Logged in user
+        * Admin role for Create, Update and Delete
+
+    """
+    permission_classes = (IsAuthenticated, TokenHasScope, IsAdminOfGroup)
+    required_scopes = [
+        'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
+
+    def get(self, request, group_id, format=None):
+        try:
+            basicgroup = BasicGroup.objects.get(id=group_id)
+            serializer = GroupNotificationSerializer(
+                basicgroup.notifications.all().order_by('-id'),
+                many=True
+            )
+            return Response(
+                serializer.data
+            )
+        except BasicGroup.DoesNotExist:
+            return Response(
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+    def post(self, request, group_id, format=None):
+        try:
+            basicgroup = BasicGroup.objects.get(id=group_id)
+            self.check_object_permissions(request, basicgroup)
+            serializer = GroupNotificationSerializer(
+                data=request.data
+            )
+            if serializer.is_valid():
+                serializer.save(
+                    creator=request.user,
+                    basic_group=basicgroup
+                )
+                return Response(
+                    serializer.data
+                )
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
+        except BasicGroup.DoesNotExist:
+            return Response(
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+    def put(self, request, group_id, format=None):
+        try:
+            basicgroup = BasicGroup.objects.get(id=group_id)
+            self.check_object_permissions(request, basicgroup)
+            notification = GroupNotification.objects.get(
+                id=request.data.get('id'))
+            serializer = GroupNotificationSerializer(
+                notification,
+                data=request.data
+            )
+            if serializer.is_valid():
+                serializer.save()
+                return Response(
+                    serializer.data
+                )
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
+        except BasicGroup.DoesNotExist:
+            return Response(
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+    def delete(self, request, group_id, format=None):
+        try:
+            basicgroup = BasicGroup.objects.get(id=group_id)
+            self.check_object_permissions(request, basicgroup)
+            notification = GroupNotification.objects.get(
+                id=request.query_params.get('id')
+            )
+            notification_id = notification.id
+            notification.delete()
+            return Response({'notification_id': notification_id})
+        except (BasicGroup.DoesNotExist, GroupNotification.DoesNotExist):
+            return Response(
+                status=status.HTTP_404_NOT_FOUND
+            )

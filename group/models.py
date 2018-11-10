@@ -81,3 +81,12 @@ class BasicGroup(models.Model):
         if not self.flagged_for_deletion:
             self.flagged_for_deletion_on = None
         super(BasicGroup, self).save(*args, **kwargs)
+
+
+class GroupNotification(models.Model):
+    creator = models.ForeignKey(User, on_delete=models.CASCADE)
+    basic_group = models.ForeignKey(
+        BasicGroup, related_name='notifications', on_delete=models.CASCADE)
+    notification = models.CharField(max_length=200)
+    created_on = models.DateTimeField(auto_now_add=True)
+    is_important = models.BooleanField(default=False)

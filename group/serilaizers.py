@@ -2,7 +2,8 @@ from django.utils.translation import ugettext_lazy as _
 
 from rest_framework import serializers
 
-from group.models import BasicGroup
+from group.models import (
+    BasicGroup, GroupNotification)
 from publicusers.serializers import UserSerializer
 
 
@@ -131,3 +132,9 @@ class BasicGroupSerializer(serializers.ModelSerializer):
 class GroupMemberSerializer(serializers.Serializer):
     user = UserSerializer()
     user_permission_set = serializers.ListField()
+
+
+class GroupNotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GroupNotification
+        fields = ('id', 'notification', 'created_on', 'is_important')
