@@ -75,7 +75,8 @@ BAZA_APPS = [
     'taigaissuecreator',
     'publicusers',
     'messenger',
-    'group'
+    'group',
+    'grouppost'
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + BAZA_APPS
@@ -286,3 +287,16 @@ SITE_OWNER_EMAILS = get_env_var('SITE_OWNER_EMAILS')
 # Taiga Issue Creator
 TAIGA_USERNAME = get_env_var('TAIGA_USERNAME')
 TAIGA_PASSWORD = get_env_var('TAIGA_PASSWORD')
+
+# Bleach sanitize
+BLEACH_VALID_TAGS = ['p', 'b', 'i', 'u',
+                     'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+                     'strike', 'ul', 'li', 'ol', 'br',
+                     'span', 'blockquote', 'hr', 'a', 'img']
+BLEACH_VALID_ATTRS = {
+    'span': ['style', 'class'],
+    'p': ['align', ],
+    'a': ['href', 'rel'],
+    'img': ['src', 'alt', 'style'],
+}
+BLEACH_VALID_STYLES = ['color', 'cursor', 'float', 'margin']

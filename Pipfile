@@ -25,6 +25,7 @@ pyotp = "*"
 oauthlib = "*"
 django-oauth-toolkit = "*"
 django-versatileimagefield = "*"
+bleach = "*"
 
 [dev-packages]
 "pep8" = "*"
