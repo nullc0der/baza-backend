@@ -229,7 +229,7 @@ class CommentViewset(viewsets.ViewSet):
         try:
             comment = PostComment.objects.get(id=pk)
             self.check_object_permissions(request, comment)
-            data = {'comment_id': comment.id}
+            data = {'comment_id': comment.id, 'post_id': comment.post.id}
             comment.delete()
             return Response(data)
         except PostComment.DoesNotExist:
@@ -251,7 +251,7 @@ class UploadImage(APIView):
 
     def post(self, request, format=None):
         if request.data.get('image'):
-            imageserializer = PostImageSerializer(request.data)
+            imageserializer = PostImageSerializer(data=request.data)
             if imageserializer.is_valid():
                 postimage = imageserializer.save(
                     uploader=request.user
