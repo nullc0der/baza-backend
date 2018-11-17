@@ -130,7 +130,7 @@ class BasicGroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = BasicGroup
         fields = (
-            'id', 'name', 'short_about', 'long_about', 'join_request_sent',
+            'id', 'name', 'about', 'join_request_sent',
             'group_type', 'group_type_value', 'group_type_other',
             'header_image_url', 'logo_url',
             'logo', 'header_image', 'members', 'subscribers',

@@ -61,9 +61,11 @@ def change_user_role(basicgroup, member, subscribed_groups, editor):
     else:
         basicgroup.members.remove(member)
     if 103 in subscribed_groups:
-        basicgroup.super_admins.add(member)
+        if editor in basicgroup.super_admins.all():
+            basicgroup.super_admins.add(member)
     else:
-        if basicgroup.super_admins.count() != 1:
+        if basicgroup.super_admins.count() != 1 and\
+                editor in basicgroup.super_admins.all():
             basicgroup.super_admins.remove(member)
     if 104 in subscribed_groups:
         basicgroup.admins.add(member)
