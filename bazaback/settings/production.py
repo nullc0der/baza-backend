@@ -121,3 +121,5 @@ CORS_ALLOW_HEADERS = (
     'x-csrftoken',
     'access-token'
 )
+
+CORS_ORIGIN_REGEX_WHITELIST = (r'^(https?://)?(\w+\.)?ngrok\.io$', )
