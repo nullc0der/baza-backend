@@ -5,6 +5,15 @@ from django.contrib.auth.models import User
 from pyotp import random_base32, totp
 
 
+def user_directory(instance, filename):
+    if isinstance(instance, UserPhoto):
+        directory = 'userphotos'
+    if isinstance(instance, UserDocument):
+        directory = 'userdocuments'
+    return '{0}/user_{1}/{2}'.format(
+        directory, instance.profile.user.id, filename)
+
+
 class UserProfile(models.Model):
     GENDER_CHOICES = (
         ('male', 'Male'),
@@ -32,7 +41,7 @@ class UserProfile(models.Model):
 class UserPhoto(models.Model):
     profile = models.ForeignKey(
         UserProfile, on_delete=models.CASCADE, related_name='photos')
-    photo = models.ImageField(upload_to='userphotos')
+    photo = models.ImageField(upload_to=user_directory)
 
 
 class UserProfilePhoto(models.Model):
@@ -47,7 +56,7 @@ class UserProfilePhoto(models.Model):
 class UserDocument(models.Model):
     profile = models.ForeignKey(
         UserProfile, on_delete=models.CASCADE, related_name='documents')
-    document = models.FileField(upload_to='userdocuments')
+    document = models.FileField(upload_to=user_directory)
 
 
 class UserPhone(models.Model):
