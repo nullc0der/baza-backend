@@ -66,7 +66,7 @@ class PublicusersConsumer(JsonWebsocketConsumer):
 
     def receive_json(self, content):
         status = 'online'
-        accepted_status = ['online', 'away', 'busy']
+        accepted_status = ['online', 'away', 'busy', 'idle']
         if content['status'] in accepted_status:
             status = content['status']
         self.set_online_users(self.user.id, status)
