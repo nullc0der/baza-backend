@@ -3,4 +3,4 @@ def get_coin_value(coin_name):
     Currently it returns a static value, later we need to implement
     method to retrive value
     """
-    return 0.11111111
+    return 0.01000
