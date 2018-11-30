@@ -76,7 +76,8 @@ BAZA_APPS = [
     'publicusers',
     'messenger',
     'group',
-    'grouppost'
+    'grouppost',
+    'paypalpayment'
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + BAZA_APPS
@@ -300,3 +301,11 @@ BLEACH_VALID_ATTRS = {
     'img': ['src', 'alt', 'style'],
 }
 BLEACH_VALID_STYLES = ['color', 'cursor', 'float', 'margin']
+
+
+# Paypal API
+PAYPAL_MODE = get_env_var("PAYPAL_MODE")
+PAYPAL_CLIENT_ID = get_env_var('PAYPAL_CLIENT_ID')
+PAYPAL_CLIENT_SECRET = get_env_var('PAYPAL_CLIENT_SECRET')
+PAYPAL_CANCEL_URL = get_env_var('PAYPAL_CANCEL_URL')
+PAYPAL_RETURN_URL = get_env_var('PAYPAL_RETURN_URL')

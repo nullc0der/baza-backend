@@ -26,6 +26,8 @@ oauthlib = "*"
 django-oauth-toolkit = "*"
 django-versatileimagefield = "*"
 bleach = "*"
+paypalrestsdk = "*"
+service-identity = "*"
 
 [dev-packages]
 "pep8" = "*"
