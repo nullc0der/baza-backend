@@ -4,7 +4,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from stripepayment.models import Payment
-from proxcdb.models import ProxcAccount
+from proxcdb.models import ProxcAccount, ProxcTransaction
 
 
 class CoinPurchase(models.Model):
@@ -29,3 +29,9 @@ def add_wallet_balance(sender, instance, created, **kwargs):
             user=instance.user)
         proxcaccount.balance += instance.amount
         proxcaccount.save()
+        proxctransaction = ProxcTransaction(
+            to_account=proxcaccount,
+            message='Fundraiser reward',
+            amount=instance.amount
+        )
+        proxctransaction.save()

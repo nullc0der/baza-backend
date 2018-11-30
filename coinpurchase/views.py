@@ -24,6 +24,22 @@ class GetCoinValue(views.APIView):
         return Response(value)
 
 
+class GetTotalCoinPurchased(views.APIView):
+    """
+    This API will send total purchased coin
+    """
+
+    permission_classes = (IsAuthenticated, TokenHasScope, )
+    required_scopes = [
+        'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
+
+    def get(self, request, format=None):
+        amount = 0
+        for coinpurchase in CoinPurchase.objects.filter(coin_name='proxcdb'):
+            amount += coinpurchase.amount
+        return Response({'total_purchased': amount})
+
+
 class ProcessCoinPurchase(views.APIView):
     """
     This API will process coin purchase
