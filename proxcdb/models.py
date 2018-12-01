@@ -11,7 +11,7 @@ def get_random_id():
 
 class ProxcAccount(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    balance = models.FloatField(default=100.000000)
+    balance = models.FloatField(default=0)
 
 
 class ProxcTransaction(models.Model):
