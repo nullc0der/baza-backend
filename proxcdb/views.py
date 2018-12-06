@@ -13,6 +13,9 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 
 from oauth2_provider.contrib.rest_framework import TokenHasScope
+from oauth2_provider.decorators import protected_resource
+
+from publicusers.views import make_user_serializeable
 
 from proxcdb.models import ProxcAccount, ProxcTransaction
 from proxcdb.serializers import ProxcTransactionSerializer
@@ -80,19 +83,24 @@ class ProxcTransactionView(APIView):
                 status=status.HTTP_400_BAD_REQUEST)
 
 
-# TODO: Add required scopes here
 @api_view()
 @permission_classes([IsAuthenticated, ])
+@protected_resource(scopes=[
+    'baza' if settings.SITE_TYPE == 'production' else 'baza-beta'])
 def proxcdb_account_autocomplete(request):
     data = []
     query = request.query_params.get('username')
     proxcaccounts = ProxcAccount.objects.filter(
-        user__username__istartswith=query
+        Q(user__profile__username__istartswith=query) |
+        Q(user__username__istartswith=query)
     )
     for proxcaccount in proxcaccounts:
         if not proxcaccount.user == request.user:
             data.append({
-                'label': proxcaccount.user.username,
-                'value': proxcaccount.user.username
+                'label': proxcaccount.user.profile.username
+                or proxcaccount.user.username,
+                'value': proxcaccount.user.profile.username
+                or proxcaccount.user.username,
+                'user': make_user_serializeable(proxcaccount.user)
             })
     return Response(data)
