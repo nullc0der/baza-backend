@@ -1,6 +1,4 @@
 from django.db.models import Q
-from django.contrib.auth.models import User
-from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 
 from asgiref.sync import async_to_sync
@@ -16,6 +14,8 @@ from oauth2_provider.contrib.rest_framework import TokenHasScope
 from oauth2_provider.decorators import protected_resource
 
 from publicusers.views import make_user_serializeable
+
+from userprofile.models import UserProfile
 
 from proxcdb.models import ProxcAccount, ProxcTransaction
 from proxcdb.serializers import ProxcTransactionSerializer
@@ -46,7 +46,10 @@ class ProxcTransactionView(APIView):
 
     def post(self, request, format=None):
         try:
-            to_user = User.objects.get(username=request.data.get('username'))
+            to_user = UserProfile.objects.get(
+                Q(username=request.data.get('username')) |
+                Q(user__username=request.data.get('username'))
+            ).user
             if to_user == request.user:
                 return Response(
                     {'nonField': 'Can\'t send to self'},
@@ -77,7 +80,7 @@ class ProxcTransactionView(APIView):
                     return Response(transaction.data)
                 return Response(transaction.errors,
                                 status=status.HTTP_400_BAD_REQUEST)
-        except ObjectDoesNotExist:
+        except UserProfile.DoesNotExist:
             return Response(
                 {'nonField': 'No such user'},
                 status=status.HTTP_400_BAD_REQUEST)
@@ -93,14 +96,13 @@ def proxcdb_account_autocomplete(request):
     proxcaccounts = ProxcAccount.objects.filter(
         Q(user__profile__username__istartswith=query) |
         Q(user__username__istartswith=query)
-    )
+    ).exclude(user=request.user).exclude(user__username='system')
     for proxcaccount in proxcaccounts:
-        if not proxcaccount.user == request.user:
-            data.append({
-                'label': proxcaccount.user.profile.username
-                or proxcaccount.user.username,
-                'value': proxcaccount.user.profile.username
-                or proxcaccount.user.username,
-                'user': make_user_serializeable(proxcaccount.user)
-            })
+        data.append({
+            'label': proxcaccount.user.profile.username
+            or proxcaccount.user.username,
+            'value': proxcaccount.user.profile.username
+            or proxcaccount.user.username,
+            'user': make_user_serializeable(proxcaccount.user)
+        })
     return Response(data)
