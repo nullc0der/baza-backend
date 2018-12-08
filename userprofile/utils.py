@@ -71,13 +71,13 @@ def user_has_social_account_linked(access_token):
 def user_has_completed_distribution_signup(user):
     if hasattr(user, 'bazasignup'):
         signup = user.bazasignup
-        completed_steps = list(
-            map(lambda x: int(x), signup.get_completed_steps()))
-        not_completed_steps = []
-        for i in range(4):
-            if i not in completed_steps:
-                not_completed_steps.append(i)
-        return bool(len(not_completed_steps))
+        # completed_steps = list(
+        #     map(lambda x: int(x), signup.get_completed_steps()))
+        # not_completed_steps = []
+        # for i in range(4):
+        #     if i not in completed_steps:
+        #         not_completed_steps.append(i)
+        return bool(len(signup.get_completed_steps()) == 4)
     return False
 
 
