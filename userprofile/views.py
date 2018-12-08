@@ -20,6 +20,7 @@ from userprofile.serializers import (
     UserPhotoSerializer, UserProfilePhotoSerializer,
     UserPhoneSerializer)
 from userprofile.tasks import task_send_two_factor_email
+from userprofile.utils import get_user_tasks
 
 
 URL_PROTOCOL = 'http://' if settings.SITE_TYPE == 'local' else 'https://'
@@ -558,3 +559,17 @@ class UserTwoFactorView(views.APIView):
                 )
             return Response(data, res_status)
         return self.get_create_totp_response(usertwofactor)
+
+
+class GetUserTasks(views.APIView):
+    """
+    This view is used to get users tasks info
+    """
+
+    permission_classes = (IsAuthenticated, TokenHasScope, )
+    required_scopes = [
+        'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
+
+    def get(self, request, format=None):
+        return Response(get_user_tasks(
+            request.user, request.META['HTTP_AUTHORIZATION'].split(' ')[1]))

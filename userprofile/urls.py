@@ -12,5 +12,6 @@ urlpatterns = [
     path('socialauths/', views.UserSocialView.as_view()),
     path('socialauths/connecttwitter/', views.ConnectTwitterView.as_view()),
     path('setpassword/', views.SetUserPasswordView.as_view()),
-    path('twofactor/', views.UserTwoFactorView.as_view())
+    path('twofactor/', views.UserTwoFactorView.as_view()),
+    path('tasks/', views.GetUserTasks.as_view())
 ]
