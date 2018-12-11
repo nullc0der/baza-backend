@@ -13,7 +13,7 @@ from authclient.utils import (
     AuthHelperClient, save_user_auth_data, get_user_auth_data,
     delete_user_auth_data)
 from authclient.serializers import (
-    LoginSerializer, TwoFactorSerializer)
+    LoginSerializer, TwoFactorSerializer, EmailSerializer)
 
 from userprofile.models import UserProfile
 
@@ -315,6 +315,27 @@ class GetTwitterUserToken(views.APIView):
                     pass
             return Response(data, status)
         return Response(res_status)
+
+
+class ResendEmailValidationView(views.APIView):
+    """
+    This api will be used to resend email validation for specified
+    email id
+    """
+
+    def post(self, request, format=None):
+        serializer = EmailSerializer(data=request.data)
+        if serializer.is_valid():
+            authhelperclient = AuthHelperClient(
+                URL_PROTOCOL +
+                settings.CENTRAL_AUTH_INTROSPECT_URL +
+                '/authhelper/resendvalidationemail/'
+            )
+            res_status, data = authhelperclient.resend_email_validation(
+                serializer.validated_data.get('email')
+            )
+            return Response(status=res_status)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET'])

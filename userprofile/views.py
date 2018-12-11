@@ -297,7 +297,7 @@ class UserEmailView(views.APIView):
             '/authhelper/useremails/'
         )
         res_status, data = authhelperclient.get_user_emails(
-            request.query_params['access_token'])
+            request.META['HTTP_AUTHORIZATION'].split(' ')[1],)
         return Response(data, res_status)
 
     def post(self, request, format=None):
@@ -308,7 +308,8 @@ class UserEmailView(views.APIView):
         )
         res_status, data = authhelperclient.add_user_email(
             request.data.get('email'),
-            request.data['access_token'],
+            request.META['HTTP_AUTHORIZATION'].split(' ')[1],
+            email_type=request.data.get('email_type'),
             from_social=False
         )
         if res_status != 200:
@@ -321,8 +322,8 @@ class UserEmailView(views.APIView):
             settings.CENTRAL_AUTH_INTROSPECT_URL +
             '/authhelper/deleteemail/'
         )
-        res_status, data = authhelperclient.delete_or_update_user_email(
-            request.query_params['access_token'],
+        res_status, data = authhelperclient.delete_user_email(
+            request.META['HTTP_AUTHORIZATION'].split(' ')[1],
             request.query_params['email_id']
         )
         return Response(data, res_status)
@@ -333,8 +334,12 @@ class UserEmailView(views.APIView):
             settings.CENTRAL_AUTH_INTROSPECT_URL +
             '/authhelper/updateemail/'
         )
-        res_status, data = authhelperclient.delete_or_update_user_email(
-            request.data['access_token'], request.data['email_id'])
+        res_status, data = authhelperclient.update_user_email(
+            request.META['HTTP_AUTHORIZATION'].split(' ')[1],
+            request.data['email_id'],
+            request.data.get('primary'),
+            request.data.get('email_type')
+        )
         return Response(data, res_status)
 
 
