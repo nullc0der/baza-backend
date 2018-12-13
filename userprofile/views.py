@@ -2,6 +2,7 @@ from django.conf import settings
 from django.template import loader
 from django.http import HttpResponse
 from django.utils.crypto import get_random_string
+from django.contrib.auth.models import User
 
 from rest_framework import views, status
 from rest_framework.response import Response
@@ -14,13 +15,13 @@ from oauth2_provider.contrib.rest_framework import TokenHasScope
 from authclient.utils import AuthHelperClient
 from userprofile.models import (
     UserDocument, UserPhoto, UserProfilePhoto, UserPhone,
-    UserTwoFactor, UserTwoFactorRecovery)
+    UserTwoFactor, UserTwoFactorRecovery, UserPhoneValidation)
 from userprofile.serializers import (
     UserProfileSerializer, UserDocumentSerializer,
     UserPhotoSerializer, UserProfilePhotoSerializer,
-    UserPhoneSerializer)
-from userprofile.tasks import task_send_two_factor_email
-from userprofile.utils import get_user_tasks
+    UserPhoneSerializer, UserPhoneValidationSerializer)
+from userprofile.tasks import (
+    task_send_two_factor_email, task_send_phone_verification_code)
 
 
 URL_PROTOCOL = 'http://' if settings.SITE_TYPE == 'local' else 'https://'
@@ -566,9 +567,10 @@ class UserTwoFactorView(views.APIView):
         return self.get_create_totp_response(usertwofactor)
 
 
-class GetUserTasks(views.APIView):
+class UserPhoneValidationView(views.APIView):
     """
-    This view is used to get users tasks info
+    This view is used to create validation code and
+    validate an users phone number
     """
 
     permission_classes = (IsAuthenticated, TokenHasScope, )
@@ -576,5 +578,47 @@ class GetUserTasks(views.APIView):
         'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
 
     def get(self, request, format=None):
-        return Response(get_user_tasks(
-            request.user, request.META['HTTP_AUTHORIZATION'].split(' ')[1]))
+        try:
+            # TODO: Throttle down twilio call if last sms sent within two
+            # minute
+            userphone = UserPhone.objects.get(
+                id=request.query_params.get('id'))
+            task_send_phone_verification_code.delay(userphone.phone_number)
+            return Response()
+        except UserPhone.DoesNotExist:
+            return Response(
+                'Requested phone number does not exist',
+                status=status.HTTP_400_BAD_REQUEST)
+
+    def post(self, request, format=None):
+        serializer = UserPhoneValidationSerializer(data=request.data)
+        if serializer.is_valid():
+            userphonevalidation = UserPhoneValidation.objects.get(
+                verification_code=serializer.validated_data[
+                    'verification_code'])
+            userphone = userphonevalidation.userphone
+            userphone.verified = True
+            userphone.save()
+            userphonevalidation.delete()
+            return Response(UserPhoneSerializer(userphone).data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AddedEmailWebhook(views.APIView):
+    def post(self, request, format=None):
+        if request.data['key'] == settings.INTERNAL_WEBHOOK_KEY:
+            user = User.objects.get(username=request.data['username'])
+            user.usertasks.added_and_validated_email = True
+            user.usertasks.save()
+            return Response()
+        return Response(status=status.HTTP_403_FORBIDDEN)
+
+
+class AddedSocialWebhook(views.APIView):
+    def post(self, request, format=None):
+        if request.data['key'] == settings.INTERNAL_WEBHOOK_KEY:
+            user = User.objects.get(username=request.data['username'])
+            user.usertasks.linked_one_social_account = True
+            user.usertasks.save()
+            return Response()
+        return Response(status=status.HTTP_403_FORBIDDEN)

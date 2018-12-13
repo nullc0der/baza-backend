@@ -73,6 +73,7 @@ class UserPhone(models.Model):
     phone_number_type = models.CharField(
         max_length=10, default='office', choices=PHONE_NUMBER_CHOICES)
     primary = models.BooleanField(default=False)
+    verified = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         if self.primary:
@@ -82,6 +83,12 @@ class UserPhone(models.Model):
             qs.update(primary=False)
 
         super(UserPhone, self).save(*args, **kwargs)
+
+
+class UserPhoneValidation(models.Model):
+    userphone = models.OneToOneField(UserPhone, on_delete=models.CASCADE)
+    verification_code = models.CharField(max_length=6)
+    created_on = models.DateTimeField(auto_now_add=True)
 
 
 class UserTwoFactor(models.Model):
@@ -119,7 +126,13 @@ class UserTwoFactorRecovery(models.Model):
 class UserTasks(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     added_and_validated_email = models.BooleanField(default=False)
+    added_and_validated_phone = models.BooleanField(default=False)
     added_location = models.BooleanField(default=False)
     added_two_factor_authentication = models.BooleanField(default=False)
     linked_one_social_account = models.BooleanField(default=False)
     completed_distribution_signup = models.BooleanField(default=False)
+
+
+class UserTrustPercentage(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    percentage = models.PositiveIntegerField(default=0)

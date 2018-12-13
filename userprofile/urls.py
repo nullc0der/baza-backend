@@ -13,5 +13,7 @@ urlpatterns = [
     path('socialauths/connecttwitter/', views.ConnectTwitterView.as_view()),
     path('setpassword/', views.SetUserPasswordView.as_view()),
     path('twofactor/', views.UserTwoFactorView.as_view()),
-    path('tasks/', views.GetUserTasks.as_view())
+    path('validatephone/', views.UserPhoneValidationView.as_view()),
+    path('webhook/addedemail/', views.AddedEmailWebhook.as_view()),
+    path('webhook/addedsocial/', views.AddedSocialWebhook.as_view())
 ]

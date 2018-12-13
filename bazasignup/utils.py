@@ -3,7 +3,7 @@ from datetime import timedelta
 from django.utils.crypto import get_random_string
 from django.utils.timezone import now
 from django.core.mail import EmailMultiAlternatives
-from django.template import loader, Context
+from django.template import loader
 from django.conf import settings
 from django.contrib.auth.models import User
 

@@ -8,6 +8,7 @@ from notifications.consumers import NotificationConsumer
 from publicusers.consumers import PublicusersConsumer
 from messenger.consumers import MessengerConsumer
 from group.consumers import GroupConsumer
+from userprofile.consumers import UserProfileConsumer
 
 
 application = ProtocolTypeRouter({
@@ -17,7 +18,8 @@ application = ProtocolTypeRouter({
                 path('ws/notifications/', NotificationConsumer),
                 path('ws/users/', PublicusersConsumer),
                 path('ws/messenger/', MessengerConsumer),
-                path('ws/groupnotifications/', GroupConsumer)
+                path('ws/groupnotifications/', GroupConsumer),
+                path('ws/profiletasks/', UserProfileConsumer)
             ])
         )
     )
