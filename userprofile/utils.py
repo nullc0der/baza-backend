@@ -110,7 +110,7 @@ def get_trust_percentile(usertrustpercentage):
     for trustpercentage in trustpercentages:
         if trustpercentage.percentage < usertrustpercentage.percentage:
             above_user += 1
-    return (above_user/trustpercentages.count()) * 100
+    return round((above_user/trustpercentages.count()) * 100)
 
 
 def get_user_tasks(usertasks):
