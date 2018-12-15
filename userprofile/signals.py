@@ -92,7 +92,7 @@ def update_user_tasks(sender, **kwargs):
     if sender.__name__ == 'UserTwoFactor':
         if instance.enabled:
             usertasks = UserTasks.objects.get(user=instance.user)
-            usertasks.added_two_factor = True
+            usertasks.added_two_factor_authentication = True
             usertasks.save()
     if sender.__name__ == 'BazaSignup':
         if len(instance.get_completed_steps()) == 4:

@@ -113,7 +113,7 @@ class UserTwoFactor(models.Model):
         )
 
     def verify_totp(self, otp):
-        return totp.TOTP(self.secret_key).verify(otp)
+        return totp.TOTP(self.secret_key).verify(otp, valid_window=1)
 
 
 class UserTwoFactorRecovery(models.Model):
