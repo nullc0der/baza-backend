@@ -28,6 +28,7 @@ django-versatileimagefield = "*"
 bleach = "*"
 paypalrestsdk = "*"
 service-identity = "*"
+coinbase-commerce = "*"
 
 [dev-packages]
 "pep8" = "*"

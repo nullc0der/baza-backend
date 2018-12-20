@@ -16,5 +16,6 @@ urlpatterns = [
     path('messenger/', include('messenger.urls')),
     path('groups/', include('group.urls')),
     path('notifications/', include('notifications.urls')),
-    path('paypal/', include('paypalpayment.urls'))
+    path('paypal/', include('paypalpayment.urls')),
+    path('coinbase/', include('coinbasepay.urls'))
 ]

@@ -77,7 +77,8 @@ BAZA_APPS = [
     'messenger',
     'group',
     'grouppost',
-    'paypalpayment'
+    'paypalpayment',
+    'coinbasepay'
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + BAZA_APPS
@@ -311,3 +312,7 @@ PAYPAL_CANCEL_URL = get_env_var('PAYPAL_CANCEL_URL')
 PAYPAL_RETURN_URL = get_env_var('PAYPAL_RETURN_URL')
 
 INTERNAL_WEBHOOK_KEY = get_env_var('INTERNAL_WEBHOOK_KEY')
+
+# Coinbase
+COINBASE_API_KEY = get_env_var('COINBASE_API_KEY')
+COINBASE_WEBHOOK_SECRET = get_env_var('COINBASE_WEBHOOK_SECRET')
