@@ -20,6 +20,8 @@ def create_coinpurchase(sender, instance, created, **kwargs):
         CoinPurchase.objects.create(
             user=instance.charged_user,
             price=instance.pricing.local,
-            amount=instance.pricing.local * get_coin_value('proxcdb'),
+            amount=float(instance.pricing.local) * get_coin_value('proxcdb'),
             coin_name='proxcdb'
         )
+        instance.charged_for_related_task_is_done = True
+        instance.save()
