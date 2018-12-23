@@ -53,15 +53,36 @@ class CoinbaseWebhookView(views.APIView):
         except Charge.DoesNotExist:
             pass
 
-    def process_delayed_charge(self, event):
+    def is_unresolved_charge(self, timeline):
+        for t in timeline:
+            if t['status'] == 'UNRESOLVED':
+                return True
+        return False
+
+    def get_unresolved_context(self, timeline):
+        for t in timeline:
+            if t['status'] == 'UNRESOLVED':
+                return t['context']
+        return ''
+
+    def process_unresolved_charge(self, event):
         try:
             charge = Charge.objects.get(charge_code=event['data']['code'])
-            for t in event['data']['timeline']:
-                if t['status'] == 'COMPLETED':
-                    charge.status = 'CONFIRMED'
-                    charge.save()
+            charge.status = 'UNRESOLVED'
+            charge.charge_status_context = self.get_unresolved_context(
+                event['data']['timeline'])
+            charge.save()
         except Charge.DoesNotExist:
             pass
+
+    def process_event(self, event):
+        if not self.is_unresolved_charge(event['data']['timeline']):
+            if event.type == 'charge:confirmed':
+                self.process_confirmed_charge(event)
+            if event.type == 'charge:failed':
+                self.process_failed_charge(event)
+        else:
+            self.process_unresolved_charge(event)
 
     def post(self, request, format=None):
         try:
@@ -71,10 +92,5 @@ class CoinbaseWebhookView(views.APIView):
                 settings.COINBASE_WEBHOOK_SECRET)
         except (WebhookInvalidPayload, SignatureVerificationError):
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        if event.type == 'charge:confirmed':
-            self.process_confirmed_charge(event)
-        if event.type == 'charge:failed':
-            self.process_failed_charge(event)
-        if event.type == 'charge:delayed':
-            self.process_delayed_charge(event)
+        self.process_event(event)
         return Response()

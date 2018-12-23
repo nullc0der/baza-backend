@@ -66,7 +66,7 @@ def create_proxc_transaction(coinpurchase_id):
     coinpurchase = CoinPurchase.objects.get(id=coinpurchase_id)
     proxcaccount, c = ProxcAccount.objects.get_or_create(
         user=coinpurchase.user)
-    proxcaccount.balance += coinpurchase.amount
+    # proxcaccount.balance += coinpurchase.amount
     proxcaccount.save()
     proxctransaction = ProxcTransaction(
         to_account=proxcaccount,

@@ -14,11 +14,22 @@ class Charge(models.Model):
     CHARGE_STATUS_CHOICES = (
         ('NEW', 'NEW'),
         ('CONFIRMED', 'CONFIRMED'),
-        ('FAILED', 'FAILED')
+        ('FAILED', 'FAILED'),
+        ('UNRESOLVED', 'UNRESOLVED'),
+        ('RESOLVED', 'RESOLVED')
     )
     CHARGED_FOR_CHOICES = (
         ('PROXC_COIN_PURCHASE', 'PROXC_COIN_PURCHASE'),
         ('DONATION', 'DONATION')
+    )
+    CHARGE_STATUS_CONTEXT_CHOICES = (
+        ('OVERPAID', 'OVERPAID'),
+        ('UNDERPAID', 'UNDERPAID'),
+        ('MULTIPLE', 'MULTIPLE'),
+        ('DELAYED', 'DELAYED'),
+        ('MULTIPLE', 'MULTIPLE'),
+        ('MANUAL', 'MANUAL'),
+        ('OTHER', 'OTHER')
     )
     charge_id = models.CharField(max_length=100)
     charge_code = models.CharField(max_length=100, default='')
@@ -28,6 +39,9 @@ class Charge(models.Model):
         max_length=20, choices=CHARGED_FOR_CHOICES)
     status = models.CharField(
         max_length=20, default='NEW', choices=CHARGE_STATUS_CHOICES)
+    charge_status_context = models.CharField(
+        max_length=20, default='', choices=CHARGE_STATUS_CONTEXT_CHOICES
+    )
     pricing = models.OneToOneField(
         ChargePricing, on_delete=models.SET_NULL, null=True)
     created_at = models.DateTimeField(null=True)
