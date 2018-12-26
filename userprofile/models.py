@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Q
 from django.conf import settings
 from django.contrib.auth.models import User
 
@@ -77,7 +78,8 @@ class UserPhone(models.Model):
 
     def save(self, *args, **kwargs):
         if self.primary:
-            qs = type(self).objects.filter(primary=True)
+            qs = type(self).objects.filter(
+                Q(primary=True) & Q(profile=self.profile))
             if self.pk:
                 qs = qs.exclude(pk=self.pk)
             qs.update(primary=False)
