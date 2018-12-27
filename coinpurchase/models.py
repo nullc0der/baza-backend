@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+from coinbasepay.models import Charge
 from stripepayment.models import Payment
 
 
@@ -12,7 +13,10 @@ class CoinPurchase(models.Model):
     currency = models.CharField(max_length=10, default='')
     coin_name = models.CharField(max_length=100, default='')
     stripe_payment = models.OneToOneField(
-        Payment, on_delete=models.CASCADE, null=True
+        Payment, on_delete=models.SET_NULL, null=True
+    )
+    coinbase_charge = models.OneToOneField(
+        Charge, on_delete=models.SET_NULL, null=True
     )
 
     def __str__(self):

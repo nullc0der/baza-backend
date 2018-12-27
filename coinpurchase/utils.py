@@ -29,6 +29,19 @@ def get_user_access_token(user):
     return
 
 
+def purchase_has_exception(purchase):
+    if purchase.coinbase_charge:
+        if purchase.coinbase_charge.status == 'UNRESOLVED':
+            price = 0
+            for payment in purchase.coinbase_charge.payments.all():
+                price += float(payment.localamount)
+            return (
+                purchase.coinbase_charge.charge_status_context,
+                price,
+                purchase.coinbase_charge.pricing.local)
+    return False
+
+
 def send_coinpurchase_confirm_email(coinpurchase):
     access_token = get_user_access_token(coinpurchase.user)
     authhelperclient = AuthHelperClient(
@@ -57,7 +70,8 @@ def send_coinpurchase_confirm_email(coinpurchase):
             msg.attach_alternative(email_template.render({
                 'username': coinpurchase.user.profile.username
                 or coinpurchase.user.username,
-                'amount': coinpurchase.amount
+                'amount': coinpurchase.amount,
+                'has_exception': purchase_has_exception(coinpurchase)
             }), 'text/html')
             msg.send()
 
@@ -66,8 +80,6 @@ def create_proxc_transaction(coinpurchase_id):
     coinpurchase = CoinPurchase.objects.get(id=coinpurchase_id)
     proxcaccount, c = ProxcAccount.objects.get_or_create(
         user=coinpurchase.user)
-    # proxcaccount.balance += coinpurchase.amount
-    proxcaccount.save()
     proxctransaction = ProxcTransaction(
         to_account=proxcaccount,
         message='Fundraiser reward',

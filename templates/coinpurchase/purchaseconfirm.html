@@ -1,4 +1,10 @@
 <p>Hello, {{ username }}</p>
 <p>Thank you for participating in Baza Foundation fundraiser</p>
 <p>We sent {{ amount }} BAZ reward to your online account</p>
+{% if has_exception %}
+    <p>Your payment have status of {{ has_exception[0] }}</p>
+    <p>We received {{ has_exception[1] }} USD amount of crypto instead of {{ has_exception[2] }} USD</p>
+    <p>We adjusted your BAZ reward according to received amount</p>
+    <p>Please contact <a href="mailto:support@baza.foundation">support@baza.foundation</a> if you have any question</p>
+{% endif %}
 <p>Please sign into the <a href="https://baza.foundation/#!login">Baza Foundation</a> website and confirm</p>

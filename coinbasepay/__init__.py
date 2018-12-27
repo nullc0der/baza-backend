@@ -1,1 +1,1 @@
-default_app_config = 'coinbasepay.apps.CoinbasepayConfig'
+# default_app_config = 'coinbasepay.apps.CoinbasepayConfig'

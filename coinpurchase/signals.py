@@ -7,6 +7,16 @@ from coinpurchase.utils import get_coin_value
 from coinpurchase.tasks import task_create_proxc_transaction
 
 
+STATUSES = ['CONFIRMED', 'UNRESOLVED']
+
+
+def get_price_and_amount(payments):
+    price = 0
+    for payment in payments:
+        price += float(payment.localamount)
+    return price, price * get_coin_value('proxcdb')
+
+
 @receiver(post_save, sender=CoinPurchase)
 def add_wallet_balance(sender, instance, created, **kwargs):
     if created and instance.coin_name == 'proxcdb':
@@ -15,13 +25,16 @@ def add_wallet_balance(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=Charge)
 def create_coinpurchase(sender, instance, created, **kwargs):
-    if instance.status == 'CONFIRMED'\
-            and not instance.charged_for_related_task_is_done:
-        CoinPurchase.objects.create(
-            user=instance.charged_user,
-            price=instance.pricing.local,
-            amount=float(instance.pricing.local) * get_coin_value('proxcdb'),
-            coin_name='proxcdb'
-        )
-        instance.charged_for_related_task_is_done = True
-        instance.save()
+    if instance.charged_for == 'PROXC_COIN_PURCHASE':
+        if instance.status in STATUSES\
+                and not instance.charged_for_related_task_is_done:
+            price, amount = get_price_and_amount(instance.payments.all())
+            CoinPurchase.objects.create(
+                user=instance.charged_user,
+                price=price,
+                amount=amount,
+                coin_name='proxcdb',
+                coinbase_charge=instance
+            )
+            instance.charged_for_related_task_is_done = True
+            instance.save()

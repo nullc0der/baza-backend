@@ -27,7 +27,6 @@ class Charge(models.Model):
         ('UNDERPAID', 'UNDERPAID'),
         ('MULTIPLE', 'MULTIPLE'),
         ('DELAYED', 'DELAYED'),
-        ('MULTIPLE', 'MULTIPLE'),
         ('MANUAL', 'MANUAL'),
         ('OTHER', 'OTHER')
     )
@@ -49,3 +48,13 @@ class Charge(models.Model):
     # This flag will be set by the related task such as send email and
     # add coin to user in case of successful coin purchase
     charged_for_related_task_is_done = models.BooleanField(default=False)
+
+
+class ChargePayment(models.Model):
+    charge = models.ForeignKey(
+        Charge, on_delete=models.CASCADE, related_name='payments')
+    localamount = models.CharField(max_length=100, default='')
+    localcurrency = models.CharField(max_length=100, default='USD')
+    cryptoamount = models.CharField(max_length=100, default='')
+    cryptocurrency = models.CharField(max_length=100, default='')
+    txid = models.TextField()

@@ -10,8 +10,9 @@ from coinbase_commerce.webhook import Webhook
 from coinbase_commerce.error import (
     WebhookInvalidPayload, SignatureVerificationError)
 
-from coinbasepay.models import Charge
+from coinbasepay.models import Charge, ChargePayment
 from coinbasepay.utils import create_charge
+from coinbasepay.tasks import task_resolve_charge
 from coinbasepay.dicts import CHARGE
 
 
@@ -42,6 +43,15 @@ class CoinbaseWebhookView(views.APIView):
             charge = Charge.objects.get(charge_code=event['data']['code'])
             charge.status = 'CONFIRMED'
             charge.save()
+            for payment in event['data']['payments']:
+                ChargePayment.objects.create(
+                    charge=charge,
+                    localamount=payment['value']['local']['amount'],
+                    localcurrency=payment['value']['local']['currency'],
+                    cryptoamount=payment['value']['crypto']['amount'],
+                    cryptocurrency=payment['value']['crypto']['currency'],
+                    txid=payment['transaction_id']
+                )
         except Charge.DoesNotExist:
             pass
 
@@ -72,6 +82,17 @@ class CoinbaseWebhookView(views.APIView):
             charge.charge_status_context = self.get_unresolved_context(
                 event['data']['timeline'])
             charge.save()
+            if 'payments' in event['data']:
+                for payment in event['data']['payments']:
+                    ChargePayment.objects.create(
+                        charge=charge,
+                        localamount=payment['value']['local']['amount'],
+                        localcurrency=payment['value']['local']['currency'],
+                        cryptoamount=payment['value']['crypto']['amount'],
+                        cryptocurrency=payment['value']['crypto']['currency'],
+                        txid=payment['transaction_id']
+                    )
+            task_resolve_charge.delay(charge.id)
         except Charge.DoesNotExist:
             pass
 
