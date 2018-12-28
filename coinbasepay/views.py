@@ -43,14 +43,20 @@ class CoinbaseWebhookView(views.APIView):
             charge = Charge.objects.get(charge_code=event['data']['code'])
             charge.status = 'CONFIRMED'
             for payment in event['data']['payments']:
-                ChargePayment.objects.create(
+                chargepayment, created = ChargePayment.objects.get_or_create(
                     charge=charge,
-                    localamount=payment['value']['local']['amount'],
-                    localcurrency=payment['value']['local']['currency'],
-                    cryptoamount=payment['value']['crypto']['amount'],
-                    cryptocurrency=payment['value']['crypto']['currency'],
                     txid=payment['transaction_id']
                 )
+                if created:
+                    chargepayment.localamount = \
+                        payment['value']['local']['amount']
+                    chargepayment.localcurrency = \
+                        payment['value']['local']['currency']
+                    chargepayment.cryptoamount = \
+                        payment['value']['crypto']['amount']
+                    chargepayment.cryptocurrency = \
+                        payment['value']['crypto']['currency']
+                    chargepayment.save()
             charge.save()
         except Charge.DoesNotExist:
             pass
@@ -70,6 +76,7 @@ class CoinbaseWebhookView(views.APIView):
         return False
 
     def get_unresolved_context(self, timeline):
+        # TODO: Get last 'UNRESOLVED' timeline status
         for t in timeline:
             if t['status'] == 'UNRESOLVED':
                 return t['context']
@@ -83,14 +90,22 @@ class CoinbaseWebhookView(views.APIView):
                 event['data']['timeline'])
             if 'payments' in event['data']:
                 for payment in event['data']['payments']:
-                    ChargePayment.objects.create(
-                        charge=charge,
-                        localamount=payment['value']['local']['amount'],
-                        localcurrency=payment['value']['local']['currency'],
-                        cryptoamount=payment['value']['crypto']['amount'],
-                        cryptocurrency=payment['value']['crypto']['currency'],
-                        txid=payment['transaction_id']
-                    )
+                    chargepayment, created = \
+                        ChargePayment.objects.get_or_create(
+                            charge=charge,
+                            txid=payment['transaction_id']
+                        )
+                    if created:
+                        chargepayment.localamount = \
+                            payment['value']['local']['amount']
+                        chargepayment.localcurrency = \
+                            payment['value']['local']['currency']
+                        chargepayment.cryptoamount = \
+                            payment['value']['crypto']['amount']
+                        chargepayment.cryptocurrency = \
+                            payment['value']['crypto']['currency']
+                        chargepayment.save()
+                        charge.charged_for_related_task_is_done = False
             charge.save()
             task_resolve_charge.delay(charge.id)
         except Charge.DoesNotExist:

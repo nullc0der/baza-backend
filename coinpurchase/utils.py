@@ -32,13 +32,13 @@ def get_user_access_token(user):
 def purchase_has_exception(purchase):
     if purchase.coinbase_charge:
         if purchase.coinbase_charge.status == 'UNRESOLVED':
-            price = 0
-            for payment in purchase.coinbase_charge.payments.all():
-                price += float(payment.localamount)
+            status = 'MULTIPLE' if purchase.coinbase_charge.payments.count(
+            ) > 1 else purchase.coinbase_charge.charge_status_context
             return True, {
-                'status': purchase.coinbase_charge.charge_status_context,
-                'received_amount': price,
-                'expected_amount': purchase.coinbase_charge.pricing.local}
+                'status': status,
+                'received_amount': purchase.price,
+                'expected_amount': purchase.coinbase_charge.pricing.local
+            }
     return False, {}
 
 

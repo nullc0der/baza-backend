@@ -58,3 +58,4 @@ class ChargePayment(models.Model):
     cryptoamount = models.CharField(max_length=100, default='')
     cryptocurrency = models.CharField(max_length=100, default='')
     txid = models.TextField()
+    is_rewarded = models.BooleanField(default=False)

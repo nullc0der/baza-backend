@@ -13,9 +13,10 @@ STATUSES = ['CONFIRMED', 'UNRESOLVED']
 def get_price_and_amount(payments):
     price = 0
     for payment in payments:
-        price += float(payment.localamount)
-    # TODO: Remove print function
-    print(price)
+        if not payment.is_rewarded:
+            price += float(payment.localamount)
+            payment.is_rewarded = True
+            payment.save()
     return price, price * get_coin_value('proxcdb')
 
 
@@ -31,12 +32,13 @@ def create_coinpurchase(sender, instance, created, **kwargs):
         if instance.status in STATUSES\
                 and not instance.charged_for_related_task_is_done:
             price, amount = get_price_and_amount(instance.payments.all())
-            CoinPurchase.objects.create(
-                user=instance.charged_user,
-                price=price,
-                amount=amount,
-                coin_name='proxcdb',
-                coinbase_charge=instance
-            )
+            if price != 0:
+                CoinPurchase.objects.create(
+                    user=instance.charged_user,
+                    price=price,
+                    amount=amount,
+                    coin_name='proxcdb',
+                    coinbase_charge=instance
+                )
             instance.charged_for_related_task_is_done = True
             instance.save()
