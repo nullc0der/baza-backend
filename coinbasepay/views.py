@@ -42,7 +42,6 @@ class CoinbaseWebhookView(views.APIView):
         try:
             charge = Charge.objects.get(charge_code=event['data']['code'])
             charge.status = 'CONFIRMED'
-            charge.save()
             for payment in event['data']['payments']:
                 ChargePayment.objects.create(
                     charge=charge,
@@ -52,6 +51,7 @@ class CoinbaseWebhookView(views.APIView):
                     cryptocurrency=payment['value']['crypto']['currency'],
                     txid=payment['transaction_id']
                 )
+            charge.save()
         except Charge.DoesNotExist:
             pass
 
@@ -81,7 +81,6 @@ class CoinbaseWebhookView(views.APIView):
             charge.status = 'UNRESOLVED'
             charge.charge_status_context = self.get_unresolved_context(
                 event['data']['timeline'])
-            charge.save()
             if 'payments' in event['data']:
                 for payment in event['data']['payments']:
                     ChargePayment.objects.create(
@@ -92,6 +91,7 @@ class CoinbaseWebhookView(views.APIView):
                         cryptocurrency=payment['value']['crypto']['currency'],
                         txid=payment['transaction_id']
                     )
+            charge.save()
             task_resolve_charge.delay(charge.id)
         except Charge.DoesNotExist:
             pass
