@@ -14,6 +14,8 @@ def get_price_and_amount(payments):
     price = 0
     for payment in payments:
         price += float(payment.localamount)
+    # TODO: Remove print function
+    print(price)
     return price, price * get_coin_value('proxcdb')
 
 

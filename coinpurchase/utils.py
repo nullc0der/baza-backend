@@ -35,11 +35,11 @@ def purchase_has_exception(purchase):
             price = 0
             for payment in purchase.coinbase_charge.payments.all():
                 price += float(payment.localamount)
-            return (
-                purchase.coinbase_charge.charge_status_context,
-                price,
-                purchase.coinbase_charge.pricing.local)
-    return False
+            return True, {
+                'status': purchase.coinbase_charge.charge_status_context,
+                'received_amount': price,
+                'expected_amount': purchase.coinbase_charge.pricing.local}
+    return False, {}
 
 
 def send_coinpurchase_confirm_email(coinpurchase):
@@ -67,11 +67,14 @@ def send_coinpurchase_confirm_email(coinpurchase):
                 from_email='fundraiser-noreply@baza.foundation',
                 to=[primary_emails[0]['email']]
             )
+            has_exception, exception_info = purchase_has_exception(
+                coinpurchase)
             msg.attach_alternative(email_template.render({
                 'username': coinpurchase.user.profile.username
                 or coinpurchase.user.username,
                 'amount': coinpurchase.amount,
-                'has_exception': purchase_has_exception(coinpurchase)
+                'has_exception': has_exception,
+                'exception_info': exception_info
             }), 'text/html')
             msg.send()
 

@@ -2,8 +2,8 @@
 <p>Thank you for participating in Baza Foundation fundraiser</p>
 <p>We sent {{ amount }} BAZ reward to your online account</p>
 {% if has_exception %}
-    <p>Your payment have status of {{ has_exception[0] }}</p>
-    <p>We received {{ has_exception[1] }} USD amount of crypto instead of {{ has_exception[2] }} USD</p>
+    <p>Your payment have status of {{ exception_info.status }}</p>
+    <p>We received {{ exception_info.received_amount }} USD amount of crypto instead of {{ exception_info.expected_amount }} USD</p>
     <p>We adjusted your BAZ reward according to received amount</p>
     <p>Please contact <a href="mailto:support@baza.foundation">support@baza.foundation</a> if you have any question</p>
 {% endif %}
