@@ -37,7 +37,7 @@ class ProxcTransactionView(APIView):
             transactions = ProxcTransaction.objects.filter(
                 Q(account=proxcaccount) |
                 Q(to_account=proxcaccount)
-            )
+            ).order_by('-id')
             serialized_transactions = ProxcTransactionSerializer(
                 transactions, many=True).data
             return Response(serialized_transactions)
