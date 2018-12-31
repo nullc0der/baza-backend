@@ -1,7 +1,7 @@
 CHARGE = {
     '1': {
-        'name': 'Donate to fundraiser',
-        'description': 'Donate to Baza Foundation fundraiser',
+        'name': 'Baza Fundraiser',
+        'description': 'Baza Foundation Fundraiser',
         'charged_for': 'PROXC_COIN_PURCHASE'
     }
 }
