@@ -58,7 +58,8 @@ THIRD_PARTY_APPS = [
     'rest_framework',
     'oauth2_provider',
     'simple_history',
-    'versatileimagefield'
+    'versatileimagefield',
+    'mjml'
 ]
 
 BAZA_APPS = [

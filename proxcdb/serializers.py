@@ -14,6 +14,12 @@ class ProxcAccountSerializer(serializers.ModelSerializer):
 class ProxcTransactionSerializer(serializers.ModelSerializer):
     account = ProxcAccountSerializer(required=False)
     to_account = ProxcAccountSerializer(required=False)
+    receipt_link = serializers.SerializerMethodField()
+
+    def get_receipt_link(self, obj):
+        if obj.coinpurchase:
+            return obj.coinpurchase.coinbase_charge.get_receipt_url()
+        return None
 
     def validate_amount(self, value):
         proxcaccount = self.context['proxcaccount']
@@ -36,4 +42,5 @@ class ProxcTransactionSerializer(serializers.ModelSerializer):
             'status',
             'timestamp',
             'amount',
+            'receipt_link'
         )

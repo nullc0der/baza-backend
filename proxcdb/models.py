@@ -4,6 +4,8 @@ from django.db.models.signals import post_save
 from django.utils.crypto import get_random_string
 from django.contrib.auth.models import User
 
+from coinpurchase.models import CoinPurchase
+
 
 def get_random_id():
     return get_random_string(length=30)
@@ -32,6 +34,8 @@ class ProxcTransaction(models.Model):
     status = models.CharField(default='success', max_length=20)
     timestamp = models.DateTimeField(auto_now_add=True)
     amount = models.FloatField()
+    coinpurchase = models.OneToOneField(
+        CoinPurchase, null=True, on_delete=models.SET_NULL)
 
 
 @receiver(post_save, sender=User)

@@ -32,14 +32,27 @@ def get_user_access_token(user):
 def purchase_has_exception(purchase):
     if purchase.coinbase_charge:
         if purchase.coinbase_charge.status == 'UNRESOLVED':
-            status = 'MULTIPLE' if purchase.coinbase_charge.payments.count(
-            ) > 1 else purchase.coinbase_charge.charge_status_context
-            return True, {
-                'status': status,
-                'received_amount': purchase.price,
-                'expected_amount': purchase.coinbase_charge.pricing.local
-            }
-    return False, {}
+            return True
+    return False
+
+
+def get_purchase_info(purchase):
+    coinbase_charge = purchase.coinbase_charge
+    status = coinbase_charge.status
+    if status == 'UNRESOLVED':
+        status = 'MULTIPLE' if coinbase_charge.payments.count(
+        ) > 1 else coinbase_charge.charge_status_context
+    return {
+        'username': coinbase_charge.charged_user.profile.username or
+        coinbase_charge.charged_user.username,
+        'amount': purchase.amount,
+        'order_number': coinbase_charge.charge_code,
+        'order_date': coinbase_charge.created_at,
+        'receipt_url': coinbase_charge.get_receipt_url(),
+        'status': status,
+        'received_amount': purchase.price,
+        'expected_amount': coinbase_charge.pricing.local
+    }
 
 
 def send_coinpurchase_confirm_email(coinpurchase):
@@ -67,14 +80,10 @@ def send_coinpurchase_confirm_email(coinpurchase):
                 from_email='fundraiser-noreply@baza.foundation',
                 to=[primary_emails[0]['email']]
             )
-            has_exception, exception_info = purchase_has_exception(
-                coinpurchase)
             msg.attach_alternative(email_template.render({
-                'username': coinpurchase.user.profile.username
-                or coinpurchase.user.username,
-                'amount': coinpurchase.amount,
-                'has_exception': has_exception,
-                'exception_info': exception_info
+                'purchase_info': get_purchase_info(coinpurchase),
+                'has_exception': purchase_has_exception(
+                    coinpurchase)
             }), 'text/html')
             msg.send()
 
@@ -86,7 +95,8 @@ def create_proxc_transaction(coinpurchase_id):
     proxctransaction = ProxcTransaction(
         to_account=proxcaccount,
         message='Fundraiser reward',
-        amount=coinpurchase.amount
+        amount=coinpurchase.amount,
+        coinpurchase=coinpurchase
     )
     proxctransaction.save()
     send_coinpurchase_confirm_email(coinpurchase)

@@ -29,6 +29,7 @@ bleach = "*"
 paypalrestsdk = "*"
 service-identity = "*"
 coinbase-commerce = "*"
+django-mjml = "*"
 
 [dev-packages]
 "pep8" = "*"

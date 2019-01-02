@@ -49,6 +49,12 @@ class Charge(models.Model):
     # add coin to user in case of successful coin purchase
     charged_for_related_task_is_done = models.BooleanField(default=False)
 
+    def __str__(self):
+        return self.charge_code
+
+    def get_receipt_url(self):
+        return 'https://commerce.coinbase.com/receipts/%s' % self.charge_code
+
 
 class ChargePayment(models.Model):
     charge = models.ForeignKey(

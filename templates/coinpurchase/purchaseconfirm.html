@@ -1,10 +1,110 @@
-<p>Hello, {{ username }}</p>
-<p>Thank you for participating in Baza Foundation fundraiser</p>
-<p>We sent {{ amount }} BAZ reward to your online account</p>
-{% if has_exception %}
-    <p>Your payment have status of {{ exception_info.status }}</p>
-    <p>We received {{ exception_info.received_amount }} USD amount of crypto instead of {{ exception_info.expected_amount }} USD</p>
-    <p>We adjusted your BAZ reward according to received amount</p>
-    <p>Please contact <a href="mailto:support@baza.foundation">support@baza.foundation</a> if you have any question</p>
-{% endif %}
-<p>Please sign into the <a href="https://baza.foundation/#!login">Baza Foundation</a> website and confirm</p>
+{% load mjml %}
+{% mjml %}
+<mjml>
+    <mj-body>
+        <mj-wrapper border="1px solid #F6F6F6">
+        <mj-section background-url="https://beta.baza.foundation/public/img/hero_image.jpg" background-size="cover" background-repeat="no-repeat">
+            <mj-column>
+                <mj-image src="https://baza.foundation/public/img/baza_logo.svg" alt="" align="center" border="none" width="100px" padding-left="0px" padding-right="0px" padding-bottom="10px" padding-top="10px"></mj-image>
+                <mj-text align="center" color="#FFF" font-size="40px" font-family="Raleway, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol">Baza Foundation</mj-text>
+                <mj-text align="center" color="#FFF" font-size="20px" font-family="Raleway, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol">Because everyone needs a basic foundation</mj-text>
+            </mj-column>
+        </mj-section>
+        <mj-section background-color="#273951" padding-bottom="0px" padding-top="0">
+            <mj-column width="100%">
+                <mj-text align="center" font-size="13px" color="#FFF" font-family="Raleway, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol" padding-left="25px" padding-right="25px" padding-top="10px" padding-bottom="0">HELLO
+                    <p style="font-size:16px; color:white">{{ purchase_info.username }}</p>
+                </mj-text>
+            </mj-column>
+        </mj-section>
+        <mj-section background-color="#273951" padding-bottom="5px" padding-top="0">
+            <mj-column width="100%" padding-top="0">
+                <mj-text align="center" color="#FFF" font-size="13px" font-family="Raleway, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol" padding-left="25px" padding-right="25px"
+                    padding-bottom="10px"><span style="font-size:20px; font-weight:bold">Thank you very much for your purchase and support.</span>
+                    <br/><br/>
+                    <span style="font-size:13px">Please find the receipt below.</span>
+                </mj-text>
+            </mj-column>
+        </mj-section>
+        <mj-section background-color="#273951" padding-bottom="15px" padding-top="0">
+            <mj-column width="70%">
+            <mj-divider border-color="#FFF" border-width="2px" border-style="solid" padding-left="20px" padding-right="20px" padding-bottom="0px" padding-top="0"></mj-divider>
+            <mj-text align="center" color="#FFF" font-size="13px" font-family="Raleway, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol" padding-left="25px" padding-right="25px"
+                padding-bottom="10px" padding-top="10px"><span style="font-size:20px; font-weight:bold">Order Details</span>
+                <br/><br/>
+                <span style="font-size:13px">Your payment status is {{ purchase_info.status }}.</span><br/>
+                {% if has_exception %}
+                    <span style="font-size:13px">We received {{ purchase_info.received_amount }} USD amount of crypto instead of {{ purchase_info.expected_amount }} USD.</span><br/>
+                    <span style="font-size:13px">We adjusted your BAZ reward according to the received USD amount.</span><br/>
+                {% else %}
+                    <span style="font-size:13px">We received {{ purchase_info.received_amount }} USD amount of crypto.</span><br/>
+                {% endif %}
+                <span style="font-size:13px">We sent {{ purchase_info.amount }} BAZ reward to your online account.</span><br/>
+            </mj-text>
+            </mj-column>
+        </mj-section>
+        <mj-section background-color="#FFF" padding-bottom="15px" padding-top="10px">
+            <mj-column>
+            <mj-text align="center" color="#1B2737" font-size="15px" font-family="Raleway, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol" padding-left="25px" padding-right="25px"
+                padding-bottom="0px" padding-top="20px"><strong>Order Number</strong></mj-text>
+            <mj-text align="center" color="#1B2737" font-size="13px" font-family="Raleway, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol" padding-left="25px" padding-right="25px"
+                padding-bottom="20px" padding-top="10px">{{ purchase_info.order_number }}</mj-text>
+            </mj-column>
+            <mj-column>
+            <mj-text align="center" color="#1B2737" font-size="15px" font-family="Raleway, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol" padding-left="25px" padding-right="25px"
+                padding-bottom="0px" padding-top="20px"><strong>Order Date</strong></mj-text>
+            <mj-text align="center" color="#1B2737" font-size="13px" font-family="Raleway, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol" padding-left="25px" padding-right="25px"
+                padding-bottom="20px" padding-top="10px">{{ purchase_info.order_date|date:"d/m/Y" }}</mj-text>
+            </mj-column>
+            <mj-column>
+            <mj-text align="center" color="#1B2737" font-size="15px" font-family="Raleway, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol" padding-left="25px" padding-right="25px"
+                padding-bottom="0px" padding-top="20px"><strong>BAZ Rewarded</strong></mj-text>
+            <mj-text align="center" color="#1B2737" font-size="13px" font-family="Raleway, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol" padding-left="25px" padding-right="25px"
+                padding-bottom="20px" padding-top="10px">{{ purchase_info.amount }}</mj-text>
+            </mj-column>
+        </mj-section>
+        <mj-section background-color="#fff" padding-top="0">
+            <mj-column width="50%">
+            <mj-button 
+                background-color="#2ac7e9"
+                color="#f6f6f6"
+                font-family="Helvetica Neue"
+                align="center"
+                padding="0px 30px"
+                border-radius="3px"
+                border="none"
+                padding-left="25px"
+                padding-right="25px"
+                padding-bottom="15px"
+                href="{{ purchase_info.receipt_url }}">
+                View Receipt
+            </mj-button>
+            </mj-column>
+        </mj-section>
+
+        <mj-section background-color="#273951" padding-bottom="5px" padding-top="15px">
+            <mj-column width="100%">
+
+            <mj-text align="center" color="#FFF" font-size="15px" font-family="Helvetica Neue" font-family="Raleway, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol" padding-left="25px"
+                padding-right="25px" padding-bottom="10px" padding-top="10px">Best,
+                <br/>
+                <span style="font-size:15px">© 2018 Baza Foundation Inc</span>
+                <br/><br/> Contact :
+                <a href="mailto:support@baza.foundation" style='color:#FFF'>support@baza.foundation</a><br/>
+            </mj-text>
+            </mj-column>
+        </mj-section>
+        <mj-section background-color="#273951" padding="10px 30px">
+            <mj-column>
+            <mj-social border-radius="15px" icon-size="30px">
+                <mj-social-element name="facebook" padding="10px" href="https://facebook/bazafoundation/" />
+                <mj-social-element name="twitter" padding="10px" href="https://twitter/bazafoundation" />
+                <mj-social-element name="instagram" padding="10px" href="https://www.instagram.com/bazafoundation/" />
+                <mj-social-element name="linkedin" padding="10px" href="https://www.linkedin.com/company/bazafoundation/" />
+            </mj-social>
+            </mj-column>
+        </mj-section>
+        </mj-wrapper>
+    </mj-body>
+</mjml>
+{% endmjml %}
