@@ -110,7 +110,10 @@ def send_phone_verification_code_again(signup_id):
 
 
 def get_unique_referral_code():
-    referral_code = get_random_string(length=6)
+    referral_code = get_random_string(
+        allowed_chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890',
+        length=6
+    )
     ref_code_exist = BazaSignupReferralCode.objects.filter(
         code=referral_code).exists()
     if ref_code_exist:
@@ -122,19 +125,24 @@ def process_after_approval(signup_id):
     system_user = User.objects.get(username='system')
     signup = BazaSignup.objects.get(id=signup_id)
     referral_code = get_unique_referral_code()
-    bazasignupreferralcode = BazaSignupReferralCode(
-        signup=signup,
-        code=referral_code
-    )
-    bazasignupreferralcode.save()
+    bazasignupreferralcode, created = \
+        BazaSignupReferralCode.objects.get_or_create(
+            signup=signup
+        )
+    if created:
+        bazasignupreferralcode.code = referral_code
+        bazasignupreferralcode.save()
     email_template = loader.get_template('bazasignup/approval_mail.html')
     msg = EmailMultiAlternatives(
-        'You are approved for Baza Distribution'
-        'Your referral code is %s' % referral_code,
+        'You are approved for Baza Distribution',
+        'Your referral code is %s' % bazasignupreferralcode.code,
         'distsignup-noreply@baza.foundation',
         [signup.email])
     msg.attach_alternative(email_template.render({
-        'referral_code': referral_code
+        'referral_code': bazasignupreferralcode.code,
+        'referral_url':
+            'baza.foundation/profile/'
+            '#!baza-signup?referral-code=%s' % bazasignupreferralcode.code
     }), "text/html")
     msg.send()
     signup.verified_date = now()

@@ -1,2 +1,30 @@
-<p>You are approved for Baza Distribution</p>
-<p>Your referral code is {{ referral_code }}</p>
+{% extends "base_email_template.html" %}
+{% load mjml %}
+{% mjml %}
+{% block content %}
+    <mj-section background-color="#fafafa">
+        <mj-column width="400px">
+            <mj-text font-size="20px"
+                font-family="Raleway, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol"
+                color="#626262"
+                align="center">Referral Code</mj-text>
+            <mj-text color="#525252">
+                You are approved for the Baza distribution.<br/>
+                {% comment %}
+                Every referral that leads to a donor will entitle your account to a bonus of {{ 0.25% }} of the  donation every time they donate.
+                {% endcomment %}
+                Please find your referral code below.<br/>
+                Please share this code to other signups or send them this link.<br/>
+                {{ referral_url }}
+            </mj-text>
+            <mj-text font-size="30px"
+                font-family="Raleway, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol"
+                color="#273951"
+                font-weight='bold'
+                background-color="#f6f6f6"
+                padding="10px"
+                align="center">{{ referral_code }}</mj-text>
+        </mj-column>
+    </mj-section>
+{% endblock content %}
+{% endmjml %}
