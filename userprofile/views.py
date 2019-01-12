@@ -526,16 +526,24 @@ class UserTwoFactorView(views.APIView):
                 request.user,
                 request.META['HTTP_AUTHORIZATION'].split(' ')[1]
             )
-        two_factor_enabled = False
         try:
             usertwofactor = UserTwoFactor.objects.get(
                 user=request.user
             )
             two_factor_enabled = usertwofactor.enabled
         except UserTwoFactor.DoesNotExist:
-            pass
+            two_factor_enabled = False
+        authhelperclient = AuthHelperClient(
+            URL_PROTOCOL +
+            settings.CENTRAL_AUTH_INTROSPECT_URL +
+            '/authhelper/userhaspassword/'
+        )
+        res_status, data = authhelperclient.check_user_has_usable_password(
+            request.META['HTTP_AUTHORIZATION'].split(' ')[1]
+        )
         return Response({
-            'two_factor_enabled': two_factor_enabled
+            'two_factor_enabled': two_factor_enabled,
+            'has_usable_password': data['has_usable_password']
         })
 
     def post(self, request, format=None):

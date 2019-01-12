@@ -374,3 +374,14 @@ class AuthHelperClient(object):
         }
         res = requests.post(self.url, headers=headers, data=data)
         return res.status_code, res.json()
+
+    def check_user_has_usable_password(self, access_token):
+        token = get_authhelper_client_token()
+        headers = {
+            "Authorization": "Bearer %s" % token
+        }
+        data = {
+            'access_token': access_token
+        }
+        res = requests.post(self.url, headers=headers, data=data)
+        return res.status_code, res.json()
