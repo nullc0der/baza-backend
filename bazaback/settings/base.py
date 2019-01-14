@@ -79,7 +79,8 @@ BAZA_APPS = [
     'group',
     'grouppost',
     'paypalpayment',
-    'coinbasepay'
+    'coinbasepay',
+    'hashtag'
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + BAZA_APPS

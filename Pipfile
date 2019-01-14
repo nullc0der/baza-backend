@@ -30,6 +30,8 @@ paypalrestsdk = "*"
 service-identity = "*"
 coinbase-commerce = "*"
 django-mjml = "*"
+tweepy = "*"
+facepy = "*"
 
 [dev-packages]
 "pep8" = "*"
