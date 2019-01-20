@@ -360,7 +360,7 @@ class UserSocialView(views.APIView):
             '/authhelper/connectsocialauth/'
         )
         return authhelperclient.connect_social_auth(
-            access_token=request.data['access_token'],
+            access_token=request.META['HTTP_AUTHORIZATION'].split(' ')[1],
             provider=request.data['provider'],
             provider_access_token=request.data['provider_access_token']
         )
@@ -372,7 +372,7 @@ class UserSocialView(views.APIView):
             '/authhelper/disconnectsocialauth/'
         )
         return authhelperclient.disconnect_social_auth(
-            access_token=request.data['access_token'],
+            access_token=request.META['HTTP_AUTHORIZATION'].split(' ')[1],
             provider=request.data['provider'],
             association_id=request.data['association_id']
         )
@@ -384,7 +384,7 @@ class UserSocialView(views.APIView):
             '/authhelper/getsocialauths/'
         )
         res_status, data = authhelperclient.get_user_social_auths(
-            request.query_params['access_token'])
+            request.META['HTTP_AUTHORIZATION'].split(' ')[1])
         return Response(data, res_status)
 
     def post(self, request, format=None):
