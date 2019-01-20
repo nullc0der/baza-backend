@@ -4,6 +4,8 @@ from django.db.models.signals import post_save
 from django.utils.crypto import get_random_string
 from django.contrib.auth.models import User
 
+from coinpurchase.models import CoinPurchase
+
 
 def get_random_id():
     return get_random_string(length=30)
@@ -11,7 +13,7 @@ def get_random_id():
 
 class ProxcAccount(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    balance = models.FloatField(default=100.000000)
+    balance = models.FloatField(default=0)
 
 
 class ProxcTransaction(models.Model):
@@ -32,6 +34,8 @@ class ProxcTransaction(models.Model):
     status = models.CharField(default='success', max_length=20)
     timestamp = models.DateTimeField(auto_now_add=True)
     amount = models.FloatField()
+    coinpurchase = models.OneToOneField(
+        CoinPurchase, null=True, on_delete=models.SET_NULL)
 
 
 @receiver(post_save, sender=User)
@@ -46,8 +50,10 @@ def create_user_account(sender, **kwargs):
 def calculate_amount(sender, **kwargs):
     transaction = kwargs['instance']
     account = transaction.account
-    account.balance -= transaction.amount
+    if account:
+        account.balance -= transaction.amount
+        account.save()
     to_account = transaction.to_account
-    to_account.balance += transaction.amount
-    account.save()
+    # TODO: The txfee shouldnot be hardcoded
+    to_account.balance += transaction.amount - 0.01
     to_account.save()

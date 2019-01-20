@@ -9,6 +9,20 @@ from oauth2_provider.contrib.rest_framework import TokenHasScope
 from taigaissuecreator.forms import TaigaIssueForm
 from taigaissuecreator.tasks import task_post_issue
 from taigaissuecreator.models import TaigaIssueAttachment
+from taigaissuecreator.utils import get_issue_types
+
+
+class IssueTypeView(views.APIView):
+    """
+    This API will be used to get issue types available from
+    taiga
+    """
+    permission_classes = (IsAuthenticated, TokenHasScope, )
+    required_scopes = [
+        'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
+
+    def get(self, request, format=None):
+        return Response(get_issue_types())
 
 
 class IssueView(views.APIView):
@@ -42,7 +56,8 @@ class IssueView(views.APIView):
                 posted_by_id=request.user.id,
                 subject=issue_form.cleaned_data.get('subject'),
                 description=issue_form.cleaned_data.get('description'),
-                attachments_ids=attachments_ids
+                attachments_ids=attachments_ids,
+                issue_type_id=issue_form.cleaned_data.get('issue_type_id')
             )
             return Response()
         return Response(

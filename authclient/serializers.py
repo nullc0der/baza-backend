@@ -25,3 +25,7 @@ class TwoFactorSerializer(serializers.Serializer):
         except UserTwoFactorRecovery.DoesNotExist:
             pass
         raise serializers.ValidationError('Code is invalid')
+
+
+class EmailSerializer(serializers.Serializer):
+    email = serializers.EmailField()

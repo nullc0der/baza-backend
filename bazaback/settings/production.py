@@ -123,3 +123,7 @@ CORS_ALLOW_HEADERS = (
 )
 
 CORS_ORIGIN_REGEX_WHITELIST = (r'^(https?://)?(\w+\.)?ngrok\.io$', )
+MJML_BACKEND_MODE = 'tcpserver'
+MJML_TCPSERVERS = [
+    ('mjml', 28101)
+]

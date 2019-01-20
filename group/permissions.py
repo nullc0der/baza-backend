@@ -1,4 +1,5 @@
 from rest_framework import permissions
+from grouppost.models import GroupPost, PostComment
 
 
 class IsAdminOfGroup(permissions.BasePermission):
@@ -7,6 +8,10 @@ class IsAdminOfGroup(permissions.BasePermission):
     """
 
     def has_object_permission(self, request, view, obj):
+        if isinstance(obj, GroupPost):
+            obj = obj.basic_group
+        if isinstance(obj, PostComment):
+            obj = obj.post.basic_group
         return request.user in set(
             obj.super_admins.all() |
             obj.admins.all()
@@ -19,6 +24,10 @@ class IsModeratorOfGroup(permissions.BasePermission):
     """
 
     def has_object_permission(self, request, view, obj):
+        if isinstance(obj, GroupPost):
+            obj = obj.basic_group
+        if isinstance(obj, PostComment):
+            obj = obj.post.basic_group
         return request.user in obj.moderators.all()
 
 
@@ -28,6 +37,10 @@ class IsMemberOfGroup(permissions.BasePermission):
     """
 
     def has_object_permission(self, request, view, obj):
+        if isinstance(obj, GroupPost):
+            obj = obj.basic_group
+        if isinstance(obj, PostComment):
+            obj = obj.post.basic_group
         return request.user in set(
             obj.super_admins.all() |
             obj.admins.all() |

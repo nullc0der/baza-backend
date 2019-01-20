@@ -20,10 +20,13 @@ from django.conf import settings
 
 from bazasignup.views import reset_signup
 
+from hashtag.views import facebook_share_view
+
 urlpatterns = [
     path('djadmin/', admin.site.urls),
     path('api/v1/', include('bazaback.api_urls')),
-    path('resetsignupform/', reset_signup)
+    path('resetsignupform/', reset_signup),
+    path('hashtag/<str:uid>/', facebook_share_view)
 ]
 
 if settings.DEBUG:

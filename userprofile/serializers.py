@@ -1,4 +1,7 @@
+from datetime import timedelta
+
 from django.contrib.auth.models import User
+from django.utils.timezone import now
 from rest_framework import serializers
 
 from userprofile.models import (
@@ -6,7 +9,8 @@ from userprofile.models import (
     UserPhoto,
     UserProfilePhoto,
     UserDocument,
-    UserPhone
+    UserPhone,
+    UserPhoneValidation
 )
 
 
@@ -38,8 +42,13 @@ class UserDocumentSerializer(serializers.ModelSerializer):
 
 
 class UserPhoneSerializer(serializers.ModelSerializer):
+    verified = serializers.ReadOnlyField()
 
     def validate_phone_number(self, value):
+        if self.instance and value != self.instance.phone_number:
+            raise serializers.ValidationError(
+                'Phone number can\'t be edited once set'
+            )
         userphones = UserPhone.objects.filter(
             phone_number=value)
         if userphones.count() >= 1:
@@ -50,7 +59,8 @@ class UserPhoneSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserPhone
-        fields = ('id', 'phone_number', 'phone_number_type', 'primary')
+        fields = ('id', 'phone_number', 'phone_number_type',
+                  'primary', 'verified')
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -87,3 +97,22 @@ class UserProfileSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'user', 'username', 'gender', 'about_me', 'website',
             'location', 'phone_number', 'default_avatar_color')
+
+
+class UserPhoneValidationSerializer(serializers.Serializer):
+    verification_code = serializers.CharField()
+
+    def validate_verification_code(self, value):
+        try:
+            userphonevalidation = UserPhoneValidation.objects.get(
+                verification_code=value
+            )
+            if userphonevalidation.created_on + timedelta(seconds=120) > now():
+                return value
+            raise serializers.ValidationError(
+                "This code is expired"
+            )
+        except UserPhoneValidation.DoesNotExist:
+            raise serializers.ValidationError(
+                "Invalid code"
+            )

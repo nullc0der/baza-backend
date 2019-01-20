@@ -3,5 +3,6 @@ from taigaissuecreator import views
 
 
 urlpatterns = [
-    path('', views.IssueView.as_view())
+    path('create/', views.IssueView.as_view()),
+    path('gettypes/', views.IssueTypeView.as_view())
 ]

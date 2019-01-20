@@ -2,6 +2,8 @@ from .base import *
 
 DEBUG = True
 
+ALLOWED_HOSTS = ['*']
+
 INSTALLED_APPS += [
     'corsheaders',
 ]
@@ -38,3 +40,8 @@ CORS_ALLOW_HEADERS = (
 # CELERY
 CELERY_BROKER_URL = 'redis://' + get_env_var('REDIS_HOST') + ':6379/1'
 CELERY_RESULT_BACKEND = 'redis://' + get_env_var('REDIS_HOST') + ':6379/1'
+
+MJML_BACKEND_MODE = 'tcpserver'
+MJML_TCPSERVERS = [
+    ('127.0.0.1', 28101)
+]

@@ -25,12 +25,20 @@ pyotp = "*"
 oauthlib = "*"
 django-oauth-toolkit = "*"
 django-versatileimagefield = "*"
+bleach = "*"
+paypalrestsdk = "*"
+service-identity = "*"
+coinbase-commerce = "*"
+django-mjml = "*"
+tweepy = "*"
+facepy = "*"
 
 [dev-packages]
 "pep8" = "*"
 "autopep8" = "*"
 ipython = "*"
 "flake8" = "*"
+python-language-server = {version = "*", extras = ["all"]}
 
 [requires]
 python_version = "3.6"

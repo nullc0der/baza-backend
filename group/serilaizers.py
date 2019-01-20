@@ -2,7 +2,8 @@ from django.utils.translation import ugettext_lazy as _
 
 from rest_framework import serializers
 
-from group.models import BasicGroup
+from group.models import (
+    BasicGroup, GroupNotification, JoinRequest)
 from publicusers.serializers import UserSerializer
 
 
@@ -21,6 +22,7 @@ class BasicGroupSerializer(serializers.ModelSerializer):
     members = serializers.SerializerMethodField()
     subscribers = serializers.SerializerMethodField()
     header_image_url = serializers.SerializerMethodField()
+    join_request_sent = serializers.SerializerMethodField()
     logo_url = serializers.SerializerMethodField()
     group_type = serializers.SerializerMethodField()
     user_permission_set = serializers.SerializerMethodField()
@@ -30,6 +32,16 @@ class BasicGroupSerializer(serializers.ModelSerializer):
         choices=GROUP_TYPES, write_only=True, required=True,
         error_messages={"invalid_choice": "Please select a group type"}
     )
+
+    def get_join_request_sent(self, obj):
+        try:
+            JoinRequest.objects.get(
+                basic_group=obj,
+                user=self.context['user']
+            )
+            return True
+        except JoinRequest.DoesNotExist:
+            return False
 
     def get_header_image_url(self, obj):
         datas = {}
@@ -118,7 +130,7 @@ class BasicGroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = BasicGroup
         fields = (
-            'id', 'name', 'short_about', 'long_about',
+            'id', 'name', 'about', 'join_request_sent',
             'group_type', 'group_type_value', 'group_type_other',
             'header_image_url', 'logo_url',
             'logo', 'header_image', 'members', 'subscribers',
@@ -131,3 +143,14 @@ class BasicGroupSerializer(serializers.ModelSerializer):
 class GroupMemberSerializer(serializers.Serializer):
     user = UserSerializer()
     user_permission_set = serializers.ListField()
+
+
+class GroupNotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GroupNotification
+        fields = ('id', 'notification', 'created_on', 'is_important')
+
+
+class GroupJoinRequestSerializer(serializers.Serializer):
+    id = serializers.IntegerField(required=True)
+    user = UserSerializer()

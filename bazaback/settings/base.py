@@ -58,7 +58,8 @@ THIRD_PARTY_APPS = [
     'rest_framework',
     'oauth2_provider',
     'simple_history',
-    'versatileimagefield'
+    'versatileimagefield',
+    'mjml'
 ]
 
 BAZA_APPS = [
@@ -75,7 +76,11 @@ BAZA_APPS = [
     'taigaissuecreator',
     'publicusers',
     'messenger',
-    'group'
+    'group',
+    'grouppost',
+    'paypalpayment',
+    'coinbasepay',
+    'hashtag'
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + BAZA_APPS
@@ -286,3 +291,30 @@ SITE_OWNER_EMAILS = get_env_var('SITE_OWNER_EMAILS')
 # Taiga Issue Creator
 TAIGA_USERNAME = get_env_var('TAIGA_USERNAME')
 TAIGA_PASSWORD = get_env_var('TAIGA_PASSWORD')
+
+# Bleach sanitize
+BLEACH_VALID_TAGS = ['p', 'b', 'i', 'u',
+                     'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+                     'strike', 'ul', 'li', 'ol', 'br',
+                     'span', 'blockquote', 'hr', 'a', 'img']
+BLEACH_VALID_ATTRS = {
+    'span': ['style', 'class'],
+    'p': ['align', ],
+    'a': ['href', 'rel'],
+    'img': ['src', 'alt', 'style'],
+}
+BLEACH_VALID_STYLES = ['color', 'cursor', 'float', 'margin']
+
+
+# Paypal API
+PAYPAL_MODE = get_env_var("PAYPAL_MODE")
+PAYPAL_CLIENT_ID = get_env_var('PAYPAL_CLIENT_ID')
+PAYPAL_CLIENT_SECRET = get_env_var('PAYPAL_CLIENT_SECRET')
+PAYPAL_CANCEL_URL = get_env_var('PAYPAL_CANCEL_URL')
+PAYPAL_RETURN_URL = get_env_var('PAYPAL_RETURN_URL')
+
+INTERNAL_WEBHOOK_KEY = get_env_var('INTERNAL_WEBHOOK_KEY')
+
+# Coinbase
+COINBASE_API_KEY = get_env_var('COINBASE_API_KEY')
+COINBASE_WEBHOOK_SECRET = get_env_var('COINBASE_WEBHOOK_SECRET')

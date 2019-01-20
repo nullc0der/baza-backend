@@ -17,5 +17,6 @@ urlpatterns = [
     path('twitter/getrequesttoken/', views.GetTwitterRequestCode.as_view()),
     path('twitter/login/', views.GetTwitterUserToken.as_view()),
     path('registrationenabled/', views.check_registration_enabled),
-    path('twofactor/', views.TwoFactorView.as_view())
+    path('twofactor/', views.TwoFactorView.as_view()),
+    path('resendemailverification/', views.ResendEmailValidationView.as_view())
 ]

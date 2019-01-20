@@ -3,9 +3,13 @@ import uuid
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.models import User
-
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import (
+    GenericForeignKey, GenericRelation)
 
 from versatileimagefield.fields import VersatileImageField
+
+from notifications.models import Notification
 
 
 class BasicGroup(models.Model):
@@ -27,10 +31,8 @@ class BasicGroup(models.Model):
         ('invite', 'Invite')
     )
     name = models.CharField(verbose_name=_('Name'), max_length=40)
-    short_about = models.CharField(
-        verbose_name=_('Short About'), max_length=300)
-    long_about = models.TextField(
-        verbose_name=_('Long About'), null=True, blank=True)
+    about = models.CharField(
+        verbose_name=_('About'), default='', max_length=300)
     group_type = models.CharField(
         verbose_name=_('Group Type'), max_length=30, choices=GROUP_TYPES)
     group_type_other = models.CharField(
@@ -81,3 +83,51 @@ class BasicGroup(models.Model):
         if not self.flagged_for_deletion:
             self.flagged_for_deletion_on = None
         super(BasicGroup, self).save(*args, **kwargs)
+
+
+class GroupNotification(models.Model):
+    creator = models.ForeignKey(User, on_delete=models.CASCADE)
+    basic_group = models.ForeignKey(
+        BasicGroup, related_name='notifications', on_delete=models.CASCADE)
+    notification = models.CharField(max_length=200)
+    created_on = models.DateTimeField(auto_now_add=True)
+    is_important = models.BooleanField(default=False)
+
+
+class GroupInvite(models.Model):
+    basic_group = models.ForeignKey(
+        BasicGroup, related_name='invites', on_delete=models.CASCADE)
+    sender = models.ForeignKey(
+        User, related_name='sent_invites', on_delete=models.CASCADE)
+    reciever = models.ForeignKey(
+        User, related_name='received_invites', on_delete=models.CASCADE)
+    sent_on = models.DateTimeField(auto_now_add=True)
+    mainfeed = GenericRelation(Notification)  # Main Notification feed
+
+
+class InviteAccept(models.Model):
+    basic_group = models.ForeignKey(
+        BasicGroup, related_name='accepted_invite', on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        User, related_name='invited_accept', on_delete=models.CASCADE)
+    sender = models.ForeignKey(User, on_delete=models.CASCADE)
+
+
+class JoinRequest(models.Model):
+    basic_group = models.ForeignKey(
+        BasicGroup, on_delete=models.CASCADE, related_name='joinrequest')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    approved = models.BooleanField(default=False)
+
+
+class GroupMemberNotification(models.Model):
+    read = models.BooleanField(default=False)
+    user = models.ForeignKey(
+        User, related_name='group_member_notifications',
+        on_delete=models.CASCADE)
+    basic_group = models.ForeignKey(BasicGroup, on_delete=models.CASCADE)
+    content_type = models.ForeignKey(ContentType,
+                                     on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
+    mainfeed = GenericRelation(Notification)  # Main Notification feed
