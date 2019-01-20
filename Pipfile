@@ -38,6 +38,7 @@ facepy = "*"
 "autopep8" = "*"
 ipython = "*"
 "flake8" = "*"
+python-language-server = {version = "*", extras = ["all"]}
 
 [requires]
 python_version = "3.6"

@@ -398,18 +398,6 @@ class AuthHelperClient(object):
         res = requests.post(self.url, headers=headers, data=data)
         return res.status_code, res.json()
 
-    def get_user_social_scopes(self, access_token, provider):
-        token = get_authhelper_client_token()
-        headers = {
-            "Authorization": "Bearer %s" % token
-        }
-        data = {
-            'access_token': access_token,
-            'provider': provider
-        }
-        res = requests.post(self.url, headers=headers, data=data)
-        return res.status_code, res.json()
-
     def get_user_social_credentials(self, access_token, provider):
         token = get_authhelper_client_token()
         headers = {

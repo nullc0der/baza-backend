@@ -1,7 +1,10 @@
+import os
+import tempfile
+
 import tweepy
-from facepy import GraphAPI
 
 from django.conf import settings
+from django.shortcuts import render
 
 from rest_framework import views, status
 from rest_framework.response import Response
@@ -12,6 +15,9 @@ from rest_framework.parsers import (
 from oauth2_provider.contrib.rest_framework import TokenHasScope
 
 from authclient.utils import AuthHelperClient
+
+from hashtag.utils import get_hashtag_uid
+from hashtag.models import HashtagImage
 
 
 URL_PROTOCOL = 'http://' if settings.SITE_TYPE == 'local' else 'https://'
@@ -26,7 +32,7 @@ class DownloadSocialPhotoView(views.APIView):
     required_scopes = [
         'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
 
-    def post(self, request, format=None):
+    def get(self, request, format=None):
         authhelperclient = AuthHelperClient(
             URL_PROTOCOL +
             settings.CENTRAL_AUTH_INTROSPECT_URL +
@@ -34,34 +40,10 @@ class DownloadSocialPhotoView(views.APIView):
         )
         res_status, data = authhelperclient.get_user_social_profile_photo(
             request.META['HTTP_AUTHORIZATION'].split(' ')[1],
-            request.data.get('provider', 'facebook')
+            request.query_params.get('provider', 'facebook')
         )
         if res_status == 200:
             # TODO: download and save the photo from response url
-            return Response(data)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
-
-
-class GetSocialScopesView(views.APIView):
-    """
-    This API is used to get an users granted and denied scopes
-    """
-
-    permission_classes = (IsAuthenticated, TokenHasScope, )
-    required_scopes = [
-        'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
-
-    def post(self, request, format=None):
-        authhelperclient = AuthHelperClient(
-            URL_PROTOCOL +
-            settings.CENTRAL_AUTH_INTROSPECT_URL +
-            '/authhelper/usersocialscopes/'
-        )
-        res_status, data = authhelperclient.get_user_social_scopes(
-            request.META['HTTP_AUTHORIZATION'].split(' ')[1],
-            request.data.get('provider', 'facebook')
-        )
-        if res_status == 200:
             return Response(data)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -76,23 +58,22 @@ class UploadHashtagImageView(views.APIView):
     required_scopes = [
         'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
 
-    def upload_photo_to_facebook(self, photo, request):
-        authhelperclient = AuthHelperClient(
-            URL_PROTOCOL +
-            settings.CENTRAL_AUTH_INTROSPECT_URL +
-            '/authhelper/usersocialcredentials/'
+    def save_hashtag_image(self, request):
+        hashtag_image = HashtagImage(
+            user=request.user,
+            image=request.data['photo'],
+            uid=get_hashtag_uid()
         )
-        res_status, data = authhelperclient.get_user_social_credentials(
-            request.META['HTTP_AUTHORIZATION'].split(' ')[1],
-            'facebook'
-        )
-        if res_status == 200:
-            graph = GraphAPI(data['access_token'])
-            graph.post(path='me/photos', source=photo)
-            return Response()
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        hashtag_image.save()
+        return Response({
+            'url': "{0}{1}/hashtag/{2}/".format(
+                URL_PROTOCOL,
+                settings.HOST_URL,
+                hashtag_image.uid
+            )
+        })
 
-    def upload_photo_to_twitter(self, photo, request):
+    def upload_photo_to_twitter(self, request):
         authhelperclient = AuthHelperClient(
             URL_PROTOCOL +
             settings.CENTRAL_AUTH_INTROSPECT_URL +
@@ -103,17 +84,31 @@ class UploadHashtagImageView(views.APIView):
             'twitter'
         )
         if res_status == 200:
+            tmp_file = tempfile.NamedTemporaryFile(
+                prefix='twitter',
+                suffix='.png',
+                delete=False
+            )
+            tmp_file.writelines(request.data['photo'])
+            tmp_file.close()
             auth = tweepy.OAuthHandler(
                 data['consumer_key'], data['consumer_secret'])
             auth.set_access_token(
                 data["oauth_token"], data["oauth_token_secret"])
             api = tweepy.API(auth)
-            api.update_profile_image(photo)
-            return Response()
+            api.update_profile_image(tmp_file.name)
+            os.remove(tmp_file.name)
+            return Response({'url': None})
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
     def post(self, request, format=None):
         if request.data['provider'] == 'facebook':
-            return self.upload_photo_to_facebook(request.data['photo'])
+            return self.save_hashtag_image(request)
         if request.data['provider'] == 'twitter':
-            return self.upload_photo_to_twitter(request.data['photo'])
+            return self.upload_photo_to_twitter(request)
+
+
+def facebook_share_view(request, uid):
+    hashtagimage = HashtagImage.objects.get(uid=uid)
+    return render(
+        request, 'hashtag/fbshare.html', {'image': hashtagimage.image})
