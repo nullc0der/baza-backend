@@ -7,6 +7,6 @@ RUN mkdir /baza-back
 WORKDIR /baza-back
 COPY Pipfile /baza-back
 COPY Pipfile.lock /baza-back
-RUN pipenv install --system
+RUN pipenv install --system --skip-lock
 COPY . /baza-back
 CMD [ "sh", "start.sh" ]
