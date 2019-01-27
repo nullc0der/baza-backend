@@ -5,8 +5,7 @@ RUN ln -s /usr/bin/python3 /usr/bin/python
 RUN pip3 install pipenv
 RUN mkdir /baza-back
 WORKDIR /baza-back
-COPY Pipfile /baza-back
-COPY Pipfile.lock /baza-back
-RUN pipenv install --system --skip-lock
+COPY requirements.txt /baza-back
+RUN pip install -r requirements.txt
 COPY . /baza-back
 CMD [ "sh", "start.sh" ]
