@@ -34,7 +34,11 @@ class IntializeCoinbaseChargeView(views.APIView):
             charged_user=request.user)
         if charge_id:
             return Response({'charge_id': charge_id})
-        return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({
+            'non_field_errors': [
+                'There is an issue initiating your payment,'
+                'please try later']
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class CoinbaseWebhookView(views.APIView):

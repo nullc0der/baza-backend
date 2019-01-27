@@ -29,11 +29,13 @@ class BazaSignupAutoApproval(object):
                 settings.TWILIO_AUTH_TOKEN
             )
             lookup = client.lookups.phone_numbers(
-                self.signup.phone_number).fetch(add_ons='whitepages_pro_caller_id')
+                self.signup.phone_number).fetch(
+                    add_ons='whitepages_pro_caller_id')
             if lookup.add_ons['results'][
                     'whitepages_pro_caller_id']['status'] == 'successful':
                 address_data = lookup.add_ons['results'][
-                    'whitepages_pro_caller_id']['result']['current_addresses'][0]
+                    'whitepages_pro_caller_id'][
+                        'result']['current_addresses'][0]
                 lat_long = address_data.get('lat_long', '')
                 bazasignupaddress = BazaSignupAddress(
                     signup=self.signup,
@@ -165,7 +167,7 @@ class BazaSignupAutoApproval(object):
             twilio_address, user_address) if twilio_address else False
         return {
             'geoip_vs_userinput': geoip_vs_userinput,
-            'twilio_vs_userinput': geoip_vs_userinput
+            'twilio_vs_userinput': twilio_vs_userinput
         }
 
     def __process_auto_approval(self,

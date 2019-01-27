@@ -9,6 +9,7 @@ from publicusers.consumers import PublicusersConsumer
 from messenger.consumers import MessengerConsumer
 from group.consumers import GroupConsumer
 from userprofile.consumers import UserProfileConsumer
+from donation.consumers import DonationConsumer
 
 
 application = ProtocolTypeRouter({
@@ -19,7 +20,8 @@ application = ProtocolTypeRouter({
                 path('ws/users/', PublicusersConsumer),
                 path('ws/messenger/', MessengerConsumer),
                 path('ws/groupnotifications/', GroupConsumer),
-                path('ws/profiletasks/', UserProfileConsumer)
+                path('ws/profiletasks/', UserProfileConsumer),
+                path('ws/donation/', DonationConsumer)
             ])
         )
     )
