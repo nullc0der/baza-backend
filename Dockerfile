@@ -6,6 +6,6 @@ RUN pip3 install pipenv
 RUN mkdir /baza-back
 WORKDIR /baza-back
 COPY requirements.txt /baza-back
-RUN pip install -r requirements.txt
+RUN pip3 install -r requirements.txt
 COPY . /baza-back
 CMD [ "sh", "start.sh" ]
