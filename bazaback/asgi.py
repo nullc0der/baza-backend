@@ -10,7 +10,7 @@ from channels.routing import get_default_application
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "bazaback.settings")
 django.setup()
 
-SENTRY_ENABLED_IN = ['production', 'beta']
+SENTRY_ENABLED_IN = ['production', 'beta', 'api']
 application = get_default_application()
 
 if os.environ.get('SITE_TYPE') in SENTRY_ENABLED_IN:
