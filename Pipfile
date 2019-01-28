@@ -32,6 +32,7 @@ coinbase-commerce = "*"
 django-mjml = "*"
 tweepy = "*"
 facepy = "*"
+django-extra-fields = "*"
 
 [dev-packages]
 "pep8" = "*"

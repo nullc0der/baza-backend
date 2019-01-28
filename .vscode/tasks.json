@@ -16,12 +16,14 @@
     {
       "label": "Run Baza Django Server",
       "type": "shell",
-      "command": "pipenv run python manage.py runserver"
+      "command": "pipenv run python manage.py runserver",
+      "problemMatcher": []
     },
     {
       "label": "Run Baza Celery",
       "type": "shell",
-      "command": "pipenv run celery -A bazaback worker -l info"
+      "command": "pipenv run celery -A bazaback worker -l info",
+      "problemMatcher": []
     }
   ]
 }

@@ -3,6 +3,8 @@ from django.urls import path
 from donation import views
 
 urlpatterns = [
-    path('', views.DonationView.as_view()),
-    path('anon/', views.AnonymousDonationView.as_view())
+    path('initiate/', views.InitiateDonationView.as_view()),
+    path('initiate/anon/', views.InitiateAnonymousDonationView.as_view()),
+    path('getlatest/', views.GetLatestDonations.as_view()),
+    path('getstats/', views.GetDonationStats.as_view())
 ]

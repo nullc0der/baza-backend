@@ -4,6 +4,8 @@ from django.contrib.auth.models import User
 from django.utils.timezone import now
 from rest_framework import serializers
 
+from drf_extra_fields.fields import Base64ImageField
+
 from userprofile.models import (
     UserProfile,
     UserPhoto,
@@ -22,6 +24,8 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserPhotoSerializer(serializers.ModelSerializer):
+    photo = Base64ImageField()
+
     class Meta:
         model = UserPhoto
         fields = ('id', 'photo')
