@@ -220,7 +220,7 @@ class AuthHelperClient(object):
             'local': 'http://localhost:5100/twicallback/',
             'production': 'https://baza.foundation/twicallback/',
             'development': 'https://beta.baza.foundation/twicallback/',
-            'api': 'https://baza-demo.herokuapp.com/twicallback/'
+            'apiserver': 'https://baza-demo.herokuapp.com/twicallback/'
         }
         token = get_authhelper_client_token()
         headers = {
