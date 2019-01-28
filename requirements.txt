@@ -96,3 +96,4 @@ wcwidth==0.1.7
 webencodings==0.5.1
 yapf==0.25.0
 zope.interface==4.6.0
+django-extra-fields==0.3
