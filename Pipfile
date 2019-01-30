@@ -1,3 +1,5 @@
+# Note: PIPENV is not used anymore, this file will not be updated
+# in future, maybe it will be removed too
 [[source]]
 url = "https://pypi.python.org/simple"
 verify_ssl = true
