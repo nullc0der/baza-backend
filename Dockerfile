@@ -3,7 +3,7 @@ LABEL maintainer Prasanta Kakati <prasantakakati@ekata.social>
 RUN apk update && apk add build-base linux-headers postgresql-client postgresql-dev libpq python3 python3-dev jpeg-dev zlib-dev libressl-dev libffi-dev curl
 RUN ln -s /usr/bin/python3 /usr/bin/python
 RUN curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
-RUN ln -s $HOME/.poetry/bin/poetry /usr/bin/poetry 
+ENV PATH="$HOME/.poetry/bin:${PATH}"
 RUN poetry config settings.virtualenvs.create false
 RUN mkdir /baza-back
 WORKDIR /baza-back
