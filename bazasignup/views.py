@@ -505,3 +505,13 @@ class BazaSignupDetailsView(views.APIView):
                 serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except BazaSignup.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+class GetTotalDistributionRecipients(views.APIView):
+    """
+    This API will be used to get all distributions recipients
+    """
+
+    def get(self, request, format=None):
+        signups = BazaSignup.objects.filter(status='approved')
+        return Response({'total_distribution_count': signups.count()})

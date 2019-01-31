@@ -162,3 +162,15 @@ class GetDonationStats(views.APIView):
             'collected': collected if collected != 0 else 10,
             'required': 1500
         })
+
+
+class GetTotalDonors(views.APIView):
+    """
+    This API will be used to get total number of donors
+    """
+
+    def get(self, request, format=None):
+        donations = Donation.objects.filter(is_pending=False)
+        return Response({
+            'total_donors': donations.count()
+        })
