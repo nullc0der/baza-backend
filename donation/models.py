@@ -18,6 +18,7 @@ class Donation(models.Model):
         Charge, on_delete=models.SET_NULL, null=True
     )
     donated_on = models.DateTimeField(auto_now_add=True, null=True)
+    is_anonymous = models.BooleanField(default=False, null=True)
 
     def __str__(self):
         return self.name

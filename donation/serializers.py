@@ -17,6 +17,7 @@ class AnonDonationSerializer(serializers.Serializer):
                 'Please enter a valid phone number'
         }
     )
+    is_anonymous = serializers.BooleanField()
 
     def validate_amount(self, value):
         if value == 0:
@@ -28,6 +29,7 @@ class AnonDonationSerializer(serializers.Serializer):
 
 class DonationSerializer(serializers.Serializer):
     amount = serializers.FloatField()
+    is_anonymous = serializers.BooleanField()
 
     def validate_amount(self, value):
         if value == 0:

@@ -73,7 +73,8 @@ def get_initiate_donation_response(request, is_anonymous):
                     request.META['HTTP_AUTHORIZATION'].split(' ')[1]),
                 logged_ip=request.META.get(
                     'HTTP_CF_CONNECTING_IP', ''),
-                coinbase_charge=charge
+                coinbase_charge=charge,
+                is_anonymous=serializer.validated_data['is_anonymous']
             )
             return Response({
                 'charge_id': charge_id
@@ -129,10 +130,11 @@ class GetLatestDonations(views.APIView):
         datas = []
         donations = Donation.objects.filter(
             is_pending=False).order_by('-id')
-        donations = donations if len(donations) <= 10 else donations[10]
+        donations = donations if len(donations) <= 10 else donations[0:10]
         for donation in donations:
             data = {
-                'name': donation.name,
+                'name': donation.name
+                if not donation.is_anonymous else 'Anonymous Donor',
                 'amount': donation.amount,
                 'donated_on': donation.donated_on,
                 'donator_image_url':
