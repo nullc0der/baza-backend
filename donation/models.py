@@ -10,7 +10,7 @@ class Donation(models.Model):
         User, on_delete=models.CASCADE, related_name='donations', null=True)
     amount = models.FloatField()
     name = models.CharField(max_length=150)
-    email = models.EmailField()
+    email = models.EmailField(null=True)
     phone_no = models.CharField(max_length=20, default='')
     is_pending = models.BooleanField(default=True)
     logged_ip = models.GenericIPAddressField(null=True)

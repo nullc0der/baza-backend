@@ -1,6 +1,7 @@
 from random import randint
 
 from django.conf import settings
+from django.db.models import Q
 
 from rest_framework import views
 from rest_framework import status
@@ -14,13 +15,43 @@ from coinbasepay.utils import create_charge
 from coinbasepay.dicts import CHARGE
 
 from userprofile.views import get_profile_photo
+from authclient.utils import AuthHelperClient
 
 from donation.models import Donation
-from donation.serializers import DonationSerializer
+from donation.serializers import DonationSerializer, AnonDonationSerializer
+
+
+URL_PROTOCOL = 'http://' if settings.SITE_TYPE == 'local' else 'https://'
+
+
+def get_users_name(user):
+    name = user.get_full_name()
+    if not name:
+        name = user.profile.username or user.username
+    return name
+
+
+def get_users_phone_no(user):
+    phone_no = user.profile.phones.filter(
+        Q(primary=True) & Q(verified=True)
+    )
+    if len(phone_no):
+        return phone_no[0].phone_number
+    return
+
+
+def get_users_primary_email(access_token):
+    authhelperclient = AuthHelperClient(
+        URL_PROTOCOL +
+        settings.CENTRAL_AUTH_INTROSPECT_URL +
+        '/authhelper/useremails/'
+    )
+    return authhelperclient.get_user_primary_email(access_token)
 
 
 def get_initiate_donation_response(request, is_anonymous):
-    serializer = DonationSerializer(data=request.data)
+    serializer = AnonDonationSerializer(data=request.data) \
+        if is_anonymous else DonationSerializer(data=request.data)
     if serializer.is_valid():
         charge_id = create_charge(
             amount=request.data.get('amount'),
@@ -33,9 +64,13 @@ def get_initiate_donation_response(request, is_anonymous):
             Donation.objects.create(
                 user=None if is_anonymous else request.user,
                 amount=serializer.validated_data['amount'],
-                name=serializer.validated_data['name'],
-                phone_no=serializer.validated_data['phone_no'],
-                email=serializer.validated_data['email'],
+                name=serializer.validated_data['name']
+                if is_anonymous else get_users_name(request.user),
+                phone_no=serializer.validated_data['phone_no']
+                if is_anonymous else get_users_phone_no(request.user),
+                email=serializer.validated_data['email']
+                if is_anonymous else get_users_primary_email(
+                    request.META['HTTP_AUTHORIZATION'].split(' ')[1]),
                 logged_ip=request.META.get(
                     'HTTP_CF_CONNECTING_IP', ''),
                 coinbase_charge=charge
@@ -90,8 +125,11 @@ class GetLatestDonations(views.APIView):
             '/abott{0}@adorable.io.png'.format(
                 randint(0, 9))
 
-    def get_serializable_donations(self, donations):
+    def get_donations(self):
         datas = []
+        donations = Donation.objects.filter(
+            is_pending=False).order_by('-id')
+        donations = donations if len(donations) <= 10 else donations[10]
         for donation in donations:
             data = {
                 'name': donation.name,
@@ -104,12 +142,7 @@ class GetLatestDonations(views.APIView):
         return datas
 
     def get(self, request, format=None):
-        donations = Donation.objects.filter(
-            is_pending=False).order_by('-id')
-        donations = donations if len(donations) <= 10 else donations[10]
-        serializer = DonationSerializer(
-            self.get_serializable_donations(donations), many=True)
-        return Response(serializer.data)
+        return Response(self.get_donations())
 
 
 class GetDonationStats(views.APIView):

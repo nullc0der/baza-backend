@@ -268,6 +268,23 @@ class AuthHelperClient(object):
         res = requests.get(self.url, headers=headers, data=data)
         return res.status_code, res.json()
 
+    def get_user_primary_email(self, access_token):
+        token = get_authhelper_client_token()
+        headers = {
+            "Authorization": "Bearer %s" % token
+        }
+        data = {
+            'access_token': access_token
+        }
+        res = requests.get(self.url, headers=headers, data=data)
+        if res.status_code == 200:
+            primary_email = [
+                email for email in res.json()
+                if email['primary'] and email['verified']]
+            if len(primary_email):
+                return primary_email[0]['email']
+        return
+
     def delete_user_email(self, access_token, email_id):
         token = get_authhelper_client_token()
         headers = {
