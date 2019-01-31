@@ -3,8 +3,12 @@ from rest_framework import serializers
 
 class DonationSerializer(serializers.Serializer):
     amount = serializers.FloatField()
-    name = serializers.CharField()
-    email = serializers.EmailField(write_only=True)
+    name = serializers.CharField(error_messages={
+        'blank': 'This field is required'
+    })
+    email = serializers.EmailField(write_only=True, error_messages={
+        'blank': 'This field is required'
+    })
     phone_no = serializers.RegexField(
         r'^(\+)(\d{11,15})$',
         allow_blank=True,
