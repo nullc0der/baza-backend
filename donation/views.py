@@ -106,7 +106,7 @@ class GetLatestDonations(views.APIView):
     def get(self, request, format=None):
         donations = Donation.objects.filter(
             is_pending=False).order_by('-id')
-        donations = donations if len(donations) < 10 else donations[10]
+        donations = donations if len(donations) <= 10 else donations[10]
         serializer = DonationSerializer(
             self.get_serializable_donations(donations), many=True)
         return Response(serializer.data)
