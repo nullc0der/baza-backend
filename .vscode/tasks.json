@@ -6,23 +6,23 @@
     {
       "label": "Make Baza Django DB Migrations",
       "type": "shell",
-      "command": "pipenv run python manage.py makemigrations"
+      "command": "dotenv run poetry run python manage.py makemigrations"
     },
     {
       "label": "Migrate Baza Django DB",
       "type": "shell",
-      "command": "pipenv run python manage.py migrate"
+      "command": "dotenv run poetry run python manage.py migrate"
     },
     {
       "label": "Run Baza Django Server",
       "type": "shell",
-      "command": "pipenv run python manage.py runserver",
+      "command": "dotenv run poetry run python manage.py runserver",
       "problemMatcher": []
     },
     {
       "label": "Run Baza Celery",
       "type": "shell",
-      "command": "pipenv run celery -A bazaback worker -l info",
+      "command": "dotenv run poetry run celery -A bazaback worker -l info",
       "problemMatcher": []
     }
   ]

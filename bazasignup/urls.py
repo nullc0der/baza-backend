@@ -36,5 +36,9 @@ urlpatterns = [
     path(
         'signup/<int:signup_id>/',
         views.BazaSignupDetailsView.as_view()
+    ),
+    path(
+        'recipients/',
+        views.GetTotalDistributionRecipients.as_view()
     )
 ]
