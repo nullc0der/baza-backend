@@ -26,7 +26,7 @@ urlpatterns = [
     path('djadmin/', admin.site.urls),
     path('api/v1/', include('bazaback.api_urls')),
     path('resetsignupform/', reset_signup),
-    path('hashtag/<str:uid>/', facebook_share_view)
+    path('hashtagimage/<str:uid>/', facebook_share_view)
 ]
 
 if settings.DEBUG:

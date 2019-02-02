@@ -66,7 +66,7 @@ class UploadHashtagImageView(views.APIView):
         )
         hashtag_image.save()
         return Response({
-            'url': "{0}{1}/hashtag/{2}/".format(
+            'url': "{0}{1}/hashtagimage/{2}/".format(
                 URL_PROTOCOL,
                 settings.HOST_URL,
                 hashtag_image.uid
