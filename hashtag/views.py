@@ -115,6 +115,7 @@ def facebook_share_view(request, uid):
         'hashtag/fbshare.html',
         {
             'image': hashtagimage.image,
+            'image_uid': hashtagimage.uid,
             'host': '{0}{1}'.format(
                 URL_PROTOCOL,
                 settings.HOST_URL
