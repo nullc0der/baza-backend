@@ -218,8 +218,7 @@ def get_convert_token_response(request):
             'expires_in': now() + timedelta(seconds=data['expires_in']),
             'email_exist': data['email_exist']
         }, status.HTTP_200_OK)
-    if res_status == 401 and \
-            data['error_description'].split(':')[0] == 'email_associated':
+    if data['error_description'].split(':')[0] == 'email_associated':
         return (
             {'non_field_errors': [
                 'The fetched email id %s is associated with another'
