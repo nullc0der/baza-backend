@@ -111,4 +111,13 @@ class UploadHashtagImageView(views.APIView):
 def facebook_share_view(request, uid):
     hashtagimage = HashtagImage.objects.get(uid=uid)
     return render(
-        request, 'hashtag/fbshare.html', {'image': hashtagimage.image})
+        request,
+        'hashtag/fbshare.html',
+        {
+            'image': hashtagimage.image,
+            'host': '{0}{1}'.format(
+                URL_PROTOCOL,
+                settings.HOST_URL
+            )
+        }
+    )
