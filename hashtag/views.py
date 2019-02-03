@@ -16,7 +16,7 @@ from oauth2_provider.contrib.rest_framework import TokenHasScope
 
 from authclient.utils import AuthHelperClient
 
-from hashtag.utils import get_hashtag_uid
+from hashtag.utils import get_hashtag_uid, get_final_file
 from hashtag.models import HashtagImage
 
 
@@ -61,7 +61,7 @@ class UploadHashtagImageView(views.APIView):
     def save_hashtag_image(self, request):
         hashtag_image = HashtagImage(
             user=request.user,
-            image=request.data['photo'],
+            image=get_final_file(request.data['photo']),
             uid=get_hashtag_uid()
         )
         hashtag_image.save()
