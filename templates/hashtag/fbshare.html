@@ -1,7 +1,7 @@
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta property="og:title" content="Basic Income Hashtag Campaign" />
     <meta property="og:description" content="Sign in to baza.foundation to create yours" />
@@ -15,8 +15,24 @@
         TODO: Add app id in env variable
     {% endcomment %}
     <meta property="fb:app_id" content="468956423553849" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <title>Baza Foundation Basic Income Hashtag Campaign</title>
 </head>
 <body>
+    <div class="container-fluid h-100">
+        <div class="align-items-center h-100 row">
+            <div class="col-md-12 text-center">
+                <h1>Baza Foundation Basic Income Hashtag Campaign</h1>
+                <img class="img-responsive" src="{{image.url}}" />
+                <div class="row mt-2">
+                    <div class="col-md-4"></div>
+                    <div class="col-md-4 text-center">
+                        <a class="btn btn-lg btn-block btn-dark" href="{{host}}/hashtag">Create yours</a>
+                    </div>
+                    <div class="col-md-4"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 </body> 
 </html>
