@@ -153,7 +153,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 
 STATIC_URL = '/static/'
-
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 # Media files
 
@@ -318,3 +318,6 @@ INTERNAL_WEBHOOK_KEY = get_env_var('INTERNAL_WEBHOOK_KEY')
 # Coinbase
 COINBASE_API_KEY = get_env_var('COINBASE_API_KEY')
 COINBASE_WEBHOOK_SECRET = get_env_var('COINBASE_WEBHOOK_SECRET')
+
+# Facebook
+FACEBOOK_APP_ID = get_env_var('FACEBOOK_APP_ID')

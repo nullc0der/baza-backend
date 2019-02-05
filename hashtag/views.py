@@ -1,5 +1,6 @@
 import os
 import tempfile
+from itertools import zip_longest
 
 import tweepy
 
@@ -110,12 +111,17 @@ class UploadHashtagImageView(views.APIView):
 
 def facebook_share_view(request, uid):
     hashtagimage = HashtagImage.objects.get(uid=uid)
+    otherimages = HashtagImage.objects.all().exclude(uid=uid).order_by('-id')
+    otherimages = otherimages if otherimages.count(
+    ) >= 12 else otherimages[0:12]
+    otherimages_chunk = list(zip_longest(*[iter(otherimages)]*4))
     return render(
         request,
         'hashtag/fbshare.html',
         {
-            'image': hashtagimage.image,
-            'image_uid': hashtagimage.uid,
+            'mainimage': hashtagimage,
+            'otherimages_chunk': otherimages_chunk,
+            'fb_app_id': settings.FACEBOOK_APP_ID,
             'host': '{0}{1}'.format(
                 URL_PROTOCOL,
                 settings.HOST_URL
