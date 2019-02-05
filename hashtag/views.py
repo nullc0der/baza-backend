@@ -113,7 +113,7 @@ def facebook_share_view(request, uid):
     hashtagimage = HashtagImage.objects.get(uid=uid)
     otherimages = HashtagImage.objects.all().exclude(uid=uid).order_by('-id')
     otherimages = otherimages if otherimages.count(
-    ) >= 12 else otherimages[0:12]
+    ) <= 12 else otherimages[0:12]
     otherimages_chunk = list(zip_longest(*[iter(otherimages)]*4))
     return render(
         request,
