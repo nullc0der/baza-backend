@@ -84,12 +84,12 @@ class NewOAuth2Validator(OAuth2Validator):
 
             access_token, _created = AccessToken\
                 .objects.select_related("application", "user")\
-                .update_or_create(token=token,
-                                  defaults={
-                                      "user": user,
-                                      "application": None,
-                                      "scope": scope,
-                                      "expires": expires,
-                                  })
+                .get_or_create(token=token,
+                               defaults={
+                                   "user": user,
+                                   "application": None,
+                                   "scope": scope,
+                                   "expires": expires,
+                               })
 
             return access_token
