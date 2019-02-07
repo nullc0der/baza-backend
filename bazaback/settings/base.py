@@ -232,6 +232,7 @@ OAUTH2_PROVIDER = {
     ),
     'RESOURCE_SERVER_AUTH_TOKEN': get_env_var('RESOURCE_SERVER_AUTH_TOKEN'),
 }
+OAUTH2_VALIDATOR_CLASS = 'authclient.oauth2_validators.NewOauth2Validator'
 
 
 # DJANGO Cache
