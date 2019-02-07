@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import requests
 from django.contrib.auth import get_user_model
 from django.utils.timezone import make_aware
-from oauth2_provider.validators import Oauth2Validator
+from oauth2_provider.oauth2_validators import OAuth2Validator
 from oauth2_provider.settings import oauth2_settings
 from oauth2_provider.models import get_access_token_model
 
@@ -14,7 +14,7 @@ UserModel = get_user_model()
 AccessToken = get_access_token_model()
 
 
-class NewOauth2Validator(Oauth2Validator):
+class NewOAuth2Validator(OAuth2Validator):
     def _get_token_from_authentication_server(
             self, token, introspection_url, introspection_token,
             introspection_credentials
