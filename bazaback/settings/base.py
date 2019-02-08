@@ -68,6 +68,7 @@ BAZA_APPS = [
     'proxcdb',
     'notifications',
     'authclient',
+    # TODO: Remove this completely, there is some issue in migartion
     'stripepayment',
     'donation',
     'coinpurchase',
@@ -78,7 +79,6 @@ BAZA_APPS = [
     'messenger',
     'group',
     'grouppost',
-    'paypalpayment',
     'coinbasepay',
     'hashtag'
 ]
@@ -257,10 +257,6 @@ CHANNEL_LAYERS = {
 # Registration settings
 REGISTRATION_ENABLED = bool(get_env_var('REGISTRATION_ENABLED'))
 
-
-# Stripe
-STRIPE_SECRET_KEY = get_env_var('STRIPE_SECRET_KEY')
-
 # EMAIL_SERVER
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = get_env_var('DJANGO_EMAIL_HOST')
@@ -304,14 +300,6 @@ BLEACH_VALID_ATTRS = {
     'img': ['src', 'alt', 'style'],
 }
 BLEACH_VALID_STYLES = ['color', 'cursor', 'float', 'margin']
-
-
-# Paypal API
-PAYPAL_MODE = get_env_var("PAYPAL_MODE")
-PAYPAL_CLIENT_ID = get_env_var('PAYPAL_CLIENT_ID')
-PAYPAL_CLIENT_SECRET = get_env_var('PAYPAL_CLIENT_SECRET')
-PAYPAL_CANCEL_URL = get_env_var('PAYPAL_CANCEL_URL')
-PAYPAL_RETURN_URL = get_env_var('PAYPAL_RETURN_URL')
 
 INTERNAL_WEBHOOK_KEY = get_env_var('INTERNAL_WEBHOOK_KEY')
 

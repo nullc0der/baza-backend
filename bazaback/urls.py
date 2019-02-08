@@ -25,6 +25,7 @@ from hashtag.views import facebook_share_view
 urlpatterns = [
     path('djadmin/', admin.site.urls),
     path('api/v1/', include('bazaback.api_urls')),
+    # TODO: Don't forget to remove this before production
     path('resetsignupform/', reset_signup),
     path('hashtagimage/<str:uid>/', facebook_share_view)
 ]
