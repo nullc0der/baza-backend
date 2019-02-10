@@ -88,7 +88,8 @@ class NewOAuth2Validator(OAuth2Validator):
                 # results blank screen due to lack of 'profile' object, so as
                 # a temporary solution I catched the IntegrityError
                 except IntegrityError:
-                    pass
+                    access_token = AccessToken.objects.select_related(
+                        "application", "user").get(token=token)
             else:
                 access_token.expires = expires
                 access_token.scope = scope
