@@ -50,8 +50,9 @@ def get_user_auth_data(uuid):
 
 def delete_user_auth_data(uuid):
     user_auths = cache.get('user_auths')
-    user_auths.pop(uuid)
-    cache.set('user_auths', user_auths, None)
+    if uuid in user_auths:
+        user_auths.pop(uuid)
+        cache.set('user_auths', user_auths, None)
 
 
 class AuthHelperClient(object):
