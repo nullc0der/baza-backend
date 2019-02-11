@@ -1,6 +1,6 @@
 from django.conf import settings
-from django.contrib.auth.models import User
-from django.http import HttpResponse
+# from django.contrib.auth.models import User
+# from django.http import HttpResponse
 
 from rest_framework import views, status
 from rest_framework.response import Response
@@ -379,19 +379,19 @@ class SignupImageUploadView(views.APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-def reset_signup(request):
-    """
-    TODO: Remove this before production
-    """
-    username = request.GET.get('username')
-    try:
-        user = User.objects.get(username=username)
-        if hasattr(user, 'bazasignup'):
-            user.bazasignup.delete()
-        return HttpResponse('Done, Happy Testing :)')
-    except User.DoesNotExist:
-        return HttpResponse('The user can\'t be found '
-                            'please check username')
+# def reset_signup(request):
+#     """
+#     TODO: Remove this before production
+#     """
+#     username = request.GET.get('username')
+#     try:
+#         user = User.objects.get(username=username)
+#         if hasattr(user, 'bazasignup'):
+#             user.bazasignup.delete()
+#         return HttpResponse('Done, Happy Testing :)')
+#     except User.DoesNotExist:
+#         return HttpResponse('The user can\'t be found '
+#                             'please check username')
 
 
 class BazaSignupListView(views.APIView):

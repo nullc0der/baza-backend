@@ -18,15 +18,15 @@ from django.urls import path, include
 from django.conf.urls.static import static
 from django.conf import settings
 
-from bazasignup.views import reset_signup
+# from bazasignup.views import reset_signup
 
 from hashtag.views import facebook_share_view
 
 urlpatterns = [
     path('djadmin/', admin.site.urls),
     path('api/v1/', include('bazaback.api_urls')),
-    # TODO: Don't forget to remove this before production
-    path('resetsignupform/', reset_signup),
+    # NOTE: This can be enabled in local just in case
+    # path('resetsignupform/', reset_signup),
     path('hashtagimage/<str:uid>/', facebook_share_view)
 ]
 
