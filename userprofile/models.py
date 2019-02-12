@@ -26,7 +26,7 @@ class UserProfile(models.Model):
         User, on_delete=models.CASCADE, related_name='profile')
     username = models.CharField(max_length=20, default='', blank=True)
     gender = models.CharField(
-        max_length=10, choices=GENDER_CHOICES, default='quality_person'
+        max_length=20, choices=GENDER_CHOICES, default='quality_person'
     )
     about_me = models.TextField(null=True, blank=True)
     website = models.TextField(null=True, blank=True)
