@@ -3,5 +3,17 @@ from userprofile import views
 
 
 urlpatterns = [
-    path('me/', views.WhoAmI.as_view())
+    path('', views.UserProfileView.as_view()),
+    path('profilephotos/', views.UserProfilePhotoView.as_view()),
+    path('photos/', views.UserPhotoView.as_view()),
+    path('documents/', views.UserDocumentView.as_view()),
+    path('phonenumbers/', views.UserPhoneView.as_view()),
+    path('emails/', views.UserEmailView.as_view()),
+    path('socialauths/', views.UserSocialView.as_view()),
+    path('socialauths/connecttwitter/', views.ConnectTwitterView.as_view()),
+    path('setpassword/', views.SetUserPasswordView.as_view()),
+    path('twofactor/', views.UserTwoFactorView.as_view()),
+    path('validatephone/', views.UserPhoneValidationView.as_view()),
+    path('webhook/addedemail/', views.AddedEmailWebhook.as_view()),
+    path('webhook/addedsocial/', views.AddedSocialWebhook.as_view())
 ]

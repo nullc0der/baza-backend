@@ -15,8 +15,21 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.conf.urls.static import static
+from django.conf import settings
+
+# from bazasignup.views import reset_signup
+
+from hashtag.views import facebook_share_view
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('djadmin/', admin.site.urls),
     path('api/v1/', include('bazaback.api_urls')),
+    # NOTE: This can be enabled in local just in case
+    # path('resetsignupform/', reset_signup),
+    path('hashtagimage/<str:uid>/', facebook_share_view)
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL,
+                          document_root=settings.MEDIA_ROOT)

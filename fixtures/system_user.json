@@ -1,0 +1,8 @@
+[
+  {
+    "model": "auth.user",
+    "fields": {
+      "username": "system"
+    }
+  }
+]

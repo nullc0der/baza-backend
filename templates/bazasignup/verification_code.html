@@ -1,0 +1,25 @@
+{% extends "base_email_template.html" %}
+{% load mjml %}
+{% mjml %}
+{% block content %}
+    <mj-section background-color="#fafafa">
+        <mj-column width="400px">
+            <mj-text font-size="20px"
+                font-family="Raleway, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol"
+                color="#626262"
+                align="center">Verification Code</mj-text>
+            <mj-text color="#525252">
+                Use below code to verify your email for baza distribution signup<br/>
+                The code will be valid for 2 minutes
+            </mj-text>
+            <mj-text font-size="30px"
+                font-family="Raleway, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol"
+                color="#273951"
+                font-weight='bold'
+                background-color="#f6f6f6"
+                padding="10px"
+                align="center">{{ verification_code }}</mj-text>
+        </mj-column>
+    </mj-section>
+{% endblock content %}
+{% endmjml %}

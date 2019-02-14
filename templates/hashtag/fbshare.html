@@ -1,0 +1,65 @@
+{% load staticfiles %}
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta property="og:title" content="Basic Income Hashtag Campaign" />
+    <meta property="og:description" content="Sign in to baza.foundation to create yours" />
+    <meta property="og:image" content="{{host}}{{mainimage.image.url}}" />
+    <meta property="og:image:width" content="{{mainimage.image.width}}" />
+    <meta property="og:image:height" content="{{mainimage.image.height}}" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="{{host}}/hashtagimage/{{mainimage.uid}}/" />
+    <meta property="fb:app_id" content="{{fb_app_id}}" />
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Raleway:100,300,400,500,600,700,800">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static 'hashtag.css' %}">
+    <title>Baza Foundation Basic Income Hashtag Campaign</title>
+</head>
+<body>
+    <section class="hero">
+        <div class="container-fluid">
+            <div class="row align-items-center h-100">
+                <div class="col-12 text-center">
+                    <img class="img-fluid hero-image" alt="Baza" src="https://beta.baza.foundation/public/img/baza_logo.svg">
+                    <h3 class="hero-text mt-3">Baza Foundation Basic Income Hashtag Campaign</h3>
+                </div>
+            </div>
+        </div>
+    </section>
+    <div class="container-fluid main-image">
+        <div class="row">
+            <div class="col-12 text-center mt-3">
+                <img class="img-fluid users-main-hashtag-image" src="{{mainimage.image.url}}" />
+                <div class="row mt-3">
+                    <div class="col-md-12">
+                         <a class="btn btn-lg btn-dark action-button mr-2" href="{{host}}{{mainimage.image.url}}" download>Download <i class="far fa-arrow-alt-circle-down ml-1"></i></a>
+                         <a class="btn btn-lg btn-dark action-button" href="{{host}}/hashtag">Create yours <i class="far fa-arrow-alt-circle-right ml-1"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% if otherimages_chunk %}
+        <div class="container-fluid image-gallery">
+            <div class="row mt-3">
+                <div class="col-12 text-center pt-5">
+                    <h4>Some latest hashtag images</h4>
+                </div>
+            </div>
+            {% for otherimage_chunk in otherimages_chunk %}
+                <div class="row">
+                    {% for otherimage in otherimage_chunk  %}
+                        {% if otherimage %}
+                            <div class="col-12 col-md-3 text-center mt-3 mb-3"><img class="img-fluid users-hashtag-image" src="{{otherimage.image.url}}" /></div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</body> 
+</html>

@@ -1,0 +1,64 @@
+{% extends "base_email_template.html" %}
+{% load mjml %}
+{% mjml %}
+{% block content %}
+    <mj-section background-color="#273951" padding-bottom="5px" padding-top="10px">
+        <mj-column width="100%" padding-top="0">
+            <mj-text align="center" color="#FFF" font-size="13px" font-family="Raleway, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol" padding-left="25px" padding-right="25px"
+                padding-bottom="10px"><span style="font-size:20px; font-weight:bold">Thank you very much for your donation and support.</span>
+                <br/><br/>
+                <span style="font-size:13px">Please find the receipt below.</span>
+            </mj-text>
+        </mj-column>
+    </mj-section>
+    <mj-section background-color="#273951" padding-bottom="15px" padding-top="0">
+        <mj-column width="70%">
+            <mj-divider border-color="#FFF" border-width="2px" border-style="solid" width="60%" padding="0 20px"></mj-divider>
+            <mj-text align="center" color="#FFF" font-size="13px" font-family="Raleway, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol" padding-left="25px" padding-right="25px"
+                padding-bottom="10px" padding-top="10px"><span style="font-size:20px; font-weight:bold">Donation Details</span>
+                <br/><br/>
+                <span style="font-size:13px">Your payment status is {{ donation_info.status }}.</span><br/>
+                {% if has_exception %}
+                    <span style="font-size:13px">We received {{ donation_info.received_amount }} USD amount of crypto instead of {{ donation_info.expected_amount }} USD.</span><br/>
+                {% else %}
+                    <span style="font-size:13px">We received {{ donation_info.received_amount }} USD amount of crypto.</span><br/>
+                {% endif %}
+            </mj-text>
+        </mj-column>
+    </mj-section>
+    <mj-section background-color="#FFF" padding-bottom="15px" padding-top="10px">
+        <mj-group>
+            <mj-column>
+                <mj-text align="center" color="#1B2737" font-size="15px" font-family="Raleway, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol" padding-left="25px" padding-right="25px"
+                    padding-bottom="0px" padding-top="20px"><strong>Transaction Number</strong></mj-text>
+                <mj-text align="center" color="#1B2737" font-size="13px" font-family="Raleway, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol" padding-left="25px" padding-right="25px"
+                    padding-bottom="20px" padding-top="10px">{{ donation_info.order_number }}</mj-text>
+                </mj-column>
+            <mj-column>
+                <mj-text align="center" color="#1B2737" font-size="15px" font-family="Raleway, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol" padding-left="25px" padding-right="25px"
+                    padding-bottom="0px" padding-top="20px"><strong>Transaction Date</strong></mj-text>
+                <mj-text align="center" color="#1B2737" font-size="13px" font-family="Raleway, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol" padding-left="25px" padding-right="25px"
+                    padding-bottom="20px" padding-top="10px">{{ donation_info.order_date|date:"d/m/Y" }}</mj-text>
+            </mj-column>
+        </mj-group>
+    </mj-section>
+    <mj-section background-color="#fff" padding-top="0">
+        <mj-column width="50%">
+            <mj-button 
+                background-color="#2ac7e9"
+                color="#f6f6f6"
+                font-family="Helvetica Neue"
+                align="center"
+                padding="0px 30px"
+                border-radius="3px"
+                border="none"
+                padding-left="25px"
+                padding-right="25px"
+                padding-bottom="15px"
+                href="{{ donation_info.receipt_url }}">
+                View Receipt
+            </mj-button>
+        </mj-column>
+    </mj-section>
+{% endblock content %}
+{% endmjml %}   
