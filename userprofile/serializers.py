@@ -63,8 +63,8 @@ class UserPhoneSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserPhone
-        fields = ('id', 'phone_number', 'phone_number_type',
-                  'primary', 'verified')
+        fields = ('id', 'phone_number', 'phone_number_country_code',
+                  'phone_number_type', 'primary', 'verified')
 
 
 class UserProfileSerializer(serializers.ModelSerializer):

@@ -13,7 +13,6 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.contrib import admin
 from django.urls import path, include
 from django.conf.urls.static import static
 from django.conf import settings
@@ -23,7 +22,6 @@ from django.conf import settings
 from hashtag.views import facebook_share_view
 
 urlpatterns = [
-    path('djadmin/', admin.site.urls),
     path('api/v1/', include('bazaback.api_urls')),
     # NOTE: This can be enabled in local just in case
     # path('resetsignupform/', reset_signup),

@@ -268,6 +268,10 @@ class UserPhoneView(views.APIView):
                 serializer = UserPhoneSerializer(
                     data=request.data, instance=phone, partial=True)
                 if serializer.is_valid():
+                    if phone.verified:
+                        serializer.validated_data.pop('phone_number', None)
+                        serializer.validated_data.pop(
+                            'phone_number_country_code', None)
                     serializer.save()
                     return Response(serializer.data)
                 return Response(
