@@ -78,6 +78,10 @@ class UserPhone(models.Model):
     primary = models.BooleanField(default=False)
     verified = models.BooleanField(default=False)
 
+    def get_full_phone_number(self):
+        phone_number_splitted = self.phone_number.split('-')
+        return self.phone_number_country_code + ''.join(phone_number_splitted)
+
     def save(self, *args, **kwargs):
         if self.primary:
             qs = type(self).objects.filter(
