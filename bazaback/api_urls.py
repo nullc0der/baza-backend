@@ -17,5 +17,6 @@ urlpatterns = [
     path('groups/', include('group.urls')),
     path('notifications/', include('notifications.urls')),
     path('coinbase/', include('coinbasepay.urls')),
-    path('hashtag/', include('hashtag.urls'))
+    path('hashtag/', include('hashtag.urls')),
+    path('landing/', include('landing.urls'))
 ]

@@ -145,32 +145,3 @@ class GetLatestDonations(views.APIView):
 
     def get(self, request, format=None):
         return Response(self.get_donations())
-
-
-class GetDonationStats(views.APIView):
-    """
-    This API will be used to get total donation required and
-    collected
-    """
-
-    def get(self, request, format=None):
-        collected = 0
-        donations = Donation.objects.filter(is_pending=False)
-        for donation in donations:
-            collected += donation.amount
-        return Response({
-            'collected': collected if collected != 0 else 10,
-            'required': 1500
-        })
-
-
-class GetTotalDonors(views.APIView):
-    """
-    This API will be used to get total number of donors
-    """
-
-    def get(self, request, format=None):
-        donations = Donation.objects.filter(is_pending=False)
-        return Response({
-            'total_donors': donations.count()
-        })
