@@ -71,15 +71,17 @@ class UserProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer()
 
     def validate_username(self, value):
-        try:
-            userprofile = UserProfile.objects.get(username=value)
-            if userprofile == self.context['request'].user.profile:
+        if value:
+            try:
+                userprofile = UserProfile.objects.get(username=value)
+                if userprofile == self.context['request'].user.profile:
+                    return value
+                raise serializers.ValidationError(
+                    'A user with that name already exist'
+                )
+            except UserProfile.DoesNotExist:
                 return value
-            raise serializers.ValidationError(
-                'A user with that name already exist'
-            )
-        except UserProfile.DoesNotExist:
-            return value
+        return value
 
     def update(self, instance, validated_data):
         user = validated_data.get('user', {})
