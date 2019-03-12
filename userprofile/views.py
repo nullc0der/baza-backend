@@ -13,15 +13,18 @@ from rest_framework.parsers import (
 from oauth2_provider.contrib.rest_framework import TokenHasScope
 
 from authclient.utils import AuthHelperClient
+from phoneverification.tasks import task_send_phone_verification_code
+from phoneverification.models import PhoneVerification
 from userprofile.models import (
     UserDocument, UserPhoto, UserProfilePhoto, UserPhone,
-    UserTwoFactor, UserTwoFactorRecovery, UserPhoneValidation)
+    UserTwoFactor, UserTwoFactorRecovery)
 from userprofile.serializers import (
     UserProfileSerializer, UserDocumentSerializer,
     UserPhotoSerializer, UserProfilePhotoSerializer,
     UserPhoneSerializer, UserPhoneValidationSerializer)
 from userprofile.tasks import (
-    task_send_two_factor_email, task_send_phone_verification_code)
+    task_send_two_factor_email
+)
 
 
 URL_PROTOCOL = 'http://' if settings.SITE_TYPE == 'local' else 'https://'
@@ -591,11 +594,14 @@ class UserPhoneValidationView(views.APIView):
 
     def get(self, request, format=None):
         try:
-            # TODO: Throttle down twilio call if last sms sent within two
-            # minute
             userphone = UserPhone.objects.get(
                 id=request.query_params.get('id'))
-            task_send_phone_verification_code.delay(userphone.phone_number)
+            task_send_phone_verification_code.delay(
+                'userprofile.UserPhone',
+                userphone.id,
+                userphone.phone_number_country_code +
+                userphone.phone_number
+            )
             return Response()
         except UserPhone.DoesNotExist:
             return Response(
@@ -605,10 +611,10 @@ class UserPhoneValidationView(views.APIView):
     def post(self, request, format=None):
         serializer = UserPhoneValidationSerializer(data=request.data)
         if serializer.is_valid():
-            userphonevalidation = UserPhoneValidation.objects.get(
+            userphonevalidation = PhoneVerification.objects.get(
                 verification_code=serializer.validated_data[
                     'verification_code'])
-            userphone = userphonevalidation.userphone
+            userphone = userphonevalidation.content_object
             userphone.verified = True
             userphone.save()
             userphonevalidation.delete()

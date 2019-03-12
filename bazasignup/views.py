@@ -15,8 +15,7 @@ from bazasignup.models import (
     BazaSignupAdditionalInfo,
     BazaSignupEmail,
     BazaSignupPhone,
-    EmailVerification,
-    PhoneVerification
+    EmailVerification
 )
 from bazasignup.serializers import (
     UserInfoTabSerializer,
@@ -28,11 +27,11 @@ from bazasignup.serializers import (
     BazaSignupListSerializer,
     BazaSignupSerializer
 )
+from phoneverification.tasks import task_send_phone_verification_code
+from phoneverification.models import PhoneVerification
 from bazasignup.tasks import (
     task_send_email_verification_code,
     task_send_email_verification_code_again,
-    task_send_phone_verification_code,
-    task_send_phone_verification_code_again,
     task_process_autoapproval
 )
 
@@ -291,11 +290,18 @@ class InitiatePhoneVerificationView(views.APIView):
     def post(self, request, format=None):
         serializer = PhoneSerializer(data=request.data)
         if serializer.is_valid():
+            phone_number = None
+            if serializer.validated_data.get('phone_number', None):
+                phone_number = serializer.validated_data[
+                    'phone_number_dial_code'] + serializer.validated_data[
+                        'phone_number']
             signup = BazaSignup.objects.get(
                 user=request.user
             )
             task_send_phone_verification_code.delay(
-                signup.id, serializer.validated_data['phone']
+                'bazasignup.BazaSignup',
+                signup.id,
+                phone_number
             )
             return Response()
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -317,7 +323,7 @@ class ValidatePhoneVerificationCode(views.APIView):
             phoneverification = PhoneVerification.objects.get(
                 verification_code=serializer.validated_data['code']
             )
-            signup = phoneverification.signup
+            signup = phoneverification.content_object
             signup.phone_number = phoneverification.phone_number
             signup.completed_steps = get_current_completed_steps(request, "2")
             signup.changed_by = request.user
@@ -331,26 +337,26 @@ class ValidatePhoneVerificationCode(views.APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class SendVerificationSMSAgain(views.APIView):
-    """
-    This API will send verification code sms for an user again
-    """
+# class SendVerificationSMSAgain(views.APIView):
+#     """
+#     This API will send verification code sms for an user again
+#     """
 
-    permission_classes = (IsAuthenticated, TokenHasScope, )
-    required_scopes = [
-        'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
+#     permission_classes = (IsAuthenticated, TokenHasScope, )
+#     required_scopes = [
+#         'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
 
-    def post(self, request, format=None):
-        try:
-            signup = BazaSignup.objects.get(
-                user=request.user
-            )
-            if hasattr(signup, 'phoneverification'):
-                task_send_phone_verification_code_again.delay(signup.id)
-                return Response()
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-        except BazaSignup.DoesNotExist:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+#     def post(self, request, format=None):
+#         try:
+#             signup = BazaSignup.objects.get(
+#                 user=request.user
+#             )
+#             if hasattr(signup, 'phoneverification'):
+#                 task_send_phone_verification_code_again.delay(signup.id)
+#                 return Response()
+#             return Response(status=status.HTTP_400_BAD_REQUEST)
+#         except BazaSignup.DoesNotExist:
+#             return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class SignupImageUploadView(views.APIView):
