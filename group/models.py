@@ -76,7 +76,7 @@ class BasicGroup(models.Model):
     flagged_for_deletion = models.BooleanField(default=False)
     flagged_for_deletion_on = models.DateTimeField(null=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     def save(self, *args, **kwargs):
