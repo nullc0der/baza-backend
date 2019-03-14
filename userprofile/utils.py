@@ -186,7 +186,7 @@ def send_phone_verification_code(phone_number):
         settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
     message = client.messages.create(
         body=message_body,
-        to=phone_number,
+        to=userphone.get_full_phone_number(),
         from_=settings.TWILIO_PHONE_NO
     )
     userphonevalidation, created = UserPhoneValidation.objects.get_or_create(

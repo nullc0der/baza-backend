@@ -1,12 +1,15 @@
 from datetime import timedelta
+
+from django.conf import settings
 from django.utils.timezone import now
 
 from rest_framework import serializers
 
+from phoneverification.models import PhoneVerification
+
 from bazasignup.countries import COUNTRIES
 from bazasignup.models import (
     EmailVerification,
-    PhoneVerification,
     BazaSignupAutoApprovalFailReason
 )
 
@@ -76,7 +79,8 @@ class EmailVerificationSerializer(serializers.Serializer):
 
 
 class PhoneSerializer(serializers.Serializer):
-    phone = serializers.CharField()
+    phone_number = serializers.CharField(required=False)
+    phone_number_dial_code = serializers.CharField(required=False)
 
 
 class PhoneVerificationSerializer(serializers.Serializer):
@@ -87,7 +91,9 @@ class PhoneVerificationSerializer(serializers.Serializer):
             phoneverification = PhoneVerification.objects.get(
                 verification_code=value
             )
-            if phoneverification.created_on + timedelta(seconds=120) > now():
+            if phoneverification.created_on + timedelta(
+                seconds=settings.PHONE_VERIFICATION_CODE_EXPIRES_IN)\
+                    > now():
                 return value
             raise serializers.ValidationError(
                 "This code is expired, please click on send SMS again"

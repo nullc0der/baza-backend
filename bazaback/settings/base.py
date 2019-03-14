@@ -80,7 +80,9 @@ BAZA_APPS = [
     'group',
     'grouppost',
     'coinbasepay',
-    'hashtag'
+    'hashtag',
+    'landing',
+    'phoneverification'
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + BAZA_APPS
@@ -310,3 +312,7 @@ COINBASE_WEBHOOK_SECRET = get_env_var('COINBASE_WEBHOOK_SECRET')
 
 # Facebook
 FACEBOOK_APP_ID = get_env_var('FACEBOOK_APP_ID')
+
+# Phone verification
+PHONE_VERIFICATION_CODE_EXPIRES_IN = int(get_env_var(
+    'PHONE_VERIFICATION_CODE_EXPIRES_IN'))  # In seconds

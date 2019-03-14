@@ -1,18 +1,19 @@
 from datetime import timedelta
 
 from django.contrib.auth.models import User
+from django.conf import settings
 from django.utils.timezone import now
 from rest_framework import serializers
 
 from drf_extra_fields.fields import Base64ImageField
 
+from phoneverification.models import PhoneVerification
 from userprofile.models import (
     UserProfile,
     UserPhoto,
     UserProfilePhoto,
     UserDocument,
-    UserPhone,
-    UserPhoneValidation
+    UserPhone
 )
 
 
@@ -63,23 +64,25 @@ class UserPhoneSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserPhone
-        fields = ('id', 'phone_number', 'phone_number_type',
-                  'primary', 'verified')
+        fields = ('id', 'phone_number', 'phone_number_country_code',
+                  'phone_number_type', 'primary', 'verified')
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer()
 
     def validate_username(self, value):
-        try:
-            userprofile = UserProfile.objects.get(username=value)
-            if userprofile == self.context['request'].user.profile:
+        if value:
+            try:
+                userprofile = UserProfile.objects.get(username=value)
+                if userprofile == self.context['request'].user.profile:
+                    return value
+                raise serializers.ValidationError(
+                    'A user with that name already exist'
+                )
+            except UserProfile.DoesNotExist:
                 return value
-            raise serializers.ValidationError(
-                'A user with that name already exist'
-            )
-        except UserProfile.DoesNotExist:
-            return value
+        return value
 
     def update(self, instance, validated_data):
         user = validated_data.get('user', {})
@@ -108,15 +111,17 @@ class UserPhoneValidationSerializer(serializers.Serializer):
 
     def validate_verification_code(self, value):
         try:
-            userphonevalidation = UserPhoneValidation.objects.get(
+            phoneverification = PhoneVerification.objects.get(
                 verification_code=value
             )
-            if userphonevalidation.created_on + timedelta(seconds=120) > now():
+            if phoneverification.created_on + timedelta(
+                seconds=settings.PHONE_VERIFICATION_CODE_EXPIRES_IN)\
+                    > now():
                 return value
             raise serializers.ValidationError(
                 "This code is expired"
             )
-        except UserPhoneValidation.DoesNotExist:
+        except PhoneVerification.DoesNotExist:
             raise serializers.ValidationError(
                 "Invalid code"
             )

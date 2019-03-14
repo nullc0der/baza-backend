@@ -72,10 +72,15 @@ class UserPhone(models.Model):
         UserProfile, on_delete=models.CASCADE, related_name='phones'
     )
     phone_number = models.CharField(max_length=15, default='')
+    phone_number_country_code = models.CharField(max_length=10, default='')
     phone_number_type = models.CharField(
         max_length=10, default='office', choices=PHONE_NUMBER_CHOICES)
     primary = models.BooleanField(default=False)
     verified = models.BooleanField(default=False)
+
+    def get_full_phone_number(self):
+        phone_number_splitted = self.phone_number.split('-')
+        return self.phone_number_country_code + ''.join(phone_number_splitted)
 
     def save(self, *args, **kwargs):
         if self.primary:

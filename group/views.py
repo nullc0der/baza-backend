@@ -3,6 +3,7 @@ from datetime import timedelta
 from django.conf import settings
 from django.utils.timezone import now
 from django.contrib.auth.models import User
+from django.db.models import Q
 
 from rest_framework import status, parsers
 from rest_framework.views import APIView
@@ -43,7 +44,8 @@ class GroupsView(APIView):
 
     def get(self, request, format=None):
         basicgroups = BasicGroup.objects.exclude(
-            blocked_members__username__contains=request.user.username
+            Q(blocked_members__username__contains=request.user.username)
+            | Q(is_site_owner_group=True)
         )
         serializer = BasicGroupSerializer(basicgroups, many=True, context={
             'user': request.user

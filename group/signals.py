@@ -1,5 +1,6 @@
 from django.dispatch import receiver
-from django.db.models.signals import m2m_changed
+from django.db.models.signals import m2m_changed, post_save
+from django.contrib.auth.models import User
 from django.conf import settings
 
 from group.models import BasicGroup
@@ -41,3 +42,15 @@ def remove_member_access_to_beta(instance, **kwargs):
             user = model.objects.get(id=pk)
             authhelperclient.update_user_special_scope(
                 'remove', 'baza-beta', user.username)
+
+
+@receiver(post_save, sender=User)
+def add_user_to_site_owner_group(sender, **kwargs):
+    instance = kwargs['instance']
+    if kwargs['created']:
+        try:
+            basicgroup = BasicGroup.objects.get(
+                is_site_owner_group=True)
+            basicgroup.members.add(instance)
+        except BasicGroup.DoesNotExist:
+            pass

@@ -23,9 +23,6 @@ urlpatterns = [
         'validatesmscode/',
         views.ValidatePhoneVerificationCode.as_view()),
     path(
-        'sendphoneverificationcodeagain/',
-        views.SendVerificationSMSAgain.as_view()),
-    path(
         'uploadsignupimage/',
         views.SignupImageUploadView.as_view()
     ),
@@ -36,9 +33,5 @@ urlpatterns = [
     path(
         'signup/<int:signup_id>/',
         views.BazaSignupDetailsView.as_view()
-    ),
-    path(
-        'recipients/',
-        views.GetTotalDistributionRecipients.as_view()
     )
 ]
