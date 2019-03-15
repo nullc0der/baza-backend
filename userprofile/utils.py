@@ -131,7 +131,7 @@ def get_user_tasks(usertasks):
             'status': 'done' if verified_phone else 'pending',
             'href': '#details',
             'id': 2,
-            'description': 'Add an phone number and verify'
+            'description': 'Add a phone number and verify'
         },
         {
             'status': 'done' if location else 'pending',
