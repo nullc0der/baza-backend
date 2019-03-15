@@ -90,6 +90,11 @@ def user_has_completed_distribution_signup(user):
     return False
 
 
+def user_added_profile_picture(user):
+    return bool(
+        user.profile.profilephotos.filter(is_active=True))
+
+
 def compute_user_tasks(user_id, access_token):
     user = User.objects.get(id=user_id)
     usertasks, created = UserTasks.objects.get_or_create(user=user)
@@ -101,6 +106,7 @@ def compute_user_tasks(user_id, access_token):
         access_token)
     usertasks.completed_distribution_signup =\
         user_has_completed_distribution_signup(user)
+    usertasks.added_profile_picture = user_added_profile_picture(user)
     usertasks.save()
 
 
@@ -120,6 +126,7 @@ def get_user_tasks(usertasks):
     two_factor = usertasks.added_two_factor_authentication
     social_account_linked = usertasks.linked_one_social_account
     completed_distribution_signup = usertasks.completed_distribution_signup
+    added_profile_picture = usertasks.added_profile_picture
     tasks = [
         {
             'status': 'done' if verified_email else 'pending',
@@ -156,6 +163,12 @@ def get_user_tasks(usertasks):
             'href': '#!baza-signup',
             'id': 6,
             'description': 'Complete distribution signup'
+        },
+        {
+            'status': 'done' if added_profile_picture else 'pending',
+            'href': '#documents',
+            'id': 7,
+            'description': 'Add a profile picture'
         }
     ]
     trust_percentage = 0
@@ -165,6 +178,7 @@ def get_user_tasks(usertasks):
     trust_percentage += 10 if location else 0
     trust_percentage += 10 if two_factor else 0
     trust_percentage += 10 if social_account_linked else 0
+    trust_percentage += 10 if added_profile_picture else 0
     usertrustpercentage, created = UserTrustPercentage.objects.get_or_create(
         user=usertasks.user)
     usertrustpercentage.percentage = trust_percentage
