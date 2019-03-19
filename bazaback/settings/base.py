@@ -79,6 +79,7 @@ BAZA_APPS = [
     'messenger',
     'group',
     'grouppost',
+    'groupnews',
     'coinbasepay',
     'hashtag',
     'landing',

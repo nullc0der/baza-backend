@@ -21,5 +21,6 @@ urlpatterns = [
     path('<int:group_id>/invitemember/',
          views.InviteMemberView.as_view()),
     path('inviteaction/', views.InviteAction.as_view()),
-    path('posts/', include('grouppost.urls'))
+    path('posts/', include('grouppost.urls')),
+    path('news/', include('groupnews.urls'))
 ]
