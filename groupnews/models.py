@@ -11,6 +11,7 @@ class GroupNews(models.Model):
         User, null=True, on_delete=models.SET_NULL)
     basic_group = models.ForeignKey(
         BasicGroup, related_name='news', on_delete=models.CASCADE)
+    title = models.TextField(null=True)
     news = models.TextField()
     created_on = models.DateTimeField(auto_now_add=True)
     is_published = models.BooleanField(default=False)

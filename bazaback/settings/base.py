@@ -317,3 +317,6 @@ FACEBOOK_APP_ID = get_env_var('FACEBOOK_APP_ID')
 # Phone verification
 PHONE_VERIFICATION_CODE_EXPIRES_IN = int(get_env_var(
     'PHONE_VERIFICATION_CODE_EXPIRES_IN'))  # In seconds
+
+# API Key for uploading faq json
+FAQ_API_KEY = get_env_var('FAQ_API_KEY')
