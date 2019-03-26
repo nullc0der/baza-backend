@@ -33,6 +33,7 @@ django-mjml = "0.6.0"
 tweepy = "3.7.0"
 facepy = "1.0.9"
 django-extra-fields = "1.0.0"
+markdown = "^3.1"
 
 [tool.poetry.dev-dependencies]
 "pep8" = "1.7.1"

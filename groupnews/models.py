@@ -1,5 +1,9 @@
+import markdown
+import bleach
+
 from django.db import models
 from django.contrib.auth.models import User
+from django.conf import settings
 
 from versatileimagefield.fields import VersatileImageField
 
@@ -13,9 +17,20 @@ class GroupNews(models.Model):
         BasicGroup, related_name='news', on_delete=models.CASCADE)
     title = models.TextField(null=True)
     news = models.TextField()
+    converted_news = models.TextField(default='')
     created_on = models.DateTimeField(auto_now_add=True)
     is_published = models.BooleanField(default=False)
     impressioncount = models.PositiveIntegerField(default=0)
+
+    def save(self, *args, **kwargs):
+        html = markdown.markdown(self.news)
+        self.converted_news = bleach.clean(
+            html,
+            settings.BLEACH_VALID_TAGS,
+            settings.BLEACH_VALID_ATTRS,
+            settings.BLEACH_VALID_STYLES
+        )
+        super(GroupNews, self).save(*args, **kwargs)
 
 
 class NewsImage(models.Model):

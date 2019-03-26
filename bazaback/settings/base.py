@@ -296,7 +296,8 @@ TAIGA_PASSWORD = get_env_var('TAIGA_PASSWORD')
 BLEACH_VALID_TAGS = ['p', 'b', 'i', 'u',
                      'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
                      'strike', 'ul', 'li', 'ol', 'br',
-                     'span', 'blockquote', 'hr', 'a', 'img']
+                     'span', 'blockquote', 'hr', 'a', 'img',
+                     'strong', 'em', 'code']
 BLEACH_VALID_ATTRS = {
     'span': ['style', 'class'],
     'p': ['align', ],

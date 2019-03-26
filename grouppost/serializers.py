@@ -53,6 +53,7 @@ class PostSerializer(serializers.ModelSerializer):
     creator = UserSerializer(required=False)
     basic_group = GroupSerializer(required=False)
     approved_by = UserSerializer(required=False)
+    converted_post = serializers.ReadOnlyField()
     created_date = serializers.SerializerMethodField()
     comment_count = serializers.SerializerMethodField(required=False)
 
