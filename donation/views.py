@@ -37,7 +37,7 @@ def get_users_phone_no(user):
     )
     if len(phone_no):
         return phone_no[0].phone_number
-    return
+    return ''
 
 
 def get_users_primary_email(access_token):
@@ -117,10 +117,10 @@ class GetLatestDonations(views.APIView):
     This view will be used to get latest 10 donations
     """
 
-    def get_donator_image_url(self, user):
+    def get_donator_image_url(self, donation):
         image_url = None
-        if user:
-            image_url = get_profile_photo(user)
+        if not donation.is_anonymous and donation.user:
+            image_url = get_profile_photo(donation.user)
         return image_url if image_url else \
             'https://api.adorable.io/avatars/80' +\
             '/abott{0}@adorable.io.png'.format(
@@ -138,7 +138,7 @@ class GetLatestDonations(views.APIView):
                 'amount': donation.amount,
                 'donated_on': donation.donated_on,
                 'donator_image_url':
-                    self.get_donator_image_url(donation.user)
+                    self.get_donator_image_url(donation)
             }
             datas.append(data)
         return datas
