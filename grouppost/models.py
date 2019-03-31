@@ -1,5 +1,9 @@
+import markdown
+import bleach
+
 from django.db import models
 from django.contrib.auth.models import User
+from django.conf import settings
 
 from versatileimagefield.fields import VersatileImageField
 
@@ -11,11 +15,22 @@ class GroupPost(models.Model):
     basic_group = models.ForeignKey(
         BasicGroup, related_name='posts', on_delete=models.CASCADE)
     post = models.TextField()
+    converted_post = models.TextField(default='')
     approved = models.BooleanField(default=False)
     approved_by = models.ForeignKey(
         User, related_name='posts_approved', null=True, blank=True,
         on_delete=models.SET_NULL)
     created_on = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        html = markdown.markdown(self.post)
+        self.converted_post = bleach.clean(
+            html,
+            settings.BLEACH_VALID_TAGS,
+            settings.BLEACH_VALID_ATTRS,
+            settings.BLEACH_VALID_STYLES
+        )
+        super(GroupPost, self).save(*args, **kwargs)
 
 
 class PostComment(models.Model):

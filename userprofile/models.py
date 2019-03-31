@@ -139,6 +139,7 @@ class UserTasks(models.Model):
     added_two_factor_authentication = models.BooleanField(default=False)
     linked_one_social_account = models.BooleanField(default=False)
     completed_distribution_signup = models.BooleanField(default=False)
+    added_profile_picture = models.BooleanField(default=False)
 
 
 class UserTrustPercentage(models.Model):

@@ -79,6 +79,7 @@ BAZA_APPS = [
     'messenger',
     'group',
     'grouppost',
+    'groupnews',
     'coinbasepay',
     'hashtag',
     'landing',
@@ -295,7 +296,8 @@ TAIGA_PASSWORD = get_env_var('TAIGA_PASSWORD')
 BLEACH_VALID_TAGS = ['p', 'b', 'i', 'u',
                      'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
                      'strike', 'ul', 'li', 'ol', 'br',
-                     'span', 'blockquote', 'hr', 'a', 'img']
+                     'span', 'blockquote', 'hr', 'a', 'img',
+                     'strong', 'em', 'code']
 BLEACH_VALID_ATTRS = {
     'span': ['style', 'class'],
     'p': ['align', ],
@@ -316,3 +318,6 @@ FACEBOOK_APP_ID = get_env_var('FACEBOOK_APP_ID')
 # Phone verification
 PHONE_VERIFICATION_CODE_EXPIRES_IN = int(get_env_var(
     'PHONE_VERIFICATION_CODE_EXPIRES_IN'))  # In seconds
+
+# API Key for uploading faq json
+FAQ_API_KEY = get_env_var('FAQ_API_KEY')

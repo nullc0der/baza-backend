@@ -12,7 +12,9 @@ from channels.layers import get_channel_layer
 from oauth2_provider.models import get_access_token_model
 
 from userprofile.models import (
-    UserProfile, UserPhoto, UserDocument, UserTasks)
+    UserProfile, UserPhoto, UserDocument, UserTasks,
+    UserProfilePhoto
+)
 from userprofile.utils import get_user_tasks
 
 
@@ -99,3 +101,19 @@ def update_user_tasks(sender, **kwargs):
             usertasks = UserTasks.objects.get(user=instance.user)
             usertasks.completed_distribution_signup = True
             usertasks.save()
+    if sender.__name__ == 'UserProfilePhoto':
+        profile = instance.profile
+        if profile.profilephotos.filter(is_active=True):
+            usertasks = UserTasks.objects.get(user=profile.user)
+            usertasks.added_profile_picture = True
+            usertasks.save()
+
+
+@receiver(post_delete, sender=UserProfilePhoto)
+def update_profile_picture_task(sender, **kwargs):
+    instance = kwargs['instance']
+    profile = instance.profile
+    if not profile.profilephotos.filter(is_active=True):
+        usertasks = UserTasks.objects.get(user=profile.user)
+        usertasks.added_profile_picture = False
+        usertasks.save()
