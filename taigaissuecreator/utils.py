@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from taigaissuecreator.models import (
     TaigaIssue, TaigaIssueAttachment, TaigaIssueType)
 
-API_BASE_URL = 'https://taiga.ekata.social/api/v1'
+API_BASE_URL = 'https://' + settings.TAIGA_HOST + '/api/v1'
 LOGIN_URL = API_BASE_URL + '/auth'
 ISSUE_URL = API_BASE_URL + '/issues'
 ISSUE_TYPE_URL = API_BASE_URL + '/issue-types'
