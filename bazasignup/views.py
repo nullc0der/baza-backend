@@ -151,7 +151,7 @@ class UserInfoTabView(views.APIView):
             request.user.first_name = serializer.validated_data['first_name']
             request.user.last_name = serializer.validated_data['last_name']
             request.user.save()
-            if 'referral_code' in serializer.validated_data:
+            if serializer.validated_data['referral_code']:
                 bazasignupreferralcode = BazaSignupReferralCode.objects.get(
                     code=serializer.validated_data['referral_code'])
                 signup.referred_by = bazasignupreferralcode.signup.user
