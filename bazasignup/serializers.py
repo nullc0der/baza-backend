@@ -10,7 +10,8 @@ from phoneverification.models import PhoneVerification
 from bazasignup.countries import COUNTRIES
 from bazasignup.models import (
     EmailVerification,
-    BazaSignupAutoApprovalFailReason
+    BazaSignupAutoApprovalFailReason,
+    BazaSignupReferralCode
 )
 
 
@@ -48,10 +49,11 @@ class UserInfoTabSerializer(serializers.Serializer):
 
     def validate_referral_code(self, value):
         if value:
-            raise serializers.ValidationError(
-                "This feature is not enabled yet, please"
-                " leave this blank"
-            )
+            try:
+                BazaSignupReferralCode.objects.get(code=value)
+                return value
+            except BazaSignupReferralCode.DoesNotExist:
+                raise serializers.ValidationError('Invalid referral code')
         return value
 
 

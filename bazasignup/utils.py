@@ -141,8 +141,9 @@ def process_after_approval(signup_id):
     msg.attach_alternative(email_template.render({
         'referral_code': bazasignupreferralcode.code,
         'referral_url':
-            'baza.foundation/profile/'
-            '#!baza-signup?referral-code=%s' % bazasignupreferralcode.code
+            'https://baza.foundation/profile/'
+            '#!baza-registration?referral-code=%s'
+            % bazasignupreferralcode.code
     }), "text/html")
     msg.send()
     signup.verified_date = now()

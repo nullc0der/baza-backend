@@ -17,6 +17,9 @@ class BazaSignup(models.Model):
     photo = models.ImageField(upload_to='signup_images', null=True)
     email = models.EmailField(null=True)
     phone_number = models.CharField(max_length=15, default='')
+    referred_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True,
+        related_name='referred_signups')
     signup_date = models.DateTimeField(auto_now_add=True)
     verified_date = models.DateTimeField(null=True)
     wallet_address = models.CharField(max_length=40, default='')
