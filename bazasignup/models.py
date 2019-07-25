@@ -97,7 +97,7 @@ class BazaSignupAutoApprovalFailReason(models.Model):
 
 class BazaSignupReferralCode(models.Model):
     signup = models.OneToOneField(BazaSignup, on_delete=models.CASCADE)
-    code = models.CharField(max_length=6)
+    code = models.CharField(max_length=12)
 
 
 class BazaSignupEmail(models.Model):
