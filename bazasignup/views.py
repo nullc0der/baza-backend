@@ -76,6 +76,12 @@ def get_next_step_index(completed_steps):
     return min(not_completed_steps) if len(not_completed_steps) else None
 
 
+def get_referral_code(signup):
+    if hasattr(signup, 'bazasignupreferralcode'):
+        return signup.bazasignupreferralcode.code
+    return ''
+
+
 class CheckCompletedTab(views.APIView):
     """
     This API returns a list of signup completed tabs
@@ -92,6 +98,7 @@ class CheckCompletedTab(views.APIView):
             next_step_index = get_next_step_index(signup.get_completed_steps())
             data = {
                 'status': signup.status,
+                'referral_code': get_referral_code(signup),
                 'completed_steps': signup.get_completed_steps(),
                 'next_step': {
                     'index': next_step_index,
@@ -102,6 +109,7 @@ class CheckCompletedTab(views.APIView):
         except BazaSignup.DoesNotExist:
             data = {
                 'status': 'pending',
+                'referral_code': '',
                 'completed_steps': [],
                 'next_step': {
                     'index': 0,

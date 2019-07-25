@@ -1,4 +1,5 @@
-from datetime import timedelta
+import hashlib
+from datetime import timedelta, datetime
 
 from django.utils.crypto import get_random_string
 from django.utils.timezone import now
@@ -110,15 +111,35 @@ def send_phone_verification_code_again(signup_id):
 
 
 def get_unique_referral_code():
-    referral_code = get_random_string(
-        allowed_chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890',
-        length=6
-    )
-    ref_code_exist = BazaSignupReferralCode.objects.filter(
-        code=referral_code).exists()
-    if ref_code_exist:
+    """
+    This function will return an unique referral code by creating md5sum of
+    current unix timestamp, it will make final result uppercased and remove
+    confusing character like 1, 0, I, O.
+
+    NOTE: I am checking if the final code is already exist, please research
+    if it needs to be checked or not
+    """
+
+    restricted_chars = ['1', '0', 'I', 'O']
+    timestamp = str(datetime.utcnow().timestamp()).encode('utf-8')
+    timestamp_md5 = hashlib.md5(timestamp).hexdigest()[:8].upper()
+    if bool([i for i in timestamp_md5 if i in restricted_chars]):
         return get_unique_referral_code()
-    return referral_code
+    if BazaSignupReferralCode.objects.filter(code=timestamp_md5).exists():
+        return get_unique_referral_code()
+    return 'BAZ-{}'.format(timestamp_md5)
+
+
+# def get_unique_referral_code():
+#     referral_code = get_random_string(
+#         allowed_chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890',
+#         length=6
+#     )
+#     ref_code_exist = BazaSignupReferralCode.objects.filter(
+#         code=referral_code).exists()
+#     if ref_code_exist:
+#         return get_unique_referral_code()
+#     return referral_code
 
 
 def process_after_approval(signup_id):
