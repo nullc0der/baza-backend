@@ -20,6 +20,7 @@ class BazaSignup(models.Model):
     referred_by = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True,
         related_name='referred_signups')
+    is_donor = models.BooleanField(default=False)
     signup_date = models.DateTimeField(auto_now_add=True)
     verified_date = models.DateTimeField(null=True)
     wallet_address = models.CharField(max_length=40, default='')

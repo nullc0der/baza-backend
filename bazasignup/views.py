@@ -59,6 +59,7 @@ def get_step_response(signup, current_step=0):
     data = {
         'status': signup.status,
         'completed_steps': signup.get_completed_steps(),
+        'is_donor': signup.is_donor,
         'next_step': {
             'index': next_step_index,
             'is_skippable': next_step_index in SKIPPABLE_INDEXES
@@ -100,6 +101,7 @@ class CheckCompletedTab(views.APIView):
                 'status': signup.status,
                 'referral_code': get_referral_code(signup),
                 'completed_steps': signup.get_completed_steps(),
+                'is_donor': signup.is_donor,
                 'next_step': {
                     'index': next_step_index,
                     'is_skippable':
@@ -111,6 +113,7 @@ class CheckCompletedTab(views.APIView):
                 'status': 'pending',
                 'referral_code': '',
                 'completed_steps': [],
+                'is_donor': False,
                 'next_step': {
                     'index': 0,
                     'is_skippable': 0 in SKIPPABLE_INDEXES
@@ -397,6 +400,27 @@ class SignupImageUploadView(views.APIView):
             task_process_autoapproval.delay(signup.id)
             return get_step_response(signup, current_step=3)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ToggleDonorView(views.APIView):
+    """
+    This api will be used to toggle donor status of a distribution signup
+    """
+
+    permission_classes = (IsAuthenticated, TokenHasScope, )
+    required_scopes = [
+        'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
+
+    def post(self, request, format=None):
+        try:
+            signup = BazaSignup.objects.get(user=request.user)
+            signup.is_donor = not signup.is_donor
+            signup.save()
+            return Response({
+                'is_donor': signup.is_donor
+            })
+        except BazaSignup.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
 
 # def reset_signup(request):

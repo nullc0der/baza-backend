@@ -27,6 +27,10 @@ urlpatterns = [
         views.SignupImageUploadView.as_view()
     ),
     path(
+        'toggledonor/',
+        views.ToggleDonorView.as_view()
+    ),
+    path(
         'signups/',
         views.BazaSignupListView.as_view()
     ),
