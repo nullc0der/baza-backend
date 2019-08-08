@@ -1,41 +1,42 @@
 from django.urls import path
-from bazasignup import views
+from bazasignup import user_views
+from bazasignup import staff_views
 
 
 urlpatterns = [
-    path('checksteps/', views.CheckCompletedTab.as_view()),
-    path('userinfotab/', views.UserInfoTabView.as_view()),
-    path('skipemail/', views.SkipEmailTabView.as_view()),
+    path('checksteps/', user_views.CheckCompletedTab.as_view()),
+    path('userinfotab/', user_views.UserInfoTabView.as_view()),
+    path('skipemail/', user_views.SkipEmailTabView.as_view()),
     path(
         'sendverificationcode/',
-        views.InitiateEmailVerificationView.as_view()),
+        user_views.InitiateEmailVerificationView.as_view()),
     path(
         'validateemailcode/',
-        views.ValidateEmailVerificationCode.as_view()),
+        user_views.ValidateEmailVerificationCode.as_view()),
     path(
         'sendverificationcodeagain/',
-        views.SendVerificationEmailAgain.as_view()),
-    path('skipphone/', views.SkipPhoneTabView.as_view()),
+        user_views.SendVerificationEmailAgain.as_view()),
+    path('skipphone/', user_views.SkipPhoneTabView.as_view()),
     path(
         'sendphoneverificationcode/',
-        views.InitiatePhoneVerificationView.as_view()),
+        user_views.InitiatePhoneVerificationView.as_view()),
     path(
         'validatesmscode/',
-        views.ValidatePhoneVerificationCode.as_view()),
+        user_views.ValidatePhoneVerificationCode.as_view()),
     path(
         'uploadsignupimage/',
-        views.SignupImageUploadView.as_view()
+        user_views.SignupImageUploadView.as_view()
     ),
     path(
         'toggledonor/',
-        views.ToggleDonorView.as_view()
+        user_views.ToggleDonorView.as_view()
     ),
     path(
         'signups/',
-        views.BazaSignupListView.as_view()
+        staff_views.BazaSignupListView.as_view()
     ),
     path(
         'signup/<int:signup_id>/',
-        views.BazaSignupDetailsView.as_view()
+        staff_views.BazaSignupDetailsView.as_view()
     )
 ]
