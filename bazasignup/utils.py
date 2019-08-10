@@ -7,15 +7,25 @@ from django.core.mail import EmailMultiAlternatives
 from django.template import loader
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.exceptions import ObjectDoesNotExist
 
 from twilio.rest import Client
+
+from authclient.utils import AuthHelperClient
+
+from publicusers.views import get_username, get_avatar_color
+from userprofile.views import get_profile_photo
 
 from bazasignup.models import (
     PhoneVerification,
     EmailVerification,
     BazaSignup,
-    BazaSignupReferralCode
+    BazaSignupReferralCode,
+    BazaSignupEmail,
+    BazaSignupPhone
 )
+
+URL_PROTOCOL = 'http://' if settings.SITE_TYPE == 'local' else 'https://'
 
 
 def send_email_verfication_code(email, signup_id):
@@ -171,3 +181,147 @@ def process_after_approval(signup_id):
     signup.changed_by = system_user
     signup.save()
     return True
+
+
+def get_user_primary_emails(user):
+    try:
+        user_access_token = user.oauth2_provider_accesstoken.latest('id')
+        authhelperclient = AuthHelperClient(
+            URL_PROTOCOL +
+            settings.CENTRAL_AUTH_INTROSPECT_URL +
+            '/authhelper/getsocialauths/'
+        )
+        res_status, data = authhelperclient.get_user_emails(user_access_token)
+        if res_status == 200:
+            primary_emails = [
+                email for email in data if email['primary']]
+            return primary_emails
+    except ObjectDoesNotExist:
+        pass
+    return list()
+
+
+def get_user_primary_phones(user):
+    data = []
+    userphones = user.profile.phones.filter(primary=True)
+    for userphone in userphones:
+        data.append({
+            'phone_number': userphone.get_full_phone_number(),
+            'primary': userphone.primary,
+            'verified': userphone.verified
+        })
+    return data
+
+
+def get_signup_profile_data(signup):
+    profile_datas = {
+        'fullname': signup.user.get_full_name(),
+        'username': get_username(signup.user),
+        'user_image_url': get_profile_photo(signup.user),
+        'user_avatar_color': get_avatar_color(signup.user),
+        'birthdate': signup.bazasignupadditionalinfo.birth_date,
+        'date_joined': signup.user.date_joined,
+        'primary_mobile': get_user_primary_phones(signup.user),
+        'primary_emails': get_user_primary_emails(signup.user)
+    }
+    return profile_datas
+
+
+def is_email_used_before(email):
+    if email:
+        bazasignupemail = BazaSignupEmail.objects.get(
+            email=email
+        )
+        return bazasignupemail.signups.count() > 1
+    return False
+
+
+def is_phone_used_before(phone_number):
+    if phone_number:
+        bazasignupphone = BazaSignupPhone.objects.get(
+            phone_number=phone_number
+        )
+        return bazasignupphone.signups.count() > 1
+    return False
+
+
+def get_address_data(address):
+    data = {
+        'address_type': address.address_type,
+        'country': address.country,
+        'city': address.city,
+        'state': address.state,
+        'house_number': address.house_number,
+        'street_name': address.street,
+        'zip_code': address.zip_code,
+        'latitude': address.latitude,
+        'longitude': address.longitude
+    }
+    return data
+
+
+def is_address_fetched(signup, address_type):
+    reason_type = 'no_geoip_data' if address_type == 'geoip_db' else\
+        'no_twilio_data'
+    fail_reasons = signup.bazasignupautoapprovalfailreason_set.filter(
+        reason_type=reason_type)
+    return not bool(fail_reasons)
+
+
+def address_is_not_within_range(signup, address_type):
+    reason_type = 'geoip_vs_userinput_address_range_exceed'\
+        if address_type == 'geoip_db' else\
+        'twilio_vs_userinput_address_range_exceed'
+    fail_reasons = signup.bazasignupautoapprovalfailreason_set.filter(
+        reason_type=reason_type)
+    return bool(fail_reasons)
+
+
+def get_signup_contact_data(signup):
+    contact_data = {
+        'email': signup.email,
+        'email_used_before': is_email_used_before(signup.email),
+        'phone_number': signup.phone_number,
+        'phone_used_before': is_phone_used_before(signup.phone_number),
+    }
+    return contact_data
+
+
+def get_signup_address_data(signup):
+    address_data = {
+        'addresses': [get_address_data(address)
+                      for address in signup.addresses.all()],
+        'twilio_address_fetched': is_address_fetched(signup, 'twilio_db'),
+        'geoip_address_fetched': is_address_fetched(signup, 'geoip_db'),
+        'geoip_address_is_not_within_range': address_is_not_within_range(
+            signup, 'geoip_db'),
+        'twilio_address_is_not_within_range': address_is_not_within_range(
+            signup, 'twilio_db')
+    }
+    return address_data
+
+
+def get_signup_additional_data(signup):
+    additional_data = {
+        'photo': signup.photo.url if signup.photo else '',
+        'status': signup.status,
+        'signup_date': signup.signup_date,
+        'verified_date': signup.verified_date,
+        'referral_code': signup.bazasignupreferralcode.code,
+        'total_referrals': signup.user.referred_signups.count(),
+        'is_donor': signup.is_donor,
+        'referred_by': signup.referred_by.username,
+        'wallet_address': signup.wallet_address,
+        'on_distribution': signup.on_distribution
+    }
+    return additional_data
+
+
+def get_signup_data(signup):
+    signup_datas = {
+        'id': signup.id,
+        'contact_data': get_signup_contact_data(signup),
+        'address_data': get_signup_address_data(signup),
+        'additional_data': get_signup_additional_data(signup)
+    }
+    return signup_datas

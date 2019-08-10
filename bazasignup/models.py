@@ -84,7 +84,25 @@ class BazaSignupAdditionalInfo(models.Model):
 
 
 class BazaSignupAutoApprovalFailReason(models.Model):
+    REASON_TYPE = (
+        ('no_email', 'no_email'),
+        ('no_phone', 'no_phone'),
+        ('non_unique_email', 'non_unique_email'),
+        ('non_unique_phone', 'non_unique_phone'),
+        ('no_twilio_data', 'no_twilio_data'),
+        ('no_geoip_data', 'no_geoip_data'),
+        ('twilio_vs_userinput_address_range_exceed',
+         'twilio_vs_userinput_address_range_exceed'),
+        ('geoip_vs_userinput_address_range_exceed',
+         'geoip_vs_userinput_address_range_exceed'),
+        ('no_distance_fetched_twilio_vs_userinput',
+         'no_distance_fetched_twilio_vs_userinput'),
+        ('no_distance_fetched_geoip_vs_userinput',
+         'no_distance_fetched_geoip_vs_userinput')
+    )
     signup = models.ForeignKey(BazaSignup, on_delete=models.CASCADE)
+    reason_type = models.CharField(
+        max_length=100, choices=REASON_TYPE, default='')
     reason = models.TextField()
     changed_by = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True,

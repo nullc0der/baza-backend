@@ -146,5 +146,8 @@ class BazaSignupSerializer(serializers.Serializer):
 
 class BazaSignupListSerializer(serializers.Serializer):
     id_ = serializers.IntegerField()
-    username = serializers.CharField()
     status = serializers.CharField()
+    fullname = serializers.CharField()
+    username = serializers.CharField()
+    user_image_url = serializers.CharField()
+    user_avatar_color = serializers.CharField()
