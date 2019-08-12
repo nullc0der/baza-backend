@@ -178,73 +178,83 @@ class BazaSignupAutoApproval(object):
                 score += 1
             else:
                 score -= 1
-                self.autoapproval_fail_reason.append(
-                    'Email address is not unique'
-                )
+                self.autoapproval_fail_reason.append({
+                    'reason_type': 'non_unique_email',
+                    'reason': 'Email address is not unique'
+                })
         else:
             score -= 1
-            self.autoapproval_fail_reason.append(
-                'No email address'
-            )
+            self.autoapproval_fail_reason.append({
+                'reason_type': 'no_email',
+                'reason': 'No email address'
+            })
         if self.signup.phone_number:
             if self.__is_phone_unique():
                 score += 1
             else:
                 score -= 1
-                self.autoapproval_fail_reason.append(
-                    'Phone number is not unique'
-                )
+                self.autoapproval_fail_reason.append({
+                    'reason_type': 'non_unique_phone',
+                    'reason': 'Phone number is not unique'
+                })
         else:
             score -= 1
-            self.autoapproval_fail_reason.append(
-                'No phone number'
-            )
+            self.autoapproval_fail_reason.append({
+                'reason_type': 'no_phone',
+                'reason': 'No phone number'
+            })
         if data_collection_status['twilio']:
             score += 1
         else:
             score -= 1
-            self.autoapproval_fail_reason.append(
-                'No twilio data could be fetched'
-            )
+            self.autoapproval_fail_reason.append({
+                'reason_type': 'no_twilio_data',
+                'reason': 'No twilio data could be fetched'
+            })
         if data_collection_status['geoip']:
             score += 1
         else:
             score -= 1
-            self.autoapproval_fail_reason.append(
-                'No geoip data could be fetched'
-            )
+            self.autoapproval_fail_reason.append({
+                'reason_type': 'no_geoip_data',
+                'reason': 'No geoip data could be fetched'
+            })
         if address_distances['geoip_vs_userinput']:
             if address_distances['geoip_vs_userinput'] <\
                     settings.MAXIMUM_ALLOWED_DISTANCE_FOR_SIGNUP:
                 score += 1
             else:
                 score -= 1
-                self.autoapproval_fail_reason.append(
-                    'Geoip and user inputed address difference exceeds'
-                    ' maximum allowed distance'
-                )
+                self.autoapproval_fail_reason.append({
+                    'reason_type': 'geoip_vs_userinput_address_range_exceed',
+                    'reason': 'Geoip and user inputed address difference'
+                    ' exceeds maximum allowed distance'
+                })
         else:
             score -= 1
-            self.autoapproval_fail_reason.append(
-                'No distance could be fetched'
+            self.autoapproval_fail_reason.append({
+                'reason_type': 'no_distance_fetched_geoip_vs_userinput',
+                'reason': 'No distance could be fetched'
                 ' between geoip and user inputed address'
-            )
+            })
         if address_distances['twilio_vs_userinput']:
             if address_distances['twilio_vs_userinput'] <\
                     settings.MAXIMUM_ALLOWED_DISTANCE_FOR_SIGNUP:
                 score += 1
             else:
                 score -= 1
-                self.autoapproval_fail_reason.append(
-                    'Twilio and user inputed address difference exceeds'
-                    ' maximum allowed distance'
-                )
+                self.autoapproval_fail_reason.append({
+                    'reason_type': 'twilio_vs_userinput_address_range_exceed',
+                    'reason': 'Twilio and user inputed address difference'
+                    ' exceeds maximum allowed distance'
+                })
         else:
             score -= 1
-            self.autoapproval_fail_reason.append(
-                'No distance could be fetched'
+            self.autoapproval_fail_reason.append({
+                'reason_type': 'no_distance_fetched_twilio_vs_userinput',
+                'reason': 'No distance could be fetched'
                 ' between twilio and user inputed address'
-            )
+            })
         if score >= 3:
             self.signup.status == 'approved'
             self.signup.changed_by = self.system_user
@@ -253,7 +263,8 @@ class BazaSignupAutoApproval(object):
             for fail_reason in self.autoapproval_fail_reason:
                 autoapprovalfailreason = BazaSignupAutoApprovalFailReason(
                     signup=self.signup,
-                    reason=fail_reason,
+                    reason_type=fail_reason['reason_type'],
+                    reason=fail_reason['reason'],
                     changed_by=self.system_user
                 )
                 autoapprovalfailreason.save()
