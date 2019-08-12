@@ -183,27 +183,32 @@ def process_after_approval(signup_id):
     return True
 
 
-def get_user_primary_emails(user):
+def get_user_emails(user):
     try:
         user_access_token = user.oauth2_provider_accesstoken.latest('id')
         authhelperclient = AuthHelperClient(
             URL_PROTOCOL +
             settings.CENTRAL_AUTH_INTROSPECT_URL +
-            '/authhelper/getsocialauths/'
+            '/authhelper/useremails/'
         )
         res_status, data = authhelperclient.get_user_emails(user_access_token)
         if res_status == 200:
-            primary_emails = [
-                email for email in data if email['primary']]
-            return primary_emails
+            email_data = []
+            for email in data:
+                email_data.append({
+                    'email_id': email.get('email', ''),
+                    'primary': email.get('primary', False),
+                    'verified': email.get('verified', False)
+                })
+            return email_data
     except ObjectDoesNotExist:
         pass
     return list()
 
 
-def get_user_primary_phones(user):
+def get_user_phones(user):
     data = []
-    userphones = user.profile.phones.filter(primary=True)
+    userphones = user.profile.phones.all()
     for userphone in userphones:
         data.append({
             'phone_number': userphone.get_full_phone_number(),
@@ -221,8 +226,8 @@ def get_signup_profile_data(signup):
         'user_avatar_color': get_avatar_color(signup.user),
         'birthdate': signup.bazasignupadditionalinfo.birth_date,
         'date_joined': signup.user.date_joined,
-        'primary_mobile': get_user_primary_phones(signup.user),
-        'primary_emails': get_user_primary_emails(signup.user)
+        'phones': get_user_phones(signup.user),
+        'emails': get_user_emails(signup.user)
     }
     return profile_datas
 
@@ -310,7 +315,8 @@ def get_signup_additional_data(signup):
         'referral_code': signup.bazasignupreferralcode.code,
         'total_referrals': signup.user.referred_signups.count(),
         'is_donor': signup.is_donor,
-        'referred_by': signup.referred_by.username,
+        'referred_by': signup.referred_by.username
+        if signup.referred_by else '',
         'wallet_address': signup.wallet_address,
         'on_distribution': signup.on_distribution
     }

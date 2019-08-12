@@ -6,7 +6,7 @@ authors = ["Prasanta <prasantakakati1994@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.6"
-django = "2.1.4"
+django = "2.1.5"
 django-rest-framework = "^0.1.0"
 django-cors-headers = "2.4.0"
 uwsgi = "2.0.17.1"
