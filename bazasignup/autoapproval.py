@@ -263,8 +263,8 @@ class BazaSignupAutoApproval(object):
             for fail_reason in self.autoapproval_fail_reason:
                 autoapprovalfailreason = BazaSignupAutoApprovalFailReason(
                     signup=self.signup,
-                    reason_type=fail_reason.reason_type,
-                    reason=fail_reason.reason,
+                    reason_type=fail_reason['reason_type'],
+                    reason=fail_reason['reason'],
                     changed_by=self.system_user
                 )
                 autoapprovalfailreason.save()

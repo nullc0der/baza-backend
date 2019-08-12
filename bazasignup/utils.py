@@ -312,7 +312,8 @@ def get_signup_additional_data(signup):
         'status': signup.status,
         'signup_date': signup.signup_date,
         'verified_date': signup.verified_date,
-        'referral_code': signup.bazasignupreferralcode.code,
+        'referral_code': signup.bazasignupreferralcode.code
+        if hasattr(signup, 'bazasignupreferralcode') else '',
         'total_referrals': signup.user.referred_signups.count(),
         'is_donor': signup.is_donor,
         'referred_by': signup.referred_by.username
