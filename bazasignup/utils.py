@@ -185,13 +185,12 @@ def process_after_approval(signup_id):
 
 def get_user_emails(user):
     try:
-        user_access_token = user.oauth2_provider_accesstoken.latest('id')
         authhelperclient = AuthHelperClient(
             URL_PROTOCOL +
             settings.CENTRAL_AUTH_INTROSPECT_URL +
             '/authhelper/useremails/'
         )
-        res_status, data = authhelperclient.get_user_emails(user_access_token)
+        res_status, data = authhelperclient.get_user_emails(user.username)
         if res_status == 200:
             email_data = []
             for email in data:
