@@ -42,5 +42,9 @@ urlpatterns = [
     path(
         'signup/<int:signup_id>/userprofile/',
         staff_views.BazaSignupProfileDataView.as_view()
+    ),
+    path(
+        'signup/<int:signup_id>/comments/',
+        staff_views.BazaSignupCommentsView.as_view()
     )
 ]

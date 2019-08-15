@@ -141,3 +141,13 @@ class PhoneVerification(models.Model):
     signup = models.OneToOneField(BazaSignup, on_delete=models.CASCADE)
     verification_code = models.CharField(max_length=6)
     created_on = models.DateTimeField(auto_now_add=True)
+
+
+class BazaSignupComment(models.Model):
+    signup = models.ForeignKey(
+        BazaSignup, on_delete=models.CASCADE, related_name='comments')
+    title = models.CharField(max_length=200)
+    content = models.TextField()
+    commented_on = models.DateTimeField(auto_now_add=True)
+    commented_by = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='bazasignupcomments')

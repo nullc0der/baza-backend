@@ -15,3 +15,12 @@ class IsStaffOfSiteOwnerGroup(permissions.BasePermission):
         if len(site_owner_group):
             return request.user in site_owner_group[0].staffs.all()
         return False
+
+
+class IsOwnerOfComment(permissions.BasePermission):
+    """
+    This permission checks wheather the request.user is owner of the comment
+    """
+
+    def has_object_permission(self, request, view, obj):
+        return request.user == obj.commented_by

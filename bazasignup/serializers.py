@@ -7,11 +7,14 @@ from rest_framework import serializers
 
 from phoneverification.models import PhoneVerification
 
+from grouppost.serializers import UserSerializer
+
 from bazasignup.countries import COUNTRIES
 from bazasignup.models import (
     EmailVerification,
-    BazaSignupAutoApprovalFailReason,
-    BazaSignupReferralCode
+    BazaSignup,
+    BazaSignupReferralCode,
+    BazaSignupComment
 )
 
 
@@ -110,40 +113,6 @@ class SignupImageSerializer(serializers.Serializer):
     image = serializers.ImageField()
 
 
-class AutoApprovalFailReasonSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = BazaSignupAutoApprovalFailReason
-        fields = ('reason', )
-
-
-class BazaSignupSerializer(serializers.Serializer):
-    STATUS_CHOICES = (
-        ('pending', 'Pending'),
-        ('approved', 'Approved'),
-        ('declined', 'Declined'),
-        ('incomplete', 'Incomplete')
-    )
-    id_ = serializers.IntegerField()
-    username = serializers.CharField()
-    full_name = serializers.CharField()
-    email = serializers.EmailField()
-    email_used_before = serializers.BooleanField()
-    phone_number = serializers.CharField()
-    phone_used_before = serializers.BooleanField()
-    photo = serializers.CharField()
-    birthdate = serializers.DateField()
-    user_addresses = AddressSerializer(many=True)
-    status = serializers.ChoiceField(choices=STATUS_CHOICES)
-    signup_date = serializers.DateTimeField()
-    verified_date = serializers.DateTimeField()
-    referral_code = serializers.CharField()
-    wallet_address = serializers.CharField()
-    on_distribution = serializers.BooleanField()
-    auto_approval_fail_reasons = AutoApprovalFailReasonSerializer(
-        many=True
-    )
-
-
 class BazaSignupListSerializer(serializers.Serializer):
     id_ = serializers.IntegerField()
     status = serializers.CharField()
@@ -151,3 +120,18 @@ class BazaSignupListSerializer(serializers.Serializer):
     username = serializers.CharField()
     user_image_url = serializers.CharField()
     user_avatar_color = serializers.CharField()
+
+
+class BazaSignupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BazaSignup
+        fields = ('id', )
+
+
+class BazaSignupCommentSerializer(serializers.ModelSerializer):
+    commented_by = UserSerializer(required=False)
+    signup = BazaSignupSerializer(required=False)
+
+    class Meta:
+        model = BazaSignupComment
+        fields = '__all__'
