@@ -1,6 +1,5 @@
 from django.conf import settings
-# from django.contrib.auth.models import User
-# from django.http import HttpResponse
+from django.core.exceptions import ObjectDoesNotExist
 
 from rest_framework import views, status
 from rest_framework.response import Response
@@ -45,18 +44,30 @@ def get_current_completed_steps(request, current_step):
         if current_step not in signup.get_completed_steps():
             completed_steps = signup.get_completed_steps()
             completed_steps.append(current_step)
-            signup.completed_steps = ','.join(completed_steps)
-            signup.save()
-        return signup.completed_steps
+        return ','.join(completed_steps)
     except BazaSignup.DoesNotExist:
         return "0"
 
 
-def get_step_response(signup, current_step=0):
-    next_step_index = get_next_step_index(signup.get_completed_steps())
+def remove_invalidated_steps(request, current_step):
+    try:
+        signup = BazaSignup.objects.get(
+            user=request.user)
+        if current_step in signup.get_invalidated_steps():
+            invalidated_steps = signup.get_invalidated_steps()
+            invalidated_steps.remove(current_step)
+        return ",".join(invalidated_steps)
+    except BazaSignup.DoesNotExist:
+        return ""
+
+
+def get_step_response(signup):
+    next_step_index = get_next_step_index(
+        signup.get_completed_steps(), signup.get_invalidated_steps())
     data = {
         'status': signup.status,
         'completed_steps': signup.get_completed_steps(),
+        'invalidated_steps': signup.get_invalidated_steps(),
         'is_donor': signup.is_donor,
         'next_step': {
             'index': next_step_index,
@@ -66,11 +77,12 @@ def get_step_response(signup, current_step=0):
     return Response(data)
 
 
-def get_next_step_index(completed_steps):
+def get_next_step_index(completed_steps, invalidated_steps):
     completed_steps = list(map(lambda x: int(x), completed_steps))
+    invalidated_steps = list(map(lambda x: int(x), invalidated_steps))
     not_completed_steps = []
     for i in range(4):
-        if i not in completed_steps:
+        if i not in completed_steps or i not in invalidated_steps:
             not_completed_steps.append(i)
     return min(not_completed_steps) if len(not_completed_steps) else None
 
@@ -94,11 +106,13 @@ class CheckCompletedTab(views.APIView):
         try:
             signup = BazaSignup.objects.get(
                 user=request.user)
-            next_step_index = get_next_step_index(signup.get_completed_steps())
+            next_step_index = get_next_step_index(
+                signup.get_completed_steps(), signup.get_invalidated_steps())
             data = {
                 'status': signup.status,
                 'referral_code': get_referral_code(signup),
                 'completed_steps': signup.get_completed_steps(),
+                'invalidated_steps': signup.get_invalidated_steps(),
                 'is_donor': signup.is_donor,
                 'next_step': {
                     'index': next_step_index,
@@ -111,6 +125,7 @@ class CheckCompletedTab(views.APIView):
                 'status': 'pending',
                 'referral_code': '',
                 'completed_steps': [],
+                'invalidated_steps': [],
                 'is_donor': False,
                 'next_step': {
                     'index': 0,
@@ -130,42 +145,79 @@ class UserInfoTabView(views.APIView):
     required_scopes = [
         'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
 
-    # TODO: decide wheather an user will be able to edit info twice
+    def __save_baza_signup_address(self, signup, serializer, request):
+        bazasignupaddress = BazaSignupAddress.objects.get_or_create(
+            signup=signup,
+            address_type='user_input'
+        )
+        bazasignupaddress.house_number = \
+            serializer.validated_data['house_number']
+        bazasignupaddress.street = serializer.validated_data['street_name']
+        bazasignupaddress.zip_code = serializer.validated_data['zip_code']
+        bazasignupaddress.city = serializer.validated_data['city']
+        bazasignupaddress.state = serializer.validated_data['state']
+        bazasignupaddress.country = serializer.validated_data['country']
+        bazasignupaddress.changed_by = request.user
+        bazasignupaddress.save()
+
+    def __save_baza_signup_additional_info(self, signup, serializer, request):
+        bazasignupadditionalinfo, created =\
+            BazaSignupAdditionalInfo.objects.get_or_create(
+                signup=signup
+            )
+        bazasignupadditionalinfo.birth_date = \
+            serializer.validated_data['birthdate']
+        bazasignupadditionalinfo.changed_by = request.user
+        bazasignupadditionalinfo.save()
+        request.user.first_name = serializer.validated_data['first_name']
+        request.user.last_name = serializer.validated_data['last_name']
+        request.user.save()
+
+    def __get_user_info_tab_data(self, signup):
+        try:
+            address = signup.addresses.get(address_type='user_input')
+            referral_code = signup.referred_by.bazasignupreferralcode.code\
+                if hasattr(signup, 'referred_by') else ''
+            return {
+                'country': address.country,
+                'city': address.city,
+                'state': address.state,
+                'house_number': address.house_number,
+                'street_name': address.street,
+                'zip_code': address.zip_code,
+                'birthdate': address.bazasignupadditionalinfo.birth_date,
+                'referral_code': referral_code
+            }
+        except ObjectDoesNotExist:
+            return dict()
+
+    def get(self, request, format=None):
+        try:
+            signup = BazaSignup.objects.get(user=request.user)
+            return Response(self.__get_user_info_tab_data(signup))
+        except BazaSignup.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
     def post(self, request, format=None):
         serializer = UserInfoTabSerializer(data=request.data)
         if serializer.is_valid():
             signup, created = BazaSignup.objects.get_or_create(
-                user=request.user,
-                completed_steps=get_current_completed_steps(request, "0"),
-                changed_by=request.user
+                user=request.user
             )
-            bazasignupaddress = BazaSignupAddress(
-                signup=signup,
-                address_type='user_input',
-                house_number=serializer.validated_data['house_number'],
-                street=serializer.validated_data['street_name'],
-                zip_code=serializer.validated_data['zip_code'],
-                city=serializer.validated_data['city'],
-                state=serializer.validated_data['state'],
-                country=serializer.validated_data['country'],
-                changed_by=request.user
-            )
-            bazasignupaddress.save()
-            bazasignupadditionalinfo = BazaSignupAdditionalInfo(
-                signup=signup,
-                birth_date=serializer.validated_data['birthdate'],
-                changed_by=request.user
-            )
-            bazasignupadditionalinfo.save()
-            request.user.first_name = serializer.validated_data['first_name']
-            request.user.last_name = serializer.validated_data['last_name']
-            request.user.save()
+            signup.completed_steps = get_current_completed_steps(request, "0")
+            signup.changed_by = request.user
+            self.__save_baza_signup_address(signup, serializer, request)
+            self.__save_baza_signup_additional_info(
+                signup, serializer, request)
             if serializer.validated_data['referral_code']:
                 bazasignupreferralcode = BazaSignupReferralCode.objects.get(
                     code=serializer.validated_data['referral_code'])
                 signup.referred_by = bazasignupreferralcode.signup.user
-                signup.save()
-            return get_step_response(signup, current_step=0)
+            if "0" in signup.get_invalidated_steps():
+                signup.invalidated_steps = remove_invalidated_steps(
+                    request, "0")
+            signup.save()
+            return get_step_response(signup)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -187,8 +239,11 @@ class SkipEmailTabView(views.APIView):
             signup.completed_steps = get_current_completed_steps(request, "1")
             signup.email_skipped = True
             signup.changed_by = request.user
+            if "1" in signup.get_invalidated_steps():
+                signup.invalidated_steps = remove_invalidated_steps(
+                    request, "1")
             signup.save()
-            return get_step_response(signup, current_step=1)
+            return get_step_response(signup)
         except BazaSignup.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
@@ -235,6 +290,9 @@ class ValidateEmailVerificationCode(views.APIView):
             signup = emailverification.signup
             signup.email = emailverification.email
             signup.completed_steps = get_current_completed_steps(request, "1")
+            if "1" in signup.get_invalidated_steps():
+                signup.invalidated_steps = remove_invalidated_steps(
+                    request, "1")
             signup.changed_by = request.user
             signup.save()
             bazasignupemail, created = BazaSignupEmail.objects.get_or_create(
@@ -242,7 +300,7 @@ class ValidateEmailVerificationCode(views.APIView):
             )
             bazasignupemail.signups.add(signup)
             emailverification.delete()
-            return get_step_response(signup, current_step=1)
+            return get_step_response(signup)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -286,8 +344,11 @@ class SkipPhoneTabView(views.APIView):
             signup.completed_steps = get_current_completed_steps(request, "2")
             signup.phone_skipped = True
             signup.changed_by = request.user
+            if "2" in signup.get_invalidated_steps():
+                signup.invalidated_steps = remove_invalidated_steps(
+                    request, "2")
             signup.save()
-            return get_step_response(signup, current_step=2)
+            return get_step_response(signup)
         except BazaSignup.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
@@ -341,6 +402,9 @@ class ValidatePhoneVerificationCode(views.APIView):
             signup = phoneverification.content_object
             signup.phone_number = phoneverification.phone_number
             signup.completed_steps = get_current_completed_steps(request, "2")
+            if "2" in signup.get_invalidated_steps():
+                signup.invalidated_steps = remove_invalidated_steps(
+                    request, "2")
             signup.changed_by = request.user
             signup.save()
             bazasignupphone, created = BazaSignupPhone.objects.get_or_create(
@@ -348,7 +412,7 @@ class ValidatePhoneVerificationCode(views.APIView):
             )
             bazasignupphone.signups.add(signup)
             phoneverification.delete()
-            return get_step_response(signup, current_step=2)
+            return get_step_response(signup)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -394,9 +458,12 @@ class SignupImageUploadView(views.APIView):
             signup.logged_ip_address = request.META.get(
                 'HTTP_CF_CONNECTING_IP', '')
             signup.changed_by = request.user
+            if "3" in signup.get_invalidated_steps():
+                signup.invalidated_steps = remove_invalidated_steps(
+                    request, "3")
             signup.save()
             task_process_autoapproval.delay(signup.id)
-            return get_step_response(signup, current_step=3)
+            return get_step_response(signup)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -419,18 +486,3 @@ class ToggleDonorView(views.APIView):
             })
         except BazaSignup.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-
-
-# def reset_signup(request):
-#     """
-#     TODO: Remove this before production
-#     """
-#     username = request.GET.get('username')
-#     try:
-#         user = User.objects.get(username=username)
-#         if hasattr(user, 'bazasignup'):
-#             user.bazasignup.delete()
-#         return HttpResponse('Done, Happy Testing :)')
-#     except User.DoesNotExist:
-#         return HttpResponse('The user can\'t be found '
-#                             'please check username')

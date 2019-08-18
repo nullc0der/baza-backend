@@ -25,8 +25,10 @@ class BazaSignup(models.Model):
     verified_date = models.DateTimeField(null=True)
     wallet_address = models.CharField(max_length=40, default='')
     on_distribution = models.BooleanField(default=False)
-    # Comma seprated string if multiple
+    # Comma separated string if multiple
     completed_steps = models.CharField(max_length=10)
+    # Comma separated string if multiple
+    invalidated_steps = models.CharField(max_length=10, default='')
     logged_ip_address = models.GenericIPAddressField(null=True)
     email_skipped = models.BooleanField(default=False)
     phone_skipped = models.BooleanField(default=False)
@@ -37,6 +39,9 @@ class BazaSignup(models.Model):
 
     def get_completed_steps(self):
         return self.completed_steps.split(',')
+
+    def get_invalidated_steps(self):
+        return self.invalidated_steps.split(',')
 
     @property
     def _history_user(self):

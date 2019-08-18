@@ -16,6 +16,10 @@ from bazasignup.models import (
     BazaSignupReferralCode,
     BazaSignupComment
 )
+from bazasignup.reset_data import (
+    RESET_DATA_TYPES,
+    RESET_DATA_SUBTYPES
+)
 
 
 class AddressSerializer(serializers.Serializer):
@@ -135,3 +139,26 @@ class BazaSignupCommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = BazaSignupComment
         fields = '__all__'
+
+
+class BazaSignupFormResetSerializer(serializers.Serializer):
+    data_types = serializers.ListField(
+        child=serializers.CharField(), allow_empty=True)
+    data_subtypes = serializers.ListField(
+        child=serializers.CharField(), allow_empty=True)
+
+    def validate_data_types(self, value):
+        if value:
+            for i in value:
+                if i not in RESET_DATA_TYPES:
+                    raise serializers.ValidationError(
+                        'The value %s is not a valid reset data type' % i)
+        return value
+
+    def validate_data_subtypes(self, value):
+        if value:
+            for i in value:
+                if i not in RESET_DATA_SUBTYPES:
+                    raise serializers.ValidationError(
+                        'The value %s is not a valid reset data subtype' % i)
+        return value

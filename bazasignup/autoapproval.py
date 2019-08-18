@@ -37,18 +37,20 @@ class BazaSignupAutoApproval(object):
                     'whitepages_pro_caller_id'][
                         'result']['current_addresses'][0]
                 lat_long = address_data.get('lat_long', '')
-                bazasignupaddress = BazaSignupAddress(
-                    signup=self.signup,
-                    address_type='twilio_db',
-                    changed_by=self.system_user,
-                    zip_code=address_data.get('postal_code', ''),
-                    city=address_data.get('city', ''),
-                    state=address_data.get('state_code', ''),
-                    country=countries.get(address_data.get(
-                        'country_code', '').lower()),
-                    latitude=lat_long.get('latitude', ''),
-                    longitude=lat_long.get('longitude', '')
-                )
+                bazasignupaddress, created = \
+                    BazaSignupAddress.objects.get_or_create(
+                        signup=self.signup,
+                        address_type='twilio_db',
+                    )
+                bazasignupaddress.changed_by = self.system_user
+                bazasignupaddress.zip_code = address_data.get(
+                    'postal_code', '')
+                bazasignupaddress.city = address_data.get('city', '')
+                bazasignupaddress.state = address_data.get('state_code', '')
+                bazasignupaddress.country = countries.get(address_data.get(
+                    'country_code', '').lower())
+                bazasignupaddress.latitude = lat_long.get('latitude', '')
+                bazasignupaddress.longitude = lat_long.get('longitude', '')
                 bazasignupaddress.save()
                 return True
         return False
@@ -58,16 +60,19 @@ class BazaSignupAutoApproval(object):
             try:
                 geoip2 = GeoIP2()
                 address_data = geoip2.city(self.signup.logged_ip_address)
-                bazasignupaddress = BazaSignupAddress(
-                    signup=self.signup,
-                    address_type='geoip_db',
-                    changed_by=self.system_user,
-                    city=address_data.get('city', ''),
-                    country=address_data.get('country_name', ''),
-                    zip_code=address_data.get('postal_code', ''),
-                    latitude=address_data.get('latitude', ''),
-                    longitude=address_data.get('longitude', '')
-                )
+                bazasignupaddress, created = \
+                    BazaSignupAddress.objects.get_or_create(
+                        signup=self.signup,
+                        address_type='geoip_db',
+                    )
+                bazasignupaddress.changed_by = self.system_user
+                bazasignupaddress.city = address_data.get('city', '')
+                bazasignupaddress.country = address_data.get(
+                    'country_name', '')
+                bazasignupaddress.zip_code = address_data.get(
+                    'postal_code', '')
+                bazasignupaddress.latitude = address_data.get('latitude', '')
+                bazasignupaddress.longitude = address_data.get('longitude', '')
                 bazasignupaddress.save()
                 return True
             except:

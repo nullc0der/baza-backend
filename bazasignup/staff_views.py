@@ -13,7 +13,8 @@ from userprofile.views import get_profile_photo
 from bazasignup.models import BazaSignup
 from bazasignup.serializers import (
     BazaSignupListSerializer,
-    BazaSignupCommentSerializer
+    BazaSignupCommentSerializer,
+    BazaSignupFormResetSerializer
 )
 from bazasignup.permissions import (
     IsStaffOfSiteOwnerGroup,
@@ -23,6 +24,7 @@ from bazasignup.utils import (
     get_signup_data,
     get_signup_profile_data
 )
+from bazasignup.reset_data import reset_signup_form
 
 
 class BazaSignupListView(views.APIView):
@@ -143,4 +145,28 @@ class BazaSignupCommentsView(views.APIView):
             comment.delete()
             return Response(data)
         except ObjectDoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+class BazaSignupResetView(views.APIView):
+    """
+    This view will provide functionality to reset a signup
+    application
+    """
+
+    permission_classes = (IsAuthenticated, TokenHasScope,
+                          IsStaffOfSiteOwnerGroup, )
+    required_scopes = [
+        'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
+
+    def post(self, request, signup_id, format=None):
+        try:
+            signup = BazaSignup.objects.get(id=signup_id)
+            serializer = BazaSignupFormResetSerializer(data=request.data)
+            if serializer.is_valid():
+                reset_signup_form(signup, serializer.data)
+                return Response(get_signup_data(signup))
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except BazaSignup.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
