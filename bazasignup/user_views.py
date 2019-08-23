@@ -41,8 +41,8 @@ def get_current_completed_steps(request, current_step):
     try:
         signup = BazaSignup.objects.get(
             user=request.user)
-        if current_step not in signup.get_completed_steps():
-            completed_steps = signup.get_completed_steps()
+        completed_steps = signup.get_completed_steps()
+        if current_step not in completed_steps:
             completed_steps.append(current_step)
         return ','.join(completed_steps)
     except BazaSignup.DoesNotExist:
@@ -53,8 +53,8 @@ def remove_invalidated_steps(request, current_step):
     try:
         signup = BazaSignup.objects.get(
             user=request.user)
-        if current_step in signup.get_invalidated_steps():
-            invalidated_steps = signup.get_invalidated_steps()
+        invalidated_steps = signup.get_invalidated_steps()
+        if current_step in invalidated_steps:
             invalidated_steps.remove(current_step)
         return ",".join(invalidated_steps)
     except BazaSignup.DoesNotExist:
@@ -80,11 +80,13 @@ def get_step_response(signup):
 def get_next_step_index(completed_steps, invalidated_steps):
     completed_steps = list(map(lambda x: int(x), completed_steps))
     invalidated_steps = list(map(lambda x: int(x), invalidated_steps))
-    not_completed_steps = []
+    next_possible_steps = []
     for i in range(4):
-        if i not in completed_steps or i not in invalidated_steps:
-            not_completed_steps.append(i)
-    return min(not_completed_steps) if len(not_completed_steps) else None
+        if i not in completed_steps:
+            next_possible_steps.append(i)
+    if len(invalidated_steps):
+        next_possible_steps = invalidated_steps
+    return min(next_possible_steps) if len(next_possible_steps) else None
 
 
 def get_referral_code(signup):
@@ -146,7 +148,7 @@ class UserInfoTabView(views.APIView):
         'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
 
     def __save_baza_signup_address(self, signup, serializer, request):
-        bazasignupaddress = BazaSignupAddress.objects.get_or_create(
+        bazasignupaddress, created = BazaSignupAddress.objects.get_or_create(
             signup=signup,
             address_type='user_input'
         )
@@ -177,7 +179,7 @@ class UserInfoTabView(views.APIView):
         try:
             address = signup.addresses.get(address_type='user_input')
             referral_code = signup.referred_by.bazasignupreferralcode.code\
-                if hasattr(signup, 'referred_by') else ''
+                if signup.referred_by else ''
             return {
                 'country': address.country,
                 'city': address.city,
@@ -185,8 +187,10 @@ class UserInfoTabView(views.APIView):
                 'house_number': address.house_number,
                 'street_name': address.street,
                 'zip_code': address.zip_code,
-                'birthdate': address.bazasignupadditionalinfo.birth_date,
-                'referral_code': referral_code
+                'birthdate': signup.bazasignupadditionalinfo.birth_date,
+                'referral_code': referral_code,
+                'first_name': signup.user.first_name,
+                'last_name': signup.user.last_name
             }
         except ObjectDoesNotExist:
             return dict()

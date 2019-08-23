@@ -28,7 +28,7 @@ class BazaSignup(models.Model):
     # Comma separated string if multiple
     completed_steps = models.CharField(max_length=10)
     # Comma separated string if multiple
-    invalidated_steps = models.CharField(max_length=10, default='')
+    invalidated_steps = models.CharField(max_length=10)
     logged_ip_address = models.GenericIPAddressField(null=True)
     email_skipped = models.BooleanField(default=False)
     phone_skipped = models.BooleanField(default=False)
@@ -38,10 +38,10 @@ class BazaSignup(models.Model):
     history = HistoricalRecords()
 
     def get_completed_steps(self):
-        return self.completed_steps.split(',')
+        return list(filter(None, self.completed_steps.split(',')))
 
     def get_invalidated_steps(self):
-        return self.invalidated_steps.split(',')
+        return list(filter(None, self.invalidated_steps.split(',')))
 
     @property
     def _history_user(self):
@@ -77,7 +77,7 @@ class BazaSignupAddress(models.Model):
 
 class BazaSignupAdditionalInfo(models.Model):
     signup = models.OneToOneField(BazaSignup, on_delete=models.CASCADE)
-    birth_date = models.DateField()
+    birth_date = models.DateField(null=True)
     changed_by = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True,
         related_name='bazasignupaddinfochanges')
