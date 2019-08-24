@@ -29,6 +29,8 @@ class BazaSignup(models.Model):
     completed_steps = models.CharField(max_length=10)
     # Comma separated string if multiple
     invalidated_steps = models.CharField(max_length=10)
+    # Comma separated string if multiple
+    invalidated_fields = models.CharField(max_length=300, default='')
     logged_ip_address = models.GenericIPAddressField(null=True)
     email_skipped = models.BooleanField(default=False)
     phone_skipped = models.BooleanField(default=False)
@@ -42,6 +44,9 @@ class BazaSignup(models.Model):
 
     def get_invalidated_steps(self):
         return list(filter(None, self.invalidated_steps.split(',')))
+
+    def get_invalidated_fields(self):
+        return list(filter(None, self.invalidated_fields.split(',')))
 
     @property
     def _history_user(self):
