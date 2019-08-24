@@ -271,7 +271,7 @@ class InitiateEmailVerificationView(views.APIView):
             task_send_email_verification_code.delay(
                 serializer.validated_data['email'], signup.id
             )
-            return Response()
+            return Response({'status': 'ok'})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -324,7 +324,7 @@ class SendVerificationEmailAgain(views.APIView):
             )
             if hasattr(signup, 'emailverification'):
                 task_send_email_verification_code_again.delay(signup.id)
-                return Response()
+                return Response({'status': 'ok'})
             return Response(status=status.HTTP_400_BAD_REQUEST)
         except BazaSignup.DoesNotExist:
             return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -383,7 +383,7 @@ class InitiatePhoneVerificationView(views.APIView):
                 signup.id,
                 phone_number
             )
-            return Response()
+            return Response({'status': 'ok'})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -418,28 +418,6 @@ class ValidatePhoneVerificationCode(views.APIView):
             phoneverification.delete()
             return get_step_response(signup)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-# class SendVerificationSMSAgain(views.APIView):
-#     """
-#     This API will send verification code sms for an user again
-#     """
-
-#     permission_classes = (IsAuthenticated, TokenHasScope, )
-#     required_scopes = [
-#         'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
-
-#     def post(self, request, format=None):
-#         try:
-#             signup = BazaSignup.objects.get(
-#                 user=request.user
-#             )
-#             if hasattr(signup, 'phoneverification'):
-#                 task_send_phone_verification_code_again.delay(signup.id)
-#                 return Response()
-#             return Response(status=status.HTTP_400_BAD_REQUEST)
-#         except BazaSignup.DoesNotExist:
-#             return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class SignupImageUploadView(views.APIView):
