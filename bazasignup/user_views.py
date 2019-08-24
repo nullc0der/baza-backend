@@ -61,6 +61,23 @@ def remove_invalidated_steps(request, current_step):
         return ""
 
 
+def remove_invalidated_fields(request, fields):
+    try:
+        signup = BazaSignup.objects.get(
+            user=request.user)
+        invalidated_fields = signup.get_invalidated_fields()
+        for field in fields:
+            # Extra step because street is defined
+            # as street_name in serializer
+            if field == 'street_name':
+                field = 'street'
+            if field in invalidated_fields:
+                invalidated_fields.remove(field)
+        return ",".join(invalidated_fields)
+    except BazaSignup.DoesNotExist:
+        return ""
+
+
 def get_step_response(signup):
     next_step_index = get_next_step_index(
         signup.get_completed_steps(), signup.get_invalidated_steps())
@@ -68,6 +85,7 @@ def get_step_response(signup):
         'status': signup.status,
         'completed_steps': signup.get_completed_steps(),
         'invalidated_steps': signup.get_invalidated_steps(),
+        'invalidated_fields': signup.get_invalidated_fields(),
         'is_donor': signup.is_donor,
         'next_step': {
             'index': next_step_index,
@@ -115,6 +133,7 @@ class CheckCompletedTab(views.APIView):
                 'referral_code': get_referral_code(signup),
                 'completed_steps': signup.get_completed_steps(),
                 'invalidated_steps': signup.get_invalidated_steps(),
+                'invalidated_fields': signup.get_invalidated_fields(),
                 'is_donor': signup.is_donor,
                 'next_step': {
                     'index': next_step_index,
@@ -128,6 +147,7 @@ class CheckCompletedTab(views.APIView):
                 'referral_code': '',
                 'completed_steps': [],
                 'invalidated_steps': [],
+                'invalidated_fields': [],
                 'is_donor': False,
                 'next_step': {
                     'index': 0,
@@ -220,6 +240,8 @@ class UserInfoTabView(views.APIView):
             if "0" in signup.get_invalidated_steps():
                 signup.invalidated_steps = remove_invalidated_steps(
                     request, "0")
+                signup.invalidated_fields = remove_invalidated_fields(
+                    request, [i for i in serializer.validated_data.keys()])
             signup.save()
             return get_step_response(signup)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -246,6 +268,9 @@ class SkipEmailTabView(views.APIView):
             if "1" in signup.get_invalidated_steps():
                 signup.invalidated_steps = remove_invalidated_steps(
                     request, "1")
+                signup.invalidated_fields = remove_invalidated_fields(
+                    request, ['email']
+                )
             signup.save()
             return get_step_response(signup)
         except BazaSignup.DoesNotExist:
@@ -271,7 +296,7 @@ class InitiateEmailVerificationView(views.APIView):
             task_send_email_verification_code.delay(
                 serializer.validated_data['email'], signup.id
             )
-            return Response()
+            return Response({'status': 'ok'})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -297,6 +322,9 @@ class ValidateEmailVerificationCode(views.APIView):
             if "1" in signup.get_invalidated_steps():
                 signup.invalidated_steps = remove_invalidated_steps(
                     request, "1")
+                signup.invalidated_fields = remove_invalidated_fields(
+                    request, ['email']
+                )
             signup.changed_by = request.user
             signup.save()
             bazasignupemail, created = BazaSignupEmail.objects.get_or_create(
@@ -324,7 +352,7 @@ class SendVerificationEmailAgain(views.APIView):
             )
             if hasattr(signup, 'emailverification'):
                 task_send_email_verification_code_again.delay(signup.id)
-                return Response()
+                return Response({'status': 'ok'})
             return Response(status=status.HTTP_400_BAD_REQUEST)
         except BazaSignup.DoesNotExist:
             return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -351,6 +379,9 @@ class SkipPhoneTabView(views.APIView):
             if "2" in signup.get_invalidated_steps():
                 signup.invalidated_steps = remove_invalidated_steps(
                     request, "2")
+                signup.invalidated_fields = remove_invalidated_fields(
+                    request, ['phone']
+                )
             signup.save()
             return get_step_response(signup)
         except BazaSignup.DoesNotExist:
@@ -383,7 +414,7 @@ class InitiatePhoneVerificationView(views.APIView):
                 signup.id,
                 phone_number
             )
-            return Response()
+            return Response({'status': 'ok'})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -409,6 +440,9 @@ class ValidatePhoneVerificationCode(views.APIView):
             if "2" in signup.get_invalidated_steps():
                 signup.invalidated_steps = remove_invalidated_steps(
                     request, "2")
+                signup.invalidated_fields = remove_invalidated_fields(
+                    request, ['phone']
+                )
             signup.changed_by = request.user
             signup.save()
             bazasignupphone, created = BazaSignupPhone.objects.get_or_create(
@@ -418,28 +452,6 @@ class ValidatePhoneVerificationCode(views.APIView):
             phoneverification.delete()
             return get_step_response(signup)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-# class SendVerificationSMSAgain(views.APIView):
-#     """
-#     This API will send verification code sms for an user again
-#     """
-
-#     permission_classes = (IsAuthenticated, TokenHasScope, )
-#     required_scopes = [
-#         'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
-
-#     def post(self, request, format=None):
-#         try:
-#             signup = BazaSignup.objects.get(
-#                 user=request.user
-#             )
-#             if hasattr(signup, 'phoneverification'):
-#                 task_send_phone_verification_code_again.delay(signup.id)
-#                 return Response()
-#             return Response(status=status.HTTP_400_BAD_REQUEST)
-#         except BazaSignup.DoesNotExist:
-#             return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class SignupImageUploadView(views.APIView):
