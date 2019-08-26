@@ -7,7 +7,8 @@ from bazasignup.utils import (
     send_email_verfication_code_again,
     send_phone_verification_code,
     send_phone_verification_code_again,
-    process_after_approval
+    process_after_approval,
+    send_invalidation_email_to_user
 )
 
 from bazasignup.autoapproval import BazaSignupAutoApproval
@@ -41,3 +42,8 @@ def task_process_autoapproval(signup_id):
 @shared_task
 def task_process_after_approval(signup_id):
     return process_after_approval(signup_id)
+
+
+@shared_task
+def task_send_invalidation_email_to_user(signup_id):
+    return send_invalidation_email_to_user(signup_id)

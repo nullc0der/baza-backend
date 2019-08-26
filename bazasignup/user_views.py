@@ -86,6 +86,8 @@ def get_step_response(signup):
         'completed_steps': signup.get_completed_steps(),
         'invalidated_steps': signup.get_invalidated_steps(),
         'invalidated_fields': signup.get_invalidated_fields(),
+        'invalidation_comment':
+        signup.bazasignupadditionalinfo.invalidation_comment,
         'is_donor': signup.is_donor,
         'next_step': {
             'index': next_step_index,
@@ -134,6 +136,8 @@ class CheckCompletedTab(views.APIView):
                 'completed_steps': signup.get_completed_steps(),
                 'invalidated_steps': signup.get_invalidated_steps(),
                 'invalidated_fields': signup.get_invalidated_fields(),
+                'invalidation_comment':
+                signup.bazasignupadditionalinfo.invalidation_comment,
                 'is_donor': signup.is_donor,
                 'next_step': {
                     'index': next_step_index,
@@ -148,6 +152,7 @@ class CheckCompletedTab(views.APIView):
                 'completed_steps': [],
                 'invalidated_steps': [],
                 'invalidated_fields': [],
+                'invalidation_comment': '',
                 'is_donor': False,
                 'next_step': {
                     'index': 0,

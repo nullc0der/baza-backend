@@ -50,6 +50,8 @@ def reset_signup_form(signup, reset_data):
         if 'phone' in reset_data['data_subtypes']:
             invalidate_step_and_fields(signup, '2', ['phone'])
     if 'documents' in reset_data['data_types']:
-        # signup.photo = None
-        # signup.save()
         invalidate_step_and_fields(signup, '3', [])
+    additional_info = signup.bazasignupadditionalinfo
+    additional_info.invalidation_comment = reset_data.get(
+        'invalidation_comment', '')
+    additional_info.save()

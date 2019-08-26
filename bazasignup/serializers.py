@@ -146,6 +146,7 @@ class BazaSignupFormResetSerializer(serializers.Serializer):
         child=serializers.CharField(), allow_empty=True)
     data_subtypes = serializers.ListField(
         child=serializers.CharField(), allow_empty=True)
+    invalidation_comment = serializers.CharField(allow_blank=True)
 
     def validate_data_types(self, value):
         if value:

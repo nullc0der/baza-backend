@@ -331,3 +331,30 @@ def get_signup_data(signup):
         'additional_data': get_signup_additional_data(signup)
     }
     return signup_datas
+
+
+def send_invalidation_email_to_user(signup_id):
+    signup = BazaSignup.objects.get(id=signup_id)
+    if signup.email:
+        signup_url = "%s://%s/profile#!baza-registration" % (
+            'https' if settings.SITE_TYPE != 'local' else 'http',
+            settings.HOST_URL
+        )
+        email_template = loader.get_template(
+            'bazasignup/invalidation_email_user.html')
+        msg = EmailMultiAlternatives(
+            'Important notification about your'
+            ' Baza Foundation distribution signup',
+            'A few field of your distribution signup application'
+            'is invalidated, please go to %s to reinput the fields' % (
+                signup_url),
+            'Baza Distribution Signup'
+            ' <distributionsignup-noreply@baza.foundation>',
+            [signup.email])
+        msg.attach_alternative(email_template.render({
+            'signup_url': signup_url,
+            'comment': signup.bazasignupadditionalinfo.invalidation_comment
+        }), "text/html")
+        msg.send()
+        return True
+    return False

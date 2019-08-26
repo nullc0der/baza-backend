@@ -25,6 +25,7 @@ from bazasignup.utils import (
     get_signup_profile_data
 )
 from bazasignup.reset_data import reset_signup_form
+from bazasignup.tasks import task_send_invalidation_email_to_user
 
 
 class BazaSignupListView(views.APIView):
@@ -165,6 +166,7 @@ class BazaSignupResetView(views.APIView):
             serializer = BazaSignupFormResetSerializer(data=request.data)
             if serializer.is_valid():
                 reset_signup_form(signup, serializer.data)
+                task_send_invalidation_email_to_user.delay(signup.id)
                 return Response(get_signup_data(signup))
             return Response(
                 serializer.errors, status=status.HTTP_400_BAD_REQUEST)
