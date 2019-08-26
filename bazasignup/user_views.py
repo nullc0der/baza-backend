@@ -483,7 +483,8 @@ class SignupImageUploadView(views.APIView):
                 signup.invalidated_steps = remove_invalidated_steps(
                     request, "3")
             signup.save()
-            task_process_autoapproval.delay(signup.id)
+            if "3" not in signup.get_invalidated_steps():
+                task_process_autoapproval.delay(signup.id)
             return get_step_response(signup)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

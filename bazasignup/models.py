@@ -34,6 +34,9 @@ class BazaSignup(models.Model):
     logged_ip_address = models.GenericIPAddressField(null=True)
     email_skipped = models.BooleanField(default=False)
     phone_skipped = models.BooleanField(default=False)
+    assigned_to = models.ForeignKey(
+        User, on_delete=models.SET_NULL,
+        null=True, related_name='assignedbazasignups')
     changed_by = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True,
         related_name='bazasignupchanges')
