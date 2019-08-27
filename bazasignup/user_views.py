@@ -91,6 +91,12 @@ def get_step_response(signup):
         'invalidated_fields': signup.get_invalidated_fields(),
         'invalidation_comment':
         signup.bazasignupadditionalinfo.invalidation_comment,
+        'handling_staff': {
+            'fullname': signup.assigned_to.get_full_name()
+            if signup.assigned_to else '',
+            'id': signup.assigned_to.id
+            if signup.assigned_to else ''
+        },
         'is_donor': signup.is_donor,
         'next_step': {
             'index': next_step_index,
@@ -141,6 +147,12 @@ class CheckCompletedTab(views.APIView):
                 'invalidated_fields': signup.get_invalidated_fields(),
                 'invalidation_comment':
                 signup.bazasignupadditionalinfo.invalidation_comment,
+                'handling_staff': {
+                    'fullname': signup.assigned_to.get_full_name()
+                    if signup.assigned_to else '',
+                    'id': signup.assigned_to.id
+                    if signup.assigned_to else ''
+                },
                 'is_donor': signup.is_donor,
                 'next_step': {
                     'index': next_step_index,
@@ -156,6 +168,10 @@ class CheckCompletedTab(views.APIView):
                 'invalidated_steps': [],
                 'invalidated_fields': [],
                 'invalidation_comment': '',
+                'handling_staff': {
+                    'fullname': '',
+                    'id': ''
+                },
                 'is_donor': False,
                 'next_step': {
                     'index': 0,

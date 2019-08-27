@@ -45,7 +45,7 @@ class BazaSignupListView(views.APIView):
     def get(self, request, format=None):
         datas = []
         signups = BazaSignup.objects.filter(
-            assigned_to=request.user).order_by('id')
+            assigned_to=request.user).order_by('-id')
         for signup in signups:
             data = {
                 'id_': signup.id,
