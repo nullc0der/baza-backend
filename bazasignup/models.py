@@ -165,3 +165,10 @@ class BazaSignupComment(models.Model):
     commented_on = models.DateTimeField(auto_now_add=True)
     commented_by = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='bazasignupcomments')
+
+
+class StaffLoginSession(models.Model):
+    staff = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='staffloginsessions')
+    logged_in_at = models.DateTimeField(auto_now_add=True)
+    logged_out_at = models.DateTimeField(null=True)
