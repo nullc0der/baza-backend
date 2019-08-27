@@ -278,16 +278,19 @@ class BazaSignupAutoApproval(object):
         return self.signup.status
 
     def __assign_to_staff(self):
-        try:
-            current_assignments = {}
-            site_owner_group = BasicGroup.objects.get(is_site_owner_group=True)
-            for staff in site_owner_group.staffs.all():
-                current_assignments[staff] = staff.assignedbazasignups.count()
-            self.signup.assigned_to = min(
-                current_assignments, key=lambda k: current_assignments[k])
-            self.signup.save()
-        except BasicGroup.DoesNotExist:
-            pass
+        if not self.signup.assigned_to:
+            try:
+                current_assignments = {}
+                site_owner_group = BasicGroup.objects.get(
+                    is_site_owner_group=True)
+                for staff in site_owner_group.staffs.all():
+                    current_assignments[staff] = \
+                        staff.assignedbazasignups.count()
+                self.signup.assigned_to = min(
+                    current_assignments, key=lambda k: current_assignments[k])
+                self.signup.save()
+            except BasicGroup.DoesNotExist:
+                pass
 
     def start(self):
         data_collection_results = self.__collect_datas()

@@ -25,6 +25,9 @@ from bazasignup.models import (
     BazaSignupPhone
 )
 
+from bazasignup.autoapproval import BazaSignupAutoApproval
+
+
 URL_PROTOCOL = 'http://' if settings.SITE_TYPE == 'local' else 'https://'
 
 
@@ -358,3 +361,39 @@ def send_invalidation_email_to_user(signup_id):
         msg.send()
         return True
     return False
+
+
+def send_resubmission_email_to_staff(signup_id):
+    signup = BazaSignup.objects.get(id=signup_id)
+    staff_emails = get_user_emails(signup.assigned_to)
+    if staff_emails:
+        staff_primary_emails = [
+            staff_email for staff_email in staff_emails if
+            staff_email['primary'] and staff_email['verified']]
+    if staff_primary_emails:
+        email_id = staff_primary_emails[0]['email_id']
+        email_template = loader.get_template(
+            'bazasignup/invalidation_email_staff.html')
+        username = get_username(signup.user)
+        fullname = signup.user.get_full_name()
+        msg = EmailMultiAlternatives(
+            'User resubmitted distribution signup application',
+            'The user %s (%s) resubmitted distribution signup application' % (
+                username, fullname
+            ),
+            'Baza Distribution Signup'
+            ' <distributionsignup-noreply@baza.foundation>',
+            [email_id])
+        msg.attach_alternative(email_template.render({
+            'username': username,
+            'fullname': fullname
+        }), "text/html")
+        msg.send()
+        return True
+    return False
+
+
+def post_resubmission(signup_id):
+    email_send_status = send_resubmission_email_to_staff(signup_id)
+    approval_status = BazaSignupAutoApproval(signup_id).start()
+    return email_send_status, approval_status

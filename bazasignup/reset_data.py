@@ -37,6 +37,8 @@ def reset_address(signup, fields):
     if 'country' in fields:
         address.country = ''
         fields_to_invalidate.append('country')
+    address.latitude = ''
+    address.longitude = ''
     address.save()
     invalidate_step_and_fields(signup, '0', fields_to_invalidate)
 
