@@ -192,7 +192,7 @@ class StaffBarView(views.APIView):
     def __get_datas(self, request):
         return {
             'staff': {
-                'fullname': request.user.get_full_name()
+                'username': get_username(request.user)
             },
             'pending_application_count':
             request.user.assignedbazasignups.filter(status='pending').count()
