@@ -163,3 +163,12 @@ class BazaSignupFormResetSerializer(serializers.Serializer):
                     raise serializers.ValidationError(
                         'The value %s is not a valid reset data subtype' % i)
         return value
+
+
+class BazaSignupStatusSerializer(serializers.Serializer):
+    STATUS_CHOICES = (
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('declined', 'Declined')
+    )
+    status = serializers.ChoiceField(choices=STATUS_CHOICES)

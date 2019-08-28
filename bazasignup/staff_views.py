@@ -18,7 +18,8 @@ from bazasignup.models import (
 from bazasignup.serializers import (
     BazaSignupListSerializer,
     BazaSignupCommentSerializer,
-    BazaSignupFormResetSerializer
+    BazaSignupFormResetSerializer,
+    BazaSignupStatusSerializer
 )
 from bazasignup.permissions import (
     IsStaffOfSiteOwnerGroup,
@@ -91,6 +92,17 @@ class BazaSignupDetailsView(views.APIView):
     def get(self, request, signup_id, format=None):
         try:
             signup = BazaSignup.objects.get(id=signup_id)
+            return Response(get_signup_data(signup))
+        except BazaSignup.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+    def post(self, request, signup_id, format=None):
+        try:
+            signup = BazaSignup.objects.get(id=signup_id)
+            serializer = BazaSignupStatusSerializer(data=request.data)
+            if serializer.is_valid():
+                signup.status = serializer.validated_data['status']
+                signup.save()
             return Response(get_signup_data(signup))
         except BazaSignup.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
