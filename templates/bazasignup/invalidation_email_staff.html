@@ -1,0 +1,14 @@
+{% extends "base_email_template.html" %}
+{% load mjml %}
+{% mjml %}
+{% block content %}
+    <mj-section background-color="#fafafa">
+        <mj-column width="400px">
+            <mj-text color="#525252">
+                The user {{ username }} ({{ fullname }}) resubmitted distribution signup application.
+                Please verify and take action
+            </mj-text>
+        </mj-column>
+    </mj-section>
+{% endblock content %}
+{% endmjml %}

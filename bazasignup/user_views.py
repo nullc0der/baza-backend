@@ -30,7 +30,8 @@ from phoneverification.models import PhoneVerification
 from bazasignup.tasks import (
     task_send_email_verification_code,
     task_send_email_verification_code_again,
-    task_process_autoapproval
+    task_process_autoapproval,
+    task_post_resubmission
 )
 
 
@@ -56,6 +57,8 @@ def remove_invalidated_steps(request, current_step):
         invalidated_steps = signup.get_invalidated_steps()
         if current_step in invalidated_steps:
             invalidated_steps.remove(current_step)
+        if not invalidated_steps:
+            task_post_resubmission.delay(signup.id)
         return ",".join(invalidated_steps)
     except BazaSignup.DoesNotExist:
         return ""
@@ -86,6 +89,14 @@ def get_step_response(signup):
         'completed_steps': signup.get_completed_steps(),
         'invalidated_steps': signup.get_invalidated_steps(),
         'invalidated_fields': signup.get_invalidated_fields(),
+        'invalidation_comment':
+        signup.bazasignupadditionalinfo.invalidation_comment,
+        'handling_staff': {
+            'fullname': signup.assigned_to.get_full_name()
+            if signup.assigned_to else '',
+            'id': signup.assigned_to.id
+            if signup.assigned_to else ''
+        },
         'is_donor': signup.is_donor,
         'next_step': {
             'index': next_step_index,
@@ -134,6 +145,14 @@ class CheckCompletedTab(views.APIView):
                 'completed_steps': signup.get_completed_steps(),
                 'invalidated_steps': signup.get_invalidated_steps(),
                 'invalidated_fields': signup.get_invalidated_fields(),
+                'invalidation_comment':
+                signup.bazasignupadditionalinfo.invalidation_comment,
+                'handling_staff': {
+                    'fullname': signup.assigned_to.get_full_name()
+                    if signup.assigned_to else '',
+                    'id': signup.assigned_to.id
+                    if signup.assigned_to else ''
+                },
                 'is_donor': signup.is_donor,
                 'next_step': {
                     'index': next_step_index,
@@ -148,6 +167,11 @@ class CheckCompletedTab(views.APIView):
                 'completed_steps': [],
                 'invalidated_steps': [],
                 'invalidated_fields': [],
+                'invalidation_comment': '',
+                'handling_staff': {
+                    'fullname': '',
+                    'id': ''
+                },
                 'is_donor': False,
                 'next_step': {
                     'index': 0,
@@ -478,7 +502,8 @@ class SignupImageUploadView(views.APIView):
                 signup.invalidated_steps = remove_invalidated_steps(
                     request, "3")
             signup.save()
-            task_process_autoapproval.delay(signup.id)
+            if "3" not in signup.get_invalidated_steps():
+                task_process_autoapproval.delay(signup.id)
             return get_step_response(signup)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

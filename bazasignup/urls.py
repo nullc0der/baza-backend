@@ -50,5 +50,13 @@ urlpatterns = [
     path(
         'signup/<int:signup_id>/reset/',
         staff_views.BazaSignupResetView.as_view()
+    ),
+    path(
+        'signup/staffbar/',
+        staff_views.StaffBarView.as_view()
+    ),
+    path(
+        'signup/loginoutstaff/',
+        staff_views.StaffLoginLogoutView.as_view()
     )
 ]

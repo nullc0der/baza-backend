@@ -34,6 +34,9 @@ class BazaSignup(models.Model):
     logged_ip_address = models.GenericIPAddressField(null=True)
     email_skipped = models.BooleanField(default=False)
     phone_skipped = models.BooleanField(default=False)
+    assigned_to = models.ForeignKey(
+        User, on_delete=models.SET_NULL,
+        null=True, related_name='assignedbazasignups')
     changed_by = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True,
         related_name='bazasignupchanges')
@@ -83,6 +86,7 @@ class BazaSignupAddress(models.Model):
 class BazaSignupAdditionalInfo(models.Model):
     signup = models.OneToOneField(BazaSignup, on_delete=models.CASCADE)
     birth_date = models.DateField(null=True)
+    invalidation_comment = models.TextField(default='')
     changed_by = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True,
         related_name='bazasignupaddinfochanges')
@@ -161,3 +165,10 @@ class BazaSignupComment(models.Model):
     commented_on = models.DateTimeField(auto_now_add=True)
     commented_by = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='bazasignupcomments')
+
+
+class StaffLoginSession(models.Model):
+    staff = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='staffloginsessions')
+    logged_in_at = models.DateTimeField(auto_now_add=True)
+    logged_out_at = models.DateTimeField(null=True)

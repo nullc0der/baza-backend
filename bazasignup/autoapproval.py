@@ -15,6 +15,8 @@ from bazasignup.models import (
     BazaSignupAutoApprovalFailReason
 )
 
+from group.models import BasicGroup
+
 
 class BazaSignupAutoApproval(object):
     def __init__(self, signup_id):
@@ -275,9 +277,26 @@ class BazaSignupAutoApproval(object):
                 autoapprovalfailreason.save()
         return self.signup.status
 
+    def __assign_to_staff(self):
+        if not self.signup.assigned_to:
+            try:
+                current_assignments = {}
+                site_owner_group = BasicGroup.objects.get(
+                    is_site_owner_group=True)
+                for staff in site_owner_group.staffs.all():
+                    current_assignments[staff] = \
+                        staff.assignedbazasignups.count()
+                self.signup.assigned_to = min(
+                    current_assignments, key=lambda k: current_assignments[k])
+                self.signup.save()
+            except BasicGroup.DoesNotExist:
+                pass
+
     def start(self):
         data_collection_results = self.__collect_datas()
         address_distances = self.__compare_addresses()
         signup_status = self.__process_auto_approval(
             data_collection_results, address_distances)
+        if signup_status != 'approved':
+            self.__assign_to_staff()
         return signup_status

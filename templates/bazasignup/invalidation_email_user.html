@@ -1,0 +1,22 @@
+{% extends "base_email_template.html" %}
+{% load mjml %}
+{% mjml %}
+{% block content %}
+    <mj-section background-color="#fafafa">
+        <mj-column width="400px">
+          <mj-text color="#525252"> A few field(s) of your distribution signup application is invalidated,
+           please go to {{ signup_url }} to resubmit the fields </mj-text>
+        </mj-column>
+    </mj-section>
+    {% if comment %}
+    <mj-section>
+        <mj-column background-color="#f9f9f9" width="400px">		
+            <mj-text padding="20px" align="center">	
+            Comment Added by Staff<br/>
+            {{ comment }}
+            </mj-text>
+        </mj-column>
+    </mj-section>
+    {% endif %}
+{% endblock content %}
+{% endmjml %}
