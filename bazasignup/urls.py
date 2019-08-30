@@ -58,5 +58,9 @@ urlpatterns = [
     path(
         'signup/loginoutstaff/',
         staff_views.StaffLoginLogoutView.as_view()
+    ),
+    path(
+        'signup/reassignstaff/',
+        staff_views.BazaSignupReassignStaffView.as_view()
     )
 ]

@@ -15,6 +15,7 @@ from authclient.utils import AuthHelperClient
 
 from publicusers.views import get_username, get_avatar_color
 from userprofile.views import get_profile_photo
+from grouppost.serializers import UserSerializer
 
 from bazasignup.models import (
     PhoneVerification,
@@ -318,10 +319,12 @@ def get_signup_additional_data(signup):
         if hasattr(signup, 'bazasignupreferralcode') else '',
         'total_referrals': signup.user.referred_signups.count(),
         'is_donor': signup.is_donor,
-        'referred_by': signup.referred_by.username
-        if signup.referred_by else '',
+        'referred_by': UserSerializer(signup.referred_by).data
+        if signup.referred_by else {},
         'wallet_address': signup.wallet_address,
-        'on_distribution': signup.on_distribution
+        'on_distribution': signup.on_distribution,
+        'assigned_to': UserSerializer(signup.assigned_to).data
+        if signup.assigned_to else {}
     }
     return additional_data
 

@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.timezone import now
+from django.contrib.auth.models import User
 
 from rest_framework import views, status
 from rest_framework.response import Response
@@ -10,6 +11,8 @@ from oauth2_provider.contrib.rest_framework import TokenHasScope
 
 from publicusers.views import get_username, get_avatar_color
 from userprofile.views import get_profile_photo
+from group.models import BasicGroup
+from grouppost.serializers import UserSerializer
 
 from bazasignup.models import (
     BazaSignup,
@@ -248,3 +251,41 @@ class StaffLoginLogoutView(views.APIView):
         if request_type == 'logout':
             self.__logout_staff(request)
         return Response({'status': 'ok'})
+
+
+class BazaSignupReassignStaffView(views.APIView):
+    """
+    This view will return staffs list and reassign a
+    staff to a signup
+    """
+
+    permission_classes = (IsAuthenticated, TokenHasScope,
+                          IsStaffOfSiteOwnerGroup, )
+    required_scopes = [
+        'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
+
+    def get(self, request, format=None):
+        try:
+            site_owner_group = BasicGroup.objects.get(is_site_owner_group=True)
+            serializer = UserSerializer(site_owner_group.staffs.exclude(
+                username__in=[request.user.username]), many=True)
+            return Response(serializer.data)
+        except BasicGroup.DoesNotExist:
+            return Response(
+                {'status': 'not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    def post(self, request, format=None):
+        try:
+            staff = User.objects.get(id=request.data['id'])
+            site_owner_group = BasicGroup.objects.get(is_site_owner_group=True)
+            if staff in site_owner_group.staffs.all():
+                bazasignup = BazaSignup.objects.get(
+                    id=request.data['signup_id'])
+                bazasignup.assigned_to = staff
+                bazasignup.save()
+                return Response({'signup_id': bazasignup.id})
+            return Response(
+                {'status': 'forbidden'}, status=status.HTTP_403_FORBIDDEN)
+        except ObjectDoesNotExist:
+            return Response(
+                {'status': 'not found'}, status=status.HTTP_404_NOT_FOUND)
