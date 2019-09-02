@@ -33,7 +33,10 @@ from bazasignup.utils import (
     get_signup_profile_data
 )
 from bazasignup.reset_data import reset_signup_form
-from bazasignup.tasks import task_send_invalidation_email_to_user
+from bazasignup.tasks import (
+    task_send_invalidation_email_to_user,
+    task_post_staff_assignment
+)
 
 
 class BazaSignupListView(views.APIView):
@@ -283,6 +286,7 @@ class BazaSignupReassignStaffView(views.APIView):
                     id=request.data['signup_id'])
                 bazasignup.assigned_to = staff
                 bazasignup.save()
+                task_post_staff_assignment.delay(bazasignup.id)
                 return Response({'signup_id': bazasignup.id})
             return Response(
                 {'status': 'forbidden'}, status=status.HTTP_403_FORBIDDEN)

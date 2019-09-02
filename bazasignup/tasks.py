@@ -9,7 +9,8 @@ from bazasignup.utils import (
     send_phone_verification_code_again,
     process_after_approval,
     send_invalidation_email_to_user,
-    post_resubmission
+    post_resubmission,
+    post_staff_assignment
 )
 
 from bazasignup.autoapproval import BazaSignupAutoApproval
@@ -53,3 +54,8 @@ def task_send_invalidation_email_to_user(signup_id):
 @shared_task
 def task_post_resubmission(signup_id):
     return post_resubmission(signup_id)
+
+
+@shared_task
+def task_post_staff_assignment(signup_id):
+    return post_staff_assignment(signup_id)

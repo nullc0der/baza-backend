@@ -16,6 +16,7 @@ from authclient.utils import AuthHelperClient
 from publicusers.views import get_username, get_avatar_color
 from userprofile.views import get_profile_photo
 from grouppost.serializers import UserSerializer
+from notifications.utils import create_user_notification
 
 from bazasignup.models import (
     PhoneVerification,
@@ -396,7 +397,44 @@ def send_resubmission_email_to_staff(signup_id):
     return False
 
 
+def send_assignment_email_to_staff(signup):
+    staff_emails = get_user_emails(signup.assigned_to)
+    if staff_emails:
+        staff_primary_emails = [
+            staff_email for staff_email in staff_emails if
+            staff_email['primary'] and staff_email['verified']]
+    if staff_primary_emails:
+        email_id = staff_primary_emails[0]['email_id']
+        email_template = loader.get_template(
+            'bazasignup/staff_assignment_email.html')
+        username = get_username(signup.user)
+        fullname = signup.user.get_full_name()
+        msg = EmailMultiAlternatives(
+            'You have been assigned to review a new signup assignment',
+            "You have been assigned to review"
+            " %s(%s)'s distribution signup application" % (
+                username, fullname
+            ),
+            'Baza Distribution Signup'
+            ' <distributionsignup-noreply@baza.foundation>',
+            [email_id])
+        msg.attach_alternative(email_template.render({
+            'username': username,
+            'fullname': fullname,
+        }), "text/html")
+        msg.send()
+        return True
+    return False
+
+
 def post_resubmission(signup_id):
     email_send_status = send_resubmission_email_to_staff(signup_id)
     approval_status = BazaSignupAutoApproval(signup_id).start()
     return email_send_status, approval_status
+
+
+def post_staff_assignment(signup_id):
+    signup = BazaSignup.objects.get(id=signup_id)
+    send_assignment_email_to_staff(signup)
+    create_user_notification(signup.assigned_to, signup)
+    return

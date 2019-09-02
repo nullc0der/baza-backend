@@ -1,0 +1,14 @@
+{% extends "base_email_template.html" %}
+{% load mjml %}
+{% mjml %}
+{% block content %}
+    <mj-section background-color="#fafafa">
+        <mj-column width="400px">
+            <mj-text color="#525252">
+                You have been assigned to review
+                {{ username }} ({{ fullname }})'s distribution signup application
+            </mj-text>
+        </mj-column>
+    </mj-section>
+{% endblock content %}
+{% endmjml %}

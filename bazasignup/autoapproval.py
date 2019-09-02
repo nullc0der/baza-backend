@@ -9,13 +9,13 @@ from twilio.rest import Client
 from iso3166 import countries
 from geopy.distance import great_circle
 
+from group.models import BasicGroup
+
 from bazasignup.models import (
     BazaSignup, BazaSignupAddress,
     BazaSignupEmail, BazaSignupPhone,
     BazaSignupAutoApprovalFailReason
 )
-
-from group.models import BasicGroup
 
 
 class BazaSignupAutoApproval(object):
@@ -289,6 +289,9 @@ class BazaSignupAutoApproval(object):
                 self.signup.assigned_to = min(
                     current_assignments, key=lambda k: current_assignments[k])
                 self.signup.save()
+                # Circular import issue fix
+                from bazasignup.utils import post_staff_assignment
+                post_staff_assignment(self.signup.id)
             except BasicGroup.DoesNotExist:
                 pass
 
