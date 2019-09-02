@@ -13,6 +13,7 @@ def invalidate_step_and_fields(signup, step, fields):
             invalidated_fields.append(field)
     signup.invalidated_steps = ','.join(invalidated_steps)
     signup.invalidated_fields = ','.join(invalidated_fields)
+    signup.status = 'incomplete'
     signup.save()
 
 

@@ -2,6 +2,7 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.timezone import now
 from django.contrib.auth.models import User
+from django.db.models import Q
 
 from rest_framework import views, status
 from rest_framework.response import Response
@@ -106,10 +107,17 @@ class BazaSignupDetailsView(views.APIView):
         try:
             signup = BazaSignup.objects.get(id=signup_id)
             serializer = BazaSignupStatusSerializer(data=request.data)
-            if serializer.is_valid():
-                signup.status = serializer.validated_data['status']
-                signup.save()
-            return Response(get_signup_data(signup))
+            if signup.status != 'incomplete':
+                if serializer.is_valid():
+                    signup.status = serializer.validated_data['status']
+                    signup.save()
+                    return Response(get_signup_data(signup))
+                return Response(
+                    serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({
+                'error': "You can't change status until user resubmits"
+                " current invalidated fields"
+            }, status=status.HTTP_403_FORBIDDEN)
         except BazaSignup.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
@@ -187,12 +195,17 @@ class BazaSignupResetView(views.APIView):
         try:
             signup = BazaSignup.objects.get(id=signup_id)
             serializer = BazaSignupFormResetSerializer(data=request.data)
-            if serializer.is_valid():
-                reset_signup_form(signup, serializer.data)
-                task_send_invalidation_email_to_user.delay(signup.id)
-                return Response(get_signup_data(signup))
-            return Response(
-                serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            if signup.status != 'incomplete':
+                if serializer.is_valid():
+                    reset_signup_form(signup, serializer.data)
+                    task_send_invalidation_email_to_user.delay(signup.id)
+                    return Response(get_signup_data(signup))
+                return Response(
+                    serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({
+                'error': "You can't mark field(s) as violated"
+                " until user resubmits previous violation"
+            }, status=status.HTTP_403_FORBIDDEN)
         except BazaSignup.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
@@ -208,12 +221,23 @@ class StaffBarView(views.APIView):
         'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
 
     def __get_datas(self, request):
+        try:
+            site_owner_group = BasicGroup.objects.get(is_site_owner_group=True)
+        except BasicGroup.DoesNotExist:
+            site_owner_group = None
         return {
             'staff': {
                 'username': get_username(request.user)
             },
             'pending_application_count':
-            request.user.assignedbazasignups.filter(status='pending').count()
+            request.user.assignedbazasignups.filter(
+                Q(status='pending') | Q(status='incomplete')).count(),
+            'is_staff':
+            request.user in site_owner_group.staffs.all()
+            if site_owner_group else False,
+            'is_moderator':
+            request.user in site_owner_group.moderators.all()
+            if site_owner_group else False
         }
 
     def get(self, request, format=None):

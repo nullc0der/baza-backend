@@ -222,7 +222,8 @@ class UserInfoTabView(views.APIView):
     def __get_user_info_tab_data(self, signup):
         try:
             address = signup.addresses.get(address_type='user_input')
-            referral_code = signup.referred_by.bazasignupreferralcode.code\
+            referral_code = \
+                signup.referred_by.bazasignup.bazasignupreferralcode.code \
                 if signup.referred_by else ''
             return {
                 'country': address.country,

@@ -275,6 +275,9 @@ class BazaSignupAutoApproval(object):
                     changed_by=self.system_user
                 )
                 autoapprovalfailreason.save()
+            self.signup.status = 'pending'
+            self.signup.changed_by = self.system_user
+            self.signup.save()
         return self.signup.status
 
     def __assign_to_staff(self):
