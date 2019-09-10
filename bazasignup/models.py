@@ -172,3 +172,17 @@ class StaffLoginSession(models.Model):
         User, on_delete=models.CASCADE, related_name='staffloginsessions')
     logged_in_at = models.DateTimeField(auto_now_add=True)
     logged_out_at = models.DateTimeField(null=True)
+
+
+# TODO: This function needs improvement when we get some time
+class BazaSignupActivity(models.Model):
+    signup = models.ForeignKey(
+        BazaSignup, on_delete=models.CASCADE, related_name='activities')
+    message = models.TextField()
+    is_assignment_activity = models.BooleanField(default=False)
+    created_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True,
+        related_name='created_signup_activities')
+    related_user = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True)
+    created_on = models.DateTimeField(auto_now_add=True)

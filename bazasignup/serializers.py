@@ -14,7 +14,8 @@ from bazasignup.models import (
     EmailVerification,
     BazaSignup,
     BazaSignupReferralCode,
-    BazaSignupComment
+    BazaSignupComment,
+    BazaSignupActivity
 )
 from bazasignup.reset_data import (
     RESET_DATA_TYPES,
@@ -172,3 +173,14 @@ class BazaSignupStatusSerializer(serializers.Serializer):
         ('declined', 'Declined')
     )
     status = serializers.ChoiceField(choices=STATUS_CHOICES)
+
+
+class BazaSignupActivitySerializer(serializers.ModelSerializer):
+    created_by = UserSerializer(required=False)
+    related_user = UserSerializer(required=False)
+
+    class Meta:
+        model = BazaSignupActivity
+        fields = (
+            'id', 'message', 'is_assignment_activity',
+            'created_by', 'related_user', 'created_on')

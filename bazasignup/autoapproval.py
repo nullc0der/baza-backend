@@ -289,12 +289,17 @@ class BazaSignupAutoApproval(object):
                 for staff in site_owner_group.staffs.all():
                     current_assignments[staff] = \
                         staff.assignedbazasignups.count()
-                self.signup.assigned_to = min(
+                assigned_to = min(
                     current_assignments, key=lambda k: current_assignments[k])
+                self.signup.assigned_to = assigned_to
                 self.signup.save()
                 # Circular import issue fix
-                from bazasignup.utils import post_staff_assignment
+                from bazasignup.utils import (
+                    post_staff_assignment, save_bazasignup_activity)
                 post_staff_assignment(self.signup.id)
+                save_bazasignup_activity(
+                    self.signup, 'autoapproval failed and assigned to',
+                    self.system_user, assigned_to, True)
             except BasicGroup.DoesNotExist:
                 pass
 

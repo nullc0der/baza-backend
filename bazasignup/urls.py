@@ -62,5 +62,9 @@ urlpatterns = [
     path(
         'signup/reassignstaff/',
         staff_views.BazaSignupReassignStaffView.as_view()
+    ),
+    path(
+        'signup/<int:signup_id>/activities/',
+        staff_views.BazaSignupActivitiesView.as_view()
     )
 ]

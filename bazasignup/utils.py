@@ -24,7 +24,8 @@ from bazasignup.models import (
     BazaSignup,
     BazaSignupReferralCode,
     BazaSignupEmail,
-    BazaSignupPhone
+    BazaSignupPhone,
+    BazaSignupActivity
 )
 
 from bazasignup.autoapproval import BazaSignupAutoApproval
@@ -438,3 +439,14 @@ def post_staff_assignment(signup_id):
     send_assignment_email_to_staff(signup)
     create_user_notification(signup.assigned_to, signup)
     return
+
+
+def save_bazasignup_activity(
+        signup, message, created_by=None, related_user=None,
+        is_assignment_activity=False):
+    activity = BazaSignupActivity(signup=signup)
+    activity.message = message
+    activity.created_by = created_by
+    activity.related_user = related_user
+    activity.is_assignment_activity = is_assignment_activity
+    activity.save()

@@ -23,7 +23,8 @@ from bazasignup.serializers import (
     BazaSignupListSerializer,
     BazaSignupCommentSerializer,
     BazaSignupFormResetSerializer,
-    BazaSignupStatusSerializer
+    BazaSignupStatusSerializer,
+    BazaSignupActivitySerializer
 )
 from bazasignup.permissions import (
     IsStaffOfSiteOwnerGroup,
@@ -31,7 +32,8 @@ from bazasignup.permissions import (
 )
 from bazasignup.utils import (
     get_signup_data,
-    get_signup_profile_data
+    get_signup_profile_data,
+    save_bazasignup_activity
 )
 from bazasignup.reset_data import reset_signup_form
 from bazasignup.tasks import (
@@ -111,6 +113,9 @@ class BazaSignupDetailsView(views.APIView):
                 if serializer.is_valid():
                     signup.status = serializer.validated_data['status']
                     signup.save()
+                    save_bazasignup_activity(
+                        signup, 'changed signup status to %s' % signup.status,
+                        request.user)
                     return Response(get_signup_data(signup))
                 return Response(
                     serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -199,6 +204,8 @@ class BazaSignupResetView(views.APIView):
                 if serializer.is_valid():
                     reset_signup_form(signup, serializer.data)
                     task_send_invalidation_email_to_user.delay(signup.id)
+                    save_bazasignup_activity(
+                        signup, 'marked few fields as invalid', request.user)
                     return Response(get_signup_data(signup))
                 return Response(
                     serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -311,9 +318,36 @@ class BazaSignupReassignStaffView(views.APIView):
                 bazasignup.assigned_to = staff
                 bazasignup.save()
                 task_post_staff_assignment.delay(bazasignup.id)
+                save_bazasignup_activity(
+                    bazasignup, 'reassigned signup to', request.user,
+                    staff, True)
                 return Response({'signup_id': bazasignup.id})
             return Response(
                 {'status': 'forbidden'}, status=status.HTTP_403_FORBIDDEN)
         except ObjectDoesNotExist:
             return Response(
                 {'status': 'not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class BazaSignupActivitiesView(views.APIView):
+    """
+    This view will be used to get all recorded activity
+    for a signup
+    """
+
+    permission_classes = (IsAuthenticated, TokenHasScope,
+                          IsStaffOfSiteOwnerGroup, )
+    required_scopes = [
+        'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
+
+    def get(self, request, signup_id, format=None):
+        try:
+            signup = BazaSignup.objects.get(id=signup_id)
+            serializer = BazaSignupActivitySerializer(
+                signup.activities.all().order_by('-id'), many=True)
+            return Response(serializer.data)
+        except BazaSignup.DoesNotExist:
+            return Response(
+                {'status': 'requested signup not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )

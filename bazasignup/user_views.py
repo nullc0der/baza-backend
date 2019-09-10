@@ -33,6 +33,7 @@ from bazasignup.tasks import (
     task_process_autoapproval,
     task_post_resubmission
 )
+from bazasignup.utils import save_bazasignup_activity
 
 
 SKIPPABLE_INDEXES = [1, 2]
@@ -268,6 +269,8 @@ class UserInfoTabView(views.APIView):
                 signup.invalidated_fields = remove_invalidated_fields(
                     request, [i for i in serializer.validated_data.keys()])
             signup.save()
+            save_bazasignup_activity(
+                signup, 'completed name and address tab', request.user)
             return get_step_response(signup)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -297,6 +300,8 @@ class SkipEmailTabView(views.APIView):
                     request, ['email']
                 )
             signup.save()
+            save_bazasignup_activity(
+                signup, 'skipped email verification', request.user)
             return get_step_response(signup)
         except BazaSignup.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
@@ -357,6 +362,8 @@ class ValidateEmailVerificationCode(views.APIView):
             )
             bazasignupemail.signups.add(signup)
             emailverification.delete()
+            save_bazasignup_activity(
+                signup, 'completed email verification', request.user)
             return get_step_response(signup)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -408,6 +415,8 @@ class SkipPhoneTabView(views.APIView):
                     request, ['phone']
                 )
             signup.save()
+            save_bazasignup_activity(
+                signup, 'skipped phone verification', request.user)
             return get_step_response(signup)
         except BazaSignup.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
@@ -475,6 +484,8 @@ class ValidatePhoneVerificationCode(views.APIView):
             )
             bazasignupphone.signups.add(signup)
             phoneverification.delete()
+            save_bazasignup_activity(
+                signup, 'completed phone verification', request.user)
             return get_step_response(signup)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -505,6 +516,8 @@ class SignupImageUploadView(views.APIView):
             signup.save()
             if "3" not in signup.get_invalidated_steps():
                 task_process_autoapproval.delay(signup.id)
+            save_bazasignup_activity(
+                signup, 'uploaded an image', request.user)
             return get_step_response(signup)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
