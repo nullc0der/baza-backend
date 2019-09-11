@@ -141,7 +141,7 @@ class BazaSignupCommentsView(views.APIView):
         try:
             signup = BazaSignup.objects.get(id=signup_id)
             serializer = BazaSignupCommentSerializer(
-                signup.comments.all(), many=True)
+                signup.comments.all().order_by('-id'), many=True)
             return Response(serializer.data)
         except BazaSignup.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
