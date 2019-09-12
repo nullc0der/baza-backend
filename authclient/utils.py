@@ -259,6 +259,10 @@ class AuthHelperClient(object):
         return res.status_code
 
     def get_user_emails(self, access_token):
+        """
+        TIP: You can send username instead of access token if accessing
+        username is not possible
+        """
         token = get_authhelper_client_token()
         headers = {
             "Authorization": "Bearer %s" % token

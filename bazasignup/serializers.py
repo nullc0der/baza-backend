@@ -7,10 +7,19 @@ from rest_framework import serializers
 
 from phoneverification.models import PhoneVerification
 
+from grouppost.serializers import UserSerializer
+
 from bazasignup.countries import COUNTRIES
 from bazasignup.models import (
     EmailVerification,
-    BazaSignupAutoApprovalFailReason
+    BazaSignup,
+    BazaSignupReferralCode,
+    BazaSignupComment,
+    BazaSignupActivity
+)
+from bazasignup.reset_data import (
+    RESET_DATA_TYPES,
+    RESET_DATA_SUBTYPES
 )
 
 
@@ -48,10 +57,11 @@ class UserInfoTabSerializer(serializers.Serializer):
 
     def validate_referral_code(self, value):
         if value:
-            raise serializers.ValidationError(
-                "This feature is not enabled yet, please"
-                " leave this blank"
-            )
+            try:
+                BazaSignupReferralCode.objects.get(code=value)
+                return value
+            except BazaSignupReferralCode.DoesNotExist:
+                raise serializers.ValidationError('Invalid referral code')
         return value
 
 
@@ -108,41 +118,69 @@ class SignupImageSerializer(serializers.Serializer):
     image = serializers.ImageField()
 
 
-class AutoApprovalFailReasonSerializer(serializers.ModelSerializer):
+class BazaSignupListSerializer(serializers.Serializer):
+    id_ = serializers.IntegerField()
+    status = serializers.CharField()
+    fullname = serializers.CharField()
+    username = serializers.CharField()
+    user_image_url = serializers.CharField()
+    user_avatar_color = serializers.CharField()
+
+
+class BazaSignupSerializer(serializers.ModelSerializer):
     class Meta:
-        model = BazaSignupAutoApprovalFailReason
-        fields = ('reason', )
+        model = BazaSignup
+        fields = ('id', )
 
 
-class BazaSignupSerializer(serializers.Serializer):
+class BazaSignupCommentSerializer(serializers.ModelSerializer):
+    commented_by = UserSerializer(required=False)
+    signup = BazaSignupSerializer(required=False)
+
+    class Meta:
+        model = BazaSignupComment
+        fields = '__all__'
+
+
+class BazaSignupFormResetSerializer(serializers.Serializer):
+    data_types = serializers.ListField(
+        child=serializers.CharField(), allow_empty=True)
+    data_subtypes = serializers.ListField(
+        child=serializers.CharField(), allow_empty=True)
+    invalidation_comment = serializers.CharField(allow_blank=True)
+
+    def validate_data_types(self, value):
+        if value:
+            for i in value:
+                if i not in RESET_DATA_TYPES:
+                    raise serializers.ValidationError(
+                        'The value %s is not a valid reset data type' % i)
+        return value
+
+    def validate_data_subtypes(self, value):
+        if value:
+            for i in value:
+                if i not in RESET_DATA_SUBTYPES:
+                    raise serializers.ValidationError(
+                        'The value %s is not a valid reset data subtype' % i)
+        return value
+
+
+class BazaSignupStatusSerializer(serializers.Serializer):
     STATUS_CHOICES = (
         ('pending', 'Pending'),
         ('approved', 'Approved'),
-        ('declined', 'Declined'),
-        ('incomplete', 'Incomplete')
+        ('declined', 'Declined')
     )
-    id_ = serializers.IntegerField()
-    username = serializers.CharField()
-    full_name = serializers.CharField()
-    email = serializers.EmailField()
-    email_used_before = serializers.BooleanField()
-    phone_number = serializers.CharField()
-    phone_used_before = serializers.BooleanField()
-    photo = serializers.CharField()
-    birthdate = serializers.DateField()
-    user_addresses = AddressSerializer(many=True)
     status = serializers.ChoiceField(choices=STATUS_CHOICES)
-    signup_date = serializers.DateTimeField()
-    verified_date = serializers.DateTimeField()
-    referral_code = serializers.CharField()
-    wallet_address = serializers.CharField()
-    on_distribution = serializers.BooleanField()
-    auto_approval_fail_reasons = AutoApprovalFailReasonSerializer(
-        many=True
-    )
 
 
-class BazaSignupListSerializer(serializers.Serializer):
-    id_ = serializers.IntegerField()
-    username = serializers.CharField()
-    status = serializers.CharField()
+class BazaSignupActivitySerializer(serializers.ModelSerializer):
+    created_by = UserSerializer(required=False)
+    related_user = UserSerializer(required=False)
+
+    class Meta:
+        model = BazaSignupActivity
+        fields = (
+            'id', 'message', 'is_assignment_activity',
+            'created_by', 'related_user', 'created_on')

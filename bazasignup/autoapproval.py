@@ -9,6 +9,8 @@ from twilio.rest import Client
 from iso3166 import countries
 from geopy.distance import great_circle
 
+from group.models import BasicGroup
+
 from bazasignup.models import (
     BazaSignup, BazaSignupAddress,
     BazaSignupEmail, BazaSignupPhone,
@@ -37,18 +39,20 @@ class BazaSignupAutoApproval(object):
                     'whitepages_pro_caller_id'][
                         'result']['current_addresses'][0]
                 lat_long = address_data.get('lat_long', '')
-                bazasignupaddress = BazaSignupAddress(
-                    signup=self.signup,
-                    address_type='twilio_db',
-                    changed_by=self.system_user,
-                    zip_code=address_data.get('postal_code', ''),
-                    city=address_data.get('city', ''),
-                    state=address_data.get('state_code', ''),
-                    country=countries.get(address_data.get(
-                        'country_code', '').lower()),
-                    latitude=lat_long.get('latitude', ''),
-                    longitude=lat_long.get('longitude', '')
-                )
+                bazasignupaddress, created = \
+                    BazaSignupAddress.objects.get_or_create(
+                        signup=self.signup,
+                        address_type='twilio_db',
+                    )
+                bazasignupaddress.changed_by = self.system_user
+                bazasignupaddress.zip_code = address_data.get(
+                    'postal_code', '')
+                bazasignupaddress.city = address_data.get('city', '')
+                bazasignupaddress.state = address_data.get('state_code', '')
+                bazasignupaddress.country = countries.get(address_data.get(
+                    'country_code', '').lower())
+                bazasignupaddress.latitude = lat_long.get('latitude', '')
+                bazasignupaddress.longitude = lat_long.get('longitude', '')
                 bazasignupaddress.save()
                 return True
         return False
@@ -58,16 +62,19 @@ class BazaSignupAutoApproval(object):
             try:
                 geoip2 = GeoIP2()
                 address_data = geoip2.city(self.signup.logged_ip_address)
-                bazasignupaddress = BazaSignupAddress(
-                    signup=self.signup,
-                    address_type='geoip_db',
-                    changed_by=self.system_user,
-                    city=address_data.get('city', ''),
-                    country=address_data.get('country_name', ''),
-                    zip_code=address_data.get('postal_code', ''),
-                    latitude=address_data.get('latitude', ''),
-                    longitude=address_data.get('longitude', '')
-                )
+                bazasignupaddress, created = \
+                    BazaSignupAddress.objects.get_or_create(
+                        signup=self.signup,
+                        address_type='geoip_db',
+                    )
+                bazasignupaddress.changed_by = self.system_user
+                bazasignupaddress.city = address_data.get('city', '')
+                bazasignupaddress.country = address_data.get(
+                    'country_name', '')
+                bazasignupaddress.zip_code = address_data.get(
+                    'postal_code', '')
+                bazasignupaddress.latitude = address_data.get('latitude', '')
+                bazasignupaddress.longitude = address_data.get('longitude', '')
                 bazasignupaddress.save()
                 return True
             except:
@@ -178,73 +185,83 @@ class BazaSignupAutoApproval(object):
                 score += 1
             else:
                 score -= 1
-                self.autoapproval_fail_reason.append(
-                    'Email address is not unique'
-                )
+                self.autoapproval_fail_reason.append({
+                    'reason_type': 'non_unique_email',
+                    'reason': 'Email address is not unique'
+                })
         else:
             score -= 1
-            self.autoapproval_fail_reason.append(
-                'No email address'
-            )
+            self.autoapproval_fail_reason.append({
+                'reason_type': 'no_email',
+                'reason': 'No email address'
+            })
         if self.signup.phone_number:
             if self.__is_phone_unique():
                 score += 1
             else:
                 score -= 1
-                self.autoapproval_fail_reason.append(
-                    'Phone number is not unique'
-                )
+                self.autoapproval_fail_reason.append({
+                    'reason_type': 'non_unique_phone',
+                    'reason': 'Phone number is not unique'
+                })
         else:
             score -= 1
-            self.autoapproval_fail_reason.append(
-                'No phone number'
-            )
+            self.autoapproval_fail_reason.append({
+                'reason_type': 'no_phone',
+                'reason': 'No phone number'
+            })
         if data_collection_status['twilio']:
             score += 1
         else:
             score -= 1
-            self.autoapproval_fail_reason.append(
-                'No twilio data could be fetched'
-            )
+            self.autoapproval_fail_reason.append({
+                'reason_type': 'no_twilio_data',
+                'reason': 'No twilio data could be fetched'
+            })
         if data_collection_status['geoip']:
             score += 1
         else:
             score -= 1
-            self.autoapproval_fail_reason.append(
-                'No geoip data could be fetched'
-            )
+            self.autoapproval_fail_reason.append({
+                'reason_type': 'no_geoip_data',
+                'reason': 'No geoip data could be fetched'
+            })
         if address_distances['geoip_vs_userinput']:
             if address_distances['geoip_vs_userinput'] <\
                     settings.MAXIMUM_ALLOWED_DISTANCE_FOR_SIGNUP:
                 score += 1
             else:
                 score -= 1
-                self.autoapproval_fail_reason.append(
-                    'Geoip and user inputed address difference exceeds'
-                    ' maximum allowed distance'
-                )
+                self.autoapproval_fail_reason.append({
+                    'reason_type': 'geoip_vs_userinput_address_range_exceed',
+                    'reason': 'Geoip and user inputed address difference'
+                    ' exceeds maximum allowed distance'
+                })
         else:
             score -= 1
-            self.autoapproval_fail_reason.append(
-                'No distance could be fetched'
+            self.autoapproval_fail_reason.append({
+                'reason_type': 'no_distance_fetched_geoip_vs_userinput',
+                'reason': 'No distance could be fetched'
                 ' between geoip and user inputed address'
-            )
+            })
         if address_distances['twilio_vs_userinput']:
             if address_distances['twilio_vs_userinput'] <\
                     settings.MAXIMUM_ALLOWED_DISTANCE_FOR_SIGNUP:
                 score += 1
             else:
                 score -= 1
-                self.autoapproval_fail_reason.append(
-                    'Twilio and user inputed address difference exceeds'
-                    ' maximum allowed distance'
-                )
+                self.autoapproval_fail_reason.append({
+                    'reason_type': 'twilio_vs_userinput_address_range_exceed',
+                    'reason': 'Twilio and user inputed address difference'
+                    ' exceeds maximum allowed distance'
+                })
         else:
             score -= 1
-            self.autoapproval_fail_reason.append(
-                'No distance could be fetched'
+            self.autoapproval_fail_reason.append({
+                'reason_type': 'no_distance_fetched_twilio_vs_userinput',
+                'reason': 'No distance could be fetched'
                 ' between twilio and user inputed address'
-            )
+            })
         if score >= 3:
             self.signup.status == 'approved'
             self.signup.changed_by = self.system_user
@@ -253,15 +270,44 @@ class BazaSignupAutoApproval(object):
             for fail_reason in self.autoapproval_fail_reason:
                 autoapprovalfailreason = BazaSignupAutoApprovalFailReason(
                     signup=self.signup,
-                    reason=fail_reason,
+                    reason_type=fail_reason['reason_type'],
+                    reason=fail_reason['reason'],
                     changed_by=self.system_user
                 )
                 autoapprovalfailreason.save()
+            self.signup.status = 'pending'
+            self.signup.changed_by = self.system_user
+            self.signup.save()
         return self.signup.status
+
+    def __assign_to_staff(self):
+        if not self.signup.assigned_to:
+            try:
+                current_assignments = {}
+                site_owner_group = BasicGroup.objects.get(
+                    is_site_owner_group=True)
+                for staff in site_owner_group.staffs.all():
+                    current_assignments[staff] = \
+                        staff.assignedbazasignups.count()
+                assigned_to = min(
+                    current_assignments, key=lambda k: current_assignments[k])
+                self.signup.assigned_to = assigned_to
+                self.signup.save()
+                # Circular import issue fix
+                from bazasignup.utils import (
+                    post_staff_assignment, save_bazasignup_activity)
+                post_staff_assignment(self.signup.id)
+                save_bazasignup_activity(
+                    self.signup, 'autoapproval failed and assigned to',
+                    self.system_user, assigned_to, True)
+            except BasicGroup.DoesNotExist:
+                pass
 
     def start(self):
         data_collection_results = self.__collect_datas()
         address_distances = self.__compare_addresses()
         signup_status = self.__process_auto_approval(
             data_collection_results, address_distances)
+        if signup_status != 'approved':
+            self.__assign_to_staff()
         return signup_status

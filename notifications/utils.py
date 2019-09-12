@@ -3,6 +3,7 @@ from channels.layers import get_channel_layer
 
 from group.models import GroupInvite
 from publicusers.views import make_user_serializeable
+from bazasignup.models import BazaSignup
 
 from notifications.models import Notification
 
@@ -20,6 +21,11 @@ def get_serialized_notification(notification):
                 data['id'] = notification.id
                 data['sender'] = make_user_serializeable(groupinvite.sender)
                 data['groupname'] = groupinvite.basic_group.name
+            if isinstance(notification.content_object, BazaSignup):
+                signup = notification.content_object
+                data['type'] = 'distribution_signup'
+                data['id'] = notification.id
+                data['signupuser'] = make_user_serializeable(signup.user)
     return data
 
 
