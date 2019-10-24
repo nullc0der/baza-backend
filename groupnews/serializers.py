@@ -9,6 +9,7 @@ class NewsSerializer(serializers.ModelSerializer):
     basic_group = GroupSerializer(required=False)
     impressioncount = serializers.ReadOnlyField()
     converted_news = serializers.ReadOnlyField()
+    plaintext_news = serializers.ReadOnlyField()
 
     class Meta:
         model = GroupNews
