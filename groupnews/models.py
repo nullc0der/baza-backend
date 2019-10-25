@@ -1,5 +1,6 @@
 import markdown
 import bleach
+from bs4 import BeautifulSoup
 
 from django.db import models
 from django.contrib.auth.models import User
@@ -18,6 +19,7 @@ class GroupNews(models.Model):
     title = models.TextField(null=True)
     news = models.TextField()
     converted_news = models.TextField(default='')
+    plaintext_news = models.TextField(default='')
     created_on = models.DateTimeField(auto_now_add=True)
     is_published = models.BooleanField(default=False)
     impressioncount = models.PositiveIntegerField(default=0)
@@ -30,6 +32,7 @@ class GroupNews(models.Model):
             settings.BLEACH_VALID_ATTRS,
             settings.BLEACH_VALID_STYLES
         )
+        self.plaintext_news = ''.join(BeautifulSoup(html).findAll(text=True))
         super(GroupNews, self).save(*args, **kwargs)
 
 
