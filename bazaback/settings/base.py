@@ -322,3 +322,6 @@ PHONE_VERIFICATION_CODE_EXPIRES_IN = int(get_env_var(
 
 # API Key for uploading faq json
 FAQ_API_KEY = get_env_var('FAQ_API_KEY')
+
+# Google Recaptcha
+GOOGLE_RECAPTCHA_SECRET_KEY = get_env_var('GOOGLE_RECAPTCHA_SECRET_KEY')
