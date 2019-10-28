@@ -1,3 +1,5 @@
+import requests
+
 from django.template import loader
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
@@ -33,3 +35,15 @@ def send_email_to_site_owner(contact_id):
         'text/html'
     )
     msg.send()
+
+
+def get_recaptcha_response(token):
+    data = {
+        'secret': settings.GOOGLE_RECAPTCHA_SECRET_KEY,
+        'response': token
+    }
+    res = requests.post(
+        'https://www.google.com/recaptcha/api/siteverify', data)
+    if res.status_code == 200:
+        return res.json()
+    return
