@@ -106,8 +106,8 @@ class InitiateDonationView(views.APIView):
         'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
 
     def post(self, request, format=None):
-        # return get_initiate_donation_response(request, False)
-        return get_donation_closed_response()
+        return get_initiate_donation_response(request, False)
+        # return get_donation_closed_response()
 
 
 class InitiateAnonymousDonationView(views.APIView):
@@ -117,8 +117,8 @@ class InitiateAnonymousDonationView(views.APIView):
     """
 
     def post(self, request, format=None):
-        # return get_initiate_donation_response(request, True)
-        return get_donation_closed_response()
+        return get_initiate_donation_response(request, True)
+        # return get_donation_closed_response()
 
 
 class GetLatestDonations(views.APIView):
