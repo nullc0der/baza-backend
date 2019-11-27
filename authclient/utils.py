@@ -228,6 +228,7 @@ class AuthHelperClient(object):
             "Authorization": "Bearer %s" % token
         }
         data = {
+            'initiator_site': settings.HOST_URL,
             'callback_uri': callback_uris[settings.SITE_TYPE]
         }
         res = requests.post(self.url, headers=headers, data=data)
@@ -239,6 +240,7 @@ class AuthHelperClient(object):
             "Authorization": "Bearer %s" % token
         }
         data = {
+            'initiator_site': settings.HOST_URL,
             'oauth_token': oauth_token,
             'oauth_verifier': oauth_verifier
         }
@@ -334,6 +336,7 @@ class AuthHelperClient(object):
         }
         data = {
             'access_token': access_token,
+            'initiator_site': settings.HOST_URL,
             'provider': provider
         }
         if provider == 'twitter':
