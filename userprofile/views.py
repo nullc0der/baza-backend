@@ -625,9 +625,12 @@ class UserPhoneValidationView(views.APIView):
 class AddedEmailWebhook(views.APIView):
     def post(self, request, format=None):
         if request.data['key'] == settings.INTERNAL_WEBHOOK_KEY:
-            user = User.objects.get(username=request.data['username'])
-            user.usertasks.added_and_validated_email = True
-            user.usertasks.save()
+            try:
+                user = User.objects.get(username=request.data['username'])
+                user.usertasks.added_and_validated_email = True
+                user.usertasks.save()
+            except User.DoesNotExist:
+                pass
             return Response()
         return Response(status=status.HTTP_403_FORBIDDEN)
 
