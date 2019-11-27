@@ -336,6 +336,7 @@ class AuthHelperClient(object):
         }
         data = {
             'access_token': access_token,
+            'initiator_site': settings.HOST_URL,
             'provider': provider
         }
         if provider == 'twitter':
