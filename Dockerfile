@@ -10,7 +10,7 @@ WORKDIR /baza-back
 RUN curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
 COPY pyproject.toml poetry.lock /baza-back/
 RUN source $HOME/.poetry/env && \
-    poetry config settings.virtualenvs.create false && \
+    poetry config virtualenvs.create false && \
     poetry install --no-dev
 COPY . /baza-back
 CMD [ "sh", "start.sh" ]
