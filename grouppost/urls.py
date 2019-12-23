@@ -8,6 +8,6 @@ urlpatterns = [
 ]
 
 router = DefaultRouter()
-router.register(r'comment', views.CommentViewset, base_name='comment')
-router.register(r'', views.PostViewSets, base_name='post')
+router.register(r'comment', views.CommentViewset, basename='comment')
+router.register(r'', views.PostViewSets, basename='post')
 urlpatterns += router.urls

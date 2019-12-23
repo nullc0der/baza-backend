@@ -9,6 +9,6 @@ urlpatterns = [
 
 router = DefaultRouter()
 router.register(r'landingnews', views.SiteOwnerGroupNewsViewSets,
-                base_name='landingnews')
-router.register(r'', views.NewsViewSets, base_name='news')
+                basename='landingnews')
+router.register(r'', views.NewsViewSets, basename='news')
 urlpatterns += router.urls

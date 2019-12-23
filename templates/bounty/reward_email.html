@@ -1,0 +1,19 @@
+{% extends "base_email_template.html" %}
+{% load mjml %}
+{% mjml %}
+{% block content %}
+    <mj-section background-color="#fafafa">
+        <mj-column width="400px">
+            <mj-text color="#525252" align="center" font-weight="bold" font-size="22px">
+                Congratulations!
+            </mj-text>
+            <mj-text color="#525252" align="center">
+                You have received a reward of {{ amount }} BAZ for completing task {{ email_desc }}.
+            </mj-text>
+            <mj-text color="#525252" align="center">
+                Open your online wallet to check.
+            </mj-text>
+        </mj-column>
+    </mj-section>
+{% endblock content %}
+{% endmjml %}
