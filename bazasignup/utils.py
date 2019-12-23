@@ -30,6 +30,9 @@ from bazasignup.models import (
 
 from bazasignup.autoapproval import BazaSignupAutoApproval
 
+from bounty.utils import send_reward
+from bounty.bounties import BAZA_BAZ_BOUNTY_1
+
 
 URL_PROTOCOL = 'http://' if settings.SITE_TYPE == 'local' else 'https://'
 
@@ -186,7 +189,21 @@ def process_after_approval(signup_id):
     signup.verified_date = now()
     signup.changed_by = system_user
     signup.save()
-    return True
+    bounty_task_name = BAZA_BAZ_BOUNTY_1[
+        'tasks']['registered_and_approved_on_baz_distribution']['name']
+    distribution_signup_reward_result = send_reward(
+        signup.user.id, bounty_task_name)
+    if signup.referred_by:
+        bounty_task_name = BAZA_BAZ_BOUNTY_1[
+            'tasks']['referred_user_for_baz_distribution']['name']
+        distribution_referral_reward_result = send_reward(
+            signup.referred_by.id, bounty_task_name, can_have_multiple=True
+        )
+    return "Sent referral code, Rewards result(s): {},{}"\
+        .format(
+            distribution_signup_reward_result,
+            distribution_referral_reward_result
+        )
 
 
 def get_user_emails(user):

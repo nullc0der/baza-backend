@@ -36,6 +36,7 @@ class ProxcTransaction(models.Model):
     amount = models.FloatField()
     coinpurchase = models.OneToOneField(
         CoinPurchase, null=True, on_delete=models.SET_NULL)
+    should_substract_txfee = models.BooleanField(default=True)
 
 
 @receiver(post_save, sender=User)
@@ -55,5 +56,6 @@ def calculate_amount(sender, **kwargs):
         account.save()
     to_account = transaction.to_account
     # TODO: The txfee shouldnot be hardcoded
-    to_account.balance += transaction.amount - 0.01
+    to_account.balance += transaction.amount - \
+        (0.01 if transaction.should_substract_txfee else 0)
     to_account.save()
