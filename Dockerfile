@@ -5,9 +5,9 @@ RUN apk update && \
     libpq python3 python3-dev jpeg-dev zlib-dev libressl-dev libffi-dev curl
 RUN ln -s /usr/bin/python3 /usr/bin/python
 RUN ln -s /usr/bin/pip3 /usr/bin/pip
-RUN curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
 RUN mkdir /baza-back
 WORKDIR /baza-back
+RUN curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
 COPY pyproject.toml poetry.lock /baza-back/
 RUN source $HOME/.poetry/env && \
     poetry config settings.virtualenvs.create false && \
