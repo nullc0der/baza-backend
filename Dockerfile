@@ -1,9 +1,9 @@
-FROM alpine:latest
+FROM python:3.6
 LABEL maintainer Prasanta Kakati <prasantakakati@ekata.social>
-RUN apk update && \
-    apk add build-base linux-headers postgresql-client postgresql-dev \
+RUN apt update && \
+    apt install build-essential linux-headers postgresql-client postgresql-dev \
     libpq python3 python3-dev jpeg-dev zlib-dev libressl-dev libffi-dev curl \
-    musl-dev libffi-dev openssl-dev gcc py3-cryptography
+    musl-dev libffi-dev openssl-dev
 RUN ln -s /usr/bin/python3 /usr/bin/python
 RUN ln -s /usr/bin/pip3 /usr/bin/pip
 RUN mkdir /baza-back
