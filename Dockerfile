@@ -9,7 +9,7 @@ RUN mkdir /baza-back
 WORKDIR /baza-back
 RUN curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
 COPY pyproject.toml poetry.lock /baza-back/
-RUN /bin/bash -c "source $HOME/.poetry/env" && \
+RUN . $HOME/.poetry/env && \
     poetry config virtualenvs.create false && \
     poetry install --no-dev
 COPY . /baza-back
