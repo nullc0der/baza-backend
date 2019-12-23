@@ -1,7 +1,7 @@
 FROM python:3.6
 LABEL maintainer Prasanta Kakati <prasantakakati@ekata.social>
-RUN apt update && \
-    apt install build-essential postgresql-client \
+RUN apt-get update && \
+    apt-get install --yes build-essential postgresql-client \
     libpq-dev libjpeg-dev zlib1g-dev libffi-dev curl \
     musl-dev libffi-dev libssl-dev
 RUN ln -s /usr/bin/python3 /usr/bin/python
