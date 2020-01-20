@@ -76,8 +76,8 @@ def send_reward(user_id, task_name, can_have_multiple=False, amount=0):
     bounty_task = BAZA_BAZ_BOUNTY_1['tasks'][task_name]
     if amount != 0:
         bounty_task['amount'] = amount
+    user = User.objects.get(id=user_id)
     if bounty_program_available(bounty_program, bounty_task['amount']):
-        user = User.objects.get(id=user_id)
         if can_have_multiple:
             make_reward_entries(bounty_task, user, bounty_program)
             send_reward_email_to_user(bounty_task, user)
