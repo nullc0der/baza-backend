@@ -638,8 +638,11 @@ class AddedEmailWebhook(views.APIView):
 class AddedSocialWebhook(views.APIView):
     def post(self, request, format=None):
         if request.data['key'] == settings.INTERNAL_WEBHOOK_KEY:
-            user = User.objects.get(username=request.data['username'])
-            user.usertasks.linked_one_social_account = True
-            user.usertasks.save()
+            try:
+                user = User.objects.get(username=request.data['username'])
+                user.usertasks.linked_one_social_account = True
+                user.usertasks.save()
+            except User.DoesNotExist:
+                pass
             return Response()
         return Response(status=status.HTTP_403_FORBIDDEN)
