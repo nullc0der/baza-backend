@@ -19,5 +19,6 @@ urlpatterns = [
     path('coinbase/', include('coinbasepay.urls')),
     path('hashtag/', include('hashtag.urls')),
     path('landing/', include('landing.urls')),
-    path('faq/', include('groupfaq.urls'))
+    path('faq/', include('groupfaq.urls')),
+    path('userwebwallet/', include('webwallet.urls'))
 ]
