@@ -18,6 +18,8 @@ class ApiWrapper(object):
             return requests.post
         if req_method == 'DELETE':
             return requests.delete
+        if req_method == 'PUT':
+            return requests.put
         return requests.get
 
     def get_api_response(self, req_method, api_endpoint, data=None):
@@ -42,9 +44,14 @@ class ApiWrapper(object):
     def close_wallet(self):
         return self.get_api_response('DELETE', '/wallet')
 
+    def save_wallet(self):
+        return self.get_api_response('PUT', '/save')
+
     def create_subwallet(self):
         if self.wallet_is_open:
-            return self.get_api_response('POST', '/addresses/create')
+            res = self.get_api_response('POST', '/addresses/create')
+            self.save_wallet()
+            return res
 
     def create_integrated_address(self, address, payment_id):
         if self.wallet_is_open:
