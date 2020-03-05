@@ -24,7 +24,7 @@ class UserWebWalletSerializer(serializers.ModelSerializer):
 class UserWebWalletTxSerializer(serializers.Serializer):
     source_address = serializers.CharField()
     destination_address = serializers.CharField()
-    amount = serializers.FloatField()
+    amount = serializers.IntegerField()
 
     def validate_source_address(self, value):
         wallets = self.context['request'].user.wallets.filter(address=value)

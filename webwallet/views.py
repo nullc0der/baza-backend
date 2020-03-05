@@ -86,7 +86,7 @@ class UserWebWalletTxView(views.APIView):
                 serializer.validated_data['source_address'],
                 serializer.validated_data['amount']
             )
-            if res.status_code == 201:
+            if res.status_code == 200:
                 data = res.json()
                 return Response({'transaction_hash': data['transactionHash']})
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -72,7 +72,8 @@ class ApiWrapper(object):
                     'amount': amount
                 }
             ],
-            'sourceAddresses': [source_address]
+            'sourceAddresses': [source_address],
+            'changeAddress': source_address
         }
         if self.wallet_is_open:
             return self.get_api_response(
