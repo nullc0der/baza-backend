@@ -84,7 +84,8 @@ BAZA_APPS = [
     'hashtag',
     'landing',
     'phoneverification',
-    'bounty'
+    'bounty',
+    'webwallet'
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + BAZA_APPS
@@ -326,3 +327,11 @@ FAQ_API_KEY = get_env_var('FAQ_API_KEY')
 
 # Google Recaptcha
 GOOGLE_RECAPTCHA_SECRET_KEY = get_env_var('GOOGLE_RECAPTCHA_SECRET_KEY')
+
+# Web Wallet
+COIN_DAEMON_HOST = get_env_var('COIN_DAEMON_HOST')
+COIN_DAEMON_PORT = get_env_var('COIN_DAEMON_PORT')
+WALLET_FILENAME = get_env_var('WALLET_FILENAME')
+WALLET_PASSWORD = get_env_var('WALLET_PASSWORD')
+WALLET_API_URL = get_env_var('WALLET_API_URL')
+WALLET_API_KEY = get_env_var('WALLET_API_KEY')
