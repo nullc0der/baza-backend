@@ -193,6 +193,9 @@ def process_after_approval(signup_id):
         'tasks']['registered_and_approved_on_baz_distribution']['name']
     distribution_signup_reward_result = send_reward(
         signup.user.id, bounty_task_name)
+    distribution_referral_reward_result = \
+        'No distribution_referral_reward_result generated for this user ' +\
+        'as the user was not referred by anyone'
     if signup.referred_by:
         bounty_task_name = BAZA_BAZ_BOUNTY_1[
             'tasks']['referred_user_for_baz_distribution']['name']
