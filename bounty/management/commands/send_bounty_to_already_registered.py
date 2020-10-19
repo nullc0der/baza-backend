@@ -5,24 +5,24 @@ from django.contrib.auth.models import User
 from django.utils.timezone import make_aware
 
 from bounty.tasks import task_send_reward
-from bounty.bounties import BAZA_BAZ_BOUNTY_1
+from bounty.bounties import BAZA_BAZ_BOUNTY_2
 
 
 class Command(BaseCommand):
     help = "This command will send reward to already registered user"
 
     def handle(self, *args, **options):
-        timestamp = make_aware(datetime.strptime('2019-11-14', '%Y-%m-%d'))
-        users = User.objects.filter(date_joined__gt=timestamp)
+        timestamp = make_aware(datetime.strptime('2020-10-19', '%Y-%m-%d'))
+        users = User.objects.filter(date_joined__gte=timestamp)
         for user in users:
-            bounty_task_name = BAZA_BAZ_BOUNTY_1['tasks']['signed_up']['name']
+            bounty_task_name = BAZA_BAZ_BOUNTY_2['tasks']['signed_up']['name']
             task_send_reward.delay(user.id, bounty_task_name)
             self.stdout.write(self.style.SUCCESS(
                 'Sent signup reward to {}'.format(user.username)))
             if hasattr(user, 'bazasignup'):
                 if user.bazasignup.status == 'approved':
                     signup = user.bazasignup
-                    bounty_task_name = BAZA_BAZ_BOUNTY_1[
+                    bounty_task_name = BAZA_BAZ_BOUNTY_2[
                         'tasks']['registered_and_approved_on_baz_distribution'
                                  ]['name']
                     task_send_reward.delay(
@@ -32,7 +32,7 @@ class Command(BaseCommand):
                             user.username)
                     ))
                     if signup.referred_by:
-                        bounty_task_name = BAZA_BAZ_BOUNTY_1[
+                        bounty_task_name = BAZA_BAZ_BOUNTY_2[
                             'tasks']['referred_user_for_baz_distribution'][
                                 'name']
                         task_send_reward.delay(
