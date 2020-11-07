@@ -128,7 +128,7 @@ class SendFundFromProxcToRealWallet(APIView):
     def post(self, request, format=None):
         if request.user.wallets.count():
             # TODO: change this to default wallet address
-            to_address = request.user.wallets[0].address
+            to_address = request.user.wallets.all()[0].address
             authhelperclient = AuthHelperClient(
                 URL_PROTOCOL +
                 settings.CENTRAL_AUTH_INTROSPECT_URL +
