@@ -18,6 +18,7 @@ from bazasignup.models import (
     BazaSignupReferralCode
 )
 from bazasignup.serializers import (
+    AddressSerializer,
     UserInfoTabSerializer,
     EmailSerializer,
     EmailVerificationSerializer,
@@ -90,8 +91,10 @@ def get_step_response(signup):
         'completed_steps': signup.get_completed_steps(),
         'invalidated_steps': signup.get_invalidated_steps(),
         'invalidated_fields': signup.get_invalidated_fields(),
+        # TODO: Need to remove condition once additional info added to profile
         'invalidation_comment':
-        signup.bazasignupadditionalinfo.invalidation_comment,
+        signup.bazasignupadditionalinfo.invalidation_comment \
+        if hasattr(signup, 'bazasignupadditionalinfo') else '',
         'handling_staff': {
             'fullname': signup.assigned_to.get_full_name()
             if signup.assigned_to else '',
@@ -146,8 +149,10 @@ class CheckCompletedTab(views.APIView):
                 'completed_steps': signup.get_completed_steps(),
                 'invalidated_steps': signup.get_invalidated_steps(),
                 'invalidated_fields': signup.get_invalidated_fields(),
+                # TODO: Need to remove condition once additional info added to profile
                 'invalidation_comment':
-                signup.bazasignupadditionalinfo.invalidation_comment,
+                signup.bazasignupadditionalinfo.invalidation_comment \
+                if hasattr(signup, 'bazasignupadditionalinfo') else '',
                 'handling_staff': {
                     'fullname': signup.assigned_to.get_full_name()
                     if signup.assigned_to else '',
@@ -233,7 +238,8 @@ class UserInfoTabView(views.APIView):
                 'house_number': address.house_number,
                 'street_name': address.street,
                 'zip_code': address.zip_code,
-                'birthdate': signup.bazasignupadditionalinfo.birth_date,
+                # TODO: Need to remove condition once additional info added to profile
+                'birthdate': signup.bazasignupadditionalinfo.birth_date if hasattr(signup, 'bazasignupadditionalinfo') else '',
                 'referral_code': referral_code,
                 'first_name': signup.user.first_name,
                 'last_name': signup.user.last_name
@@ -514,8 +520,9 @@ class SignupImageUploadView(views.APIView):
                 signup.invalidated_steps = remove_invalidated_steps(
                     request, "3")
             signup.save()
-            if "3" not in signup.get_invalidated_steps():
-                task_process_autoapproval.delay(signup.id)
+            # NOTE: Moved to signal
+            # if "3" not in signup.get_invalidated_steps():
+            #     task_process_autoapproval.delay(signup.id)
             save_bazasignup_activity(
                 signup, 'uploaded an image', request.user)
             return get_step_response(signup)
@@ -541,3 +548,50 @@ class ToggleDonorView(views.APIView):
             })
         except BazaSignup.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+class LocationView(views.APIView):
+    """
+    This API will be used to add user input location to DB
+    """
+
+    def get(self, request, format=None):
+        try:
+            signup = BazaSignup.objects.get(user=request.user)
+            bazasignupaddress = BazaSignupAddress.objects.get(
+                signup=signup,
+                address_type='user_input'
+            )
+            return Response(AddressSerializer(bazasignupaddress).data)
+        except (BazaSignup.DoesNotExist, BazaSignupAddress.DoesNotExist):
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+    def post(self, request, format=None):
+        serializer = AddressSerializer(data=request.data)
+        if serializer.is_valid():
+            signup, _ = BazaSignup.objects.get_or_create(user=request.user)
+            signup.changed_by = request.user
+            bazasignupaddress, _ = BazaSignupAddress.objects.get_or_create(
+                signup=signup,
+                address_type='user_input'
+            )
+            bazasignupaddress.house_number = \
+                serializer.validated_data['house_number']
+            bazasignupaddress.street = serializer.validated_data['street']
+            bazasignupaddress.zip_code = serializer.validated_data['zip_code']
+            bazasignupaddress.city = serializer.validated_data['city']
+            bazasignupaddress.state = serializer.validated_data['state']
+            bazasignupaddress.country = serializer.validated_data['country']
+            bazasignupaddress.changed_by = request.user
+            bazasignupaddress.save()
+            signup.completed_steps = get_current_completed_steps(request, "0")
+            if "0" in signup.get_invalidated_steps():
+                signup.invalidated_steps = remove_invalidated_steps(
+                    request, "0")
+                signup.invalidated_fields = remove_invalidated_fields(
+                    request, [i for i in serializer.validated_data.keys()])
+            signup.save()
+            save_bazasignup_activity(
+                signup, 'Added location from profile page', request.user)
+            return Response(AddressSerializer(bazasignupaddress).data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

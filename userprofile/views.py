@@ -12,6 +12,14 @@ from rest_framework.parsers import (
 
 from oauth2_provider.contrib.rest_framework import TokenHasScope
 
+from bazasignup.models import (
+    BazaSignup, BazaSignupEmail, BazaSignupPhone)
+from bazasignup.user_views import (
+    get_current_completed_steps,
+    remove_invalidated_steps,
+    remove_invalidated_fields
+)
+from bazasignup.utils import save_bazasignup_activity
 from authclient.utils import AuthHelperClient
 from phoneverification.tasks import task_send_phone_verification_code
 from phoneverification.models import PhoneVerification
@@ -22,23 +30,13 @@ from userprofile.serializers import (
     UserProfileSerializer, UserDocumentSerializer,
     UserPhotoSerializer, UserProfilePhotoSerializer,
     UserPhoneSerializer, UserPhoneValidationSerializer)
+from userprofile.utils import get_profile_photo
 from userprofile.tasks import (
     task_send_two_factor_email
 )
 
 
 URL_PROTOCOL = 'http://' if settings.SITE_TYPE == 'local' else 'https://'
-
-
-def get_profile_photo(user):
-    profile_photo = None
-    try:
-        profilephoto = user.profile.profilephotos.get(
-            is_active=True)
-        profile_photo = profilephoto.userphoto.photo.url
-    except UserProfilePhoto.DoesNotExist:
-        pass
-    return profile_photo
 
 
 class UserProfileView(views.APIView):
@@ -89,6 +87,20 @@ class UserDocumentView(views.APIView):
         serializer = UserDocumentSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(profile=request.user.profile)
+            signup, _ = BazaSignup.objects.get_or_create(user=request.user)
+            if not signup.photo:
+                signup.photo = serializer.validated_data['document']
+                signup.completed_steps = get_current_completed_steps(
+                    request, "3")
+                signup.logged_ip_address = request.META.get(
+                    'HTTP_CF_CONNECTING_IP', '')
+                signup.changed_by = request.user
+                if "3" in signup.get_invalidated_steps():
+                    signup.invalidated_steps = remove_invalidated_steps(
+                        request, "3")
+                signup.save()
+                save_bazasignup_activity(
+                    signup, 'Uploaded a document from profile page', request.user)
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -245,6 +257,23 @@ class UserPhoneView(views.APIView):
         serializer = UserPhoneSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(profile=request.user.profile)
+            signup, _ = BazaSignup.objects.get_or_create(user=request.user)
+            signup.phone_number = serializer.validated_data['phone_number']
+            signup.completed_steps = get_current_completed_steps(request, "2")
+            if "2" in signup.get_invalidated_steps():
+                signup.invalidated_steps = remove_invalidated_steps(
+                    request, "2")
+                signup.invalidated_fields = remove_invalidated_fields(
+                    request, ['phone']
+                )
+            signup.changed_by = request.user
+            signup.save()
+            bazasignupphone, _ = BazaSignupPhone.objects.get_or_create(
+                phone_number=serializer.validated_data['phone_number']
+            )
+            bazasignupphone.signups.add(signup)
+            save_bazasignup_activity(
+                signup, 'Added phone number from profile page', request.user)
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -322,6 +351,23 @@ class UserEmailView(views.APIView):
         )
         if res_status != 200:
             return Response(data, status=status.HTTP_400_BAD_REQUEST)
+        signup, _ = BazaSignup.objects.get_or_create(user=request.user)
+        signup.email = request.data.get('email')
+        signup.completed_steps = get_current_completed_steps(request, "1")
+        if "1" in signup.get_invalidated_steps():
+            signup.invalidated_steps = remove_invalidated_steps(
+                request, "1")
+            signup.invalidated_fields = remove_invalidated_fields(
+                request, ['email']
+            )
+        signup.changed_by = request.user
+        signup.save()
+        bazasignupemail, _ = BazaSignupEmail.objects.get_or_create(
+            email=request.data.get('email')
+        )
+        bazasignupemail.signups.add(signup)
+        save_bazasignup_activity(
+            signup, 'Added email from profile page', request.user)
         return Response(data)
 
     def delete(self, request, format=None):

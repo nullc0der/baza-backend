@@ -135,11 +135,12 @@ class UserTasks(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     added_and_validated_email = models.BooleanField(default=False)
     added_and_validated_phone = models.BooleanField(default=False)
+    uploaded_an_official_document_id = models.BooleanField(default=False)
     added_location = models.BooleanField(default=False)
-    added_two_factor_authentication = models.BooleanField(default=False)
     linked_one_social_account = models.BooleanField(default=False)
-    completed_distribution_signup = models.BooleanField(default=False)
     added_profile_picture = models.BooleanField(default=False)
+    added_two_factor_authentication = models.BooleanField(default=False)
+    # completed_distribution_signup = models.BooleanField(default=False)
 
 
 class UserTrustPercentage(models.Model):

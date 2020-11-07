@@ -51,11 +51,12 @@ def create_user_account(sender, **kwargs):
 def calculate_amount(sender, **kwargs):
     transaction = kwargs['instance']
     account = transaction.account
+    to_account = transaction.to_account
     if account:
         account.balance -= transaction.amount
         account.save()
-    to_account = transaction.to_account
-    # TODO: The txfee shouldnot be hardcoded
-    to_account.balance += transaction.amount - \
-        (0.01 if transaction.should_substract_txfee else 0)
-    to_account.save()
+    if to_account:
+        # TODO: The txfee shouldnot be hardcoded
+        to_account.balance += transaction.amount - \
+            (0.01 if transaction.should_substract_txfee else 0)
+        to_account.save()

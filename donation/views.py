@@ -14,7 +14,7 @@ from coinbasepay.models import Charge
 from coinbasepay.utils import create_charge
 from coinbasepay.dicts import CHARGE
 
-from userprofile.views import get_profile_photo
+from userprofile.utils import get_profile_photo
 from authclient.utils import AuthHelperClient
 
 from donation.models import Donation

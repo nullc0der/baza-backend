@@ -286,6 +286,7 @@ class BazaSignupAutoApproval(object):
                 current_assignments = {}
                 site_owner_group = BasicGroup.objects.get(
                     is_site_owner_group=True)
+                # TODO: filter the pending
                 for staff in site_owner_group.staffs.all():
                     current_assignments[staff] = \
                         staff.assignedbazasignups.count()

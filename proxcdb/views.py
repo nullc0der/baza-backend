@@ -1,3 +1,4 @@
+import re
 from django.db.models import Q
 from django.conf import settings
 
@@ -13,16 +14,21 @@ from rest_framework.permissions import IsAuthenticated
 from oauth2_provider.contrib.rest_framework import TokenHasScope
 from oauth2_provider.decorators import protected_resource
 
+from authclient.utils import AuthHelperClient
+
 from publicusers.views import make_user_serializeable
 
 from userprofile.models import UserProfile
 
 from proxcdb.models import ProxcAccount, ProxcTransaction
 from proxcdb.serializers import ProxcTransactionSerializer
+from proxcdb.utils import send_fund_from_proxc_to_real_wallet
 
 # Create your views here.
 
 channel_layer = get_channel_layer()
+
+URL_PROTOCOL = 'http://' if settings.SITE_TYPE == 'local' else 'https://'
 
 
 class ProxcTransactionView(APIView):
@@ -106,3 +112,37 @@ def proxcdb_account_autocomplete(request):
             'user': make_user_serializeable(proxcaccount.user)
         })
     return Response(data)
+
+
+class SendFundFromProxcToRealWallet(APIView):
+    permission_classes = (IsAuthenticated, TokenHasScope, )
+    required_scopes = [
+        'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
+
+    def get(self, request, format=None):
+        return Response({
+            'balance': request.user.proxcaccount.balance,
+            'has_baza_web_wallet': bool(request.user.wallets.count())
+        })
+
+    def post(self, request, format=None):
+        if request.user.wallets.count():
+            # TODO: change this to default wallet address
+            to_address = request.user.wallets[0].address
+            authhelperclient = AuthHelperClient(
+                URL_PROTOCOL +
+                settings.CENTRAL_AUTH_INTROSPECT_URL +
+                '/authhelper/checkpassword/'
+            )
+            _, data = authhelperclient.check_user_password(
+                request.META['HTTP_AUTHORIZATION'].split(' ')[1],
+                request.data['password']
+            )
+            if data['password_valid']:
+                proxcaccount = request.user.proxcaccount
+                tx_hash = send_fund_from_proxc_to_real_wallet(
+                    proxcaccount, to_address, proxcaccount.balance)
+                if tx_hash:
+                    return Response({'transaction_hash': tx_hash})
+                return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
