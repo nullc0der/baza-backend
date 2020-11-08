@@ -14,7 +14,7 @@ class BazaSignup(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     status = models.CharField(
         max_length=20, choices=STATUS_CHOICES, default='pending')
-    photo = models.ImageField(upload_to='signup_images', null=True)
+    photo = models.FileField(upload_to='signup_images', null=True)
     email = models.EmailField(null=True)
     phone_number = models.CharField(max_length=15, default='')
     referred_by = models.ForeignKey(

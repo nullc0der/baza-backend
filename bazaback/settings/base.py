@@ -190,6 +190,10 @@ CELERY_BEAT_SCHEDULE = {
     'process_flagged_for_delete_group': {
         'task': 'group.tasks.task_process_flagged_for_delete_group',
         'schedule': crontab(minute=0, hour=12)
+    },
+    'send_daily_distribution': {
+        'task': 'proxcdb.tasks.task_send_daily_distribution',
+        'schedule': crontab(minute=0, hour=0)
     }
 }
 
@@ -335,3 +339,6 @@ WALLET_FILENAME = get_env_var('WALLET_FILENAME')
 WALLET_PASSWORD = get_env_var('WALLET_PASSWORD')
 WALLET_API_URL = get_env_var('WALLET_API_URL')
 WALLET_API_KEY = get_env_var('WALLET_API_KEY')
+
+# Proxc To Real Withdrawal
+PROXC_TO_REAL_FROM_ADDRESS = get_env_var('PROXC_TO_REAL_FROM_ADDRESS')

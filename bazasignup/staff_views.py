@@ -11,7 +11,7 @@ from rest_framework.permissions import IsAuthenticated
 from oauth2_provider.contrib.rest_framework import TokenHasScope
 
 from publicusers.views import get_username, get_avatar_color
-from userprofile.views import get_profile_photo
+from userprofile.utils import get_profile_photo
 from group.models import BasicGroup
 from grouppost.serializers import UserSerializer
 

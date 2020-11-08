@@ -32,6 +32,10 @@ urlpatterns = [
         user_views.ToggleDonorView.as_view()
     ),
     path(
+        'location/',
+        user_views.LocationView.as_view()
+    ),
+    path(
         'signups/',
         staff_views.BazaSignupListView.as_view()
     ),

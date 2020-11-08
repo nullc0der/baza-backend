@@ -4,12 +4,18 @@ from django.dispatch import receiver
 from userprofile.signals import delete_file
 
 from bazasignup.models import BazaSignup
-from bazasignup.tasks import task_process_after_approval
+from bazasignup.tasks import (
+    task_process_after_approval, task_process_autoapproval)
 
 
 @receiver(post_save, sender=BazaSignup)
 def process_post_approval(sender, **kwargs):
     signup = kwargs['instance']
+    if signup.status != 'approved' and not signup.verified_date:
+        completed_steps = signup.get_completed_steps()
+        completed_steps.sort()
+        if completed_steps == ['0', '1', '2', '3']:
+            task_process_autoapproval.delay(signup.id)
     if signup.status == 'approved' and not signup.verified_date:
         task_process_after_approval.delay(signup.id)
 

@@ -80,10 +80,11 @@ def send_user_tasks(sender, **kwargs):
 
 @receiver(post_save)
 def update_user_tasks(sender, **kwargs):
+    # TODO: Need to check this function for updated validation tasks
     instance = kwargs['instance']
-    if sender.__name__ == 'UserProfile':
-        if instance.location:
-            usertasks = UserTasks.objects.get(user=instance.user)
+    if sender.__name__ == 'BazaSignupAddress':
+        if instance.address_type == 'user_input':
+            usertasks = UserTasks.objects.get(user=instance.signup.user)
             usertasks.added_location = True
             usertasks.save()
     if sender.__name__ == 'UserPhone':
@@ -96,16 +97,21 @@ def update_user_tasks(sender, **kwargs):
             usertasks = UserTasks.objects.get(user=instance.user)
             usertasks.added_two_factor_authentication = True
             usertasks.save()
-    if sender.__name__ == 'BazaSignup':
-        if len(instance.get_completed_steps()) == 4:
-            usertasks = UserTasks.objects.get(user=instance.user)
-            usertasks.completed_distribution_signup = True
-            usertasks.save()
+    # if sender.__name__ == 'BazaSignup':
+    #     if len(instance.get_completed_steps()) == 4:
+    #         usertasks = UserTasks.objects.get(user=instance.user)
+    #         usertasks.completed_distribution_signup = True
+    #         usertasks.save()
     if sender.__name__ == 'UserProfilePhoto':
         profile = instance.profile
         if profile.profilephotos.filter(is_active=True):
             usertasks = UserTasks.objects.get(user=profile.user)
             usertasks.added_profile_picture = True
+            usertasks.save()
+    if sender.__name__ == 'BazaSignup':
+        if instance.photo:
+            usertasks = UserTasks.objects.get(user=instance.user)
+            usertasks.uploaded_an_official_document_id = True
             usertasks.save()
 
 

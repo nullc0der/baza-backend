@@ -8,7 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 from oauth2_provider.contrib.rest_framework import TokenHasScope
 
 from publicusers.serializers import UserSerializer
-from userprofile.views import get_profile_photo
+from userprofile.utils import get_profile_photo
 
 
 def get_username(user):

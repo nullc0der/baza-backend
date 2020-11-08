@@ -9,7 +9,8 @@ from twilio.rest import Client
 
 from authclient.utils import AuthHelperClient
 from userprofile.models import (
-    UserPhone, UserPhoneValidation, UserTasks, UserTrustPercentage)
+    UserPhone, UserPhoneValidation, UserProfilePhoto, UserTasks,
+    UserTrustPercentage, UserProfilePhoto)
 
 URL_PROTOCOL = 'http://' if settings.SITE_TYPE == 'local' else 'https://'
 
@@ -95,18 +96,24 @@ def user_added_profile_picture(user):
         user.profile.profilephotos.filter(is_active=True))
 
 
+def user_uploaded_an_official_document_id(user):
+    return bool(user.profile.documents.count())
+
+
 def compute_user_tasks(user_id, access_token):
     user = User.objects.get(id=user_id)
     usertasks, created = UserTasks.objects.get_or_create(user=user)
     usertasks.added_and_validated_email = user_has_verified_email(access_token)
     usertasks.added_and_validated_phone = user_has_verified_phone(user)
+    usertasks.uploaded_an_official_document_id = user_uploaded_an_official_document_id(
+        user)
     usertasks.added_location = bool(user.profile.location)
-    usertasks.added_two_factor_authentication = user_has_two_factor(user)
     usertasks.linked_one_social_account = user_has_social_account_linked(
         access_token)
-    usertasks.completed_distribution_signup =\
-        user_has_completed_distribution_signup(user)
     usertasks.added_profile_picture = user_added_profile_picture(user)
+    usertasks.added_two_factor_authentication = user_has_two_factor(user)
+    # usertasks.completed_distribution_signup =\
+    #     user_has_completed_distribution_signup(user)
     usertasks.save()
 
 
@@ -122,11 +129,12 @@ def get_trust_percentile(usertrustpercentage):
 def get_user_tasks(usertasks):
     verified_email = usertasks.added_and_validated_email
     verified_phone = usertasks.added_and_validated_phone
+    uploaded_an_official_document_id = usertasks.uploaded_an_official_document_id
     location = usertasks.added_location
-    two_factor = usertasks.added_two_factor_authentication
     social_account_linked = usertasks.linked_one_social_account
-    completed_distribution_signup = usertasks.completed_distribution_signup
     added_profile_picture = usertasks.added_profile_picture
+    two_factor = usertasks.added_two_factor_authentication
+    # completed_distribution_signup = usertasks.completed_distribution_signup
     tasks = [
         {
             'status': 'done' if verified_email else 'pending',
@@ -141,16 +149,16 @@ def get_user_tasks(usertasks):
             'description': 'Add a phone number and verify'
         },
         {
-            'status': 'done' if location else 'pending',
-            'href': '#profile',
+            'status': 'done' if uploaded_an_official_document_id else 'pending',
+            'href': '#documents',
             'id': 3,
-            'description': 'Add your location'
+            'description': 'Upload an official document ID'
         },
         {
-            'status': 'done' if two_factor else 'pending',
-            'href': '#security',
+            'status': 'done' if location else 'pending',
+            'href': '#profile',
             'id': 4,
-            'description': 'Enable two factor'
+            'description': 'Add your location'
         },
         {
             'status': 'done' if social_account_linked else 'pending',
@@ -159,26 +167,34 @@ def get_user_tasks(usertasks):
             'description': 'Link a social account'
         },
         {
-            'status': 'done' if completed_distribution_signup else 'pending',
-            'href': '#!baza-signup',
-            'id': 6,
-            'description': 'Complete distribution signup'
-        },
-        {
             'status': 'done' if added_profile_picture else 'pending',
             'href': '#documents',
-            'id': 7,
+            'id': 6,
             'description': 'Add a profile picture'
-        }
+        },
+        {
+            'status': 'done' if two_factor else 'pending',
+            'href': '#security',
+            'id': 7,
+            'description': 'Enable two factor'
+        },
+        # {
+        #     'status': 'done' if completed_distribution_signup else 'pending',
+        #     'href': '#!baza-signup',
+        #     'id': 6,
+        #     'description': 'Complete distribution signup'
+        # },
     ]
     trust_percentage = 0
-    trust_percentage += 10 if completed_distribution_signup else 0
-    trust_percentage += 10 if verified_email else 0
-    trust_percentage += 10 if verified_phone else 0
-    trust_percentage += 10 if location else 0
-    trust_percentage += 10 if two_factor else 0
-    trust_percentage += 10 if social_account_linked else 0
-    trust_percentage += 10 if added_profile_picture else 0
+    trust_percentage += 14.3 if uploaded_an_official_document_id else 0
+    trust_percentage += 14.3 if verified_email else 0
+    trust_percentage += 14.3 if verified_phone else 0
+    trust_percentage += 14.3 if location else 0
+    trust_percentage += 14.3 if two_factor else 0
+    trust_percentage += 14.3 if social_account_linked else 0
+    trust_percentage += 14.3 if added_profile_picture else 0
+    if trust_percentage > 100:
+        trust_percentage = 100
     usertrustpercentage, created = UserTrustPercentage.objects.get_or_create(
         user=usertasks.user)
     usertrustpercentage.percentage = trust_percentage
@@ -210,3 +226,14 @@ def send_phone_verification_code(phone_number):
     userphonevalidation.created_on = now()
     userphonevalidation.save()
     return message.status
+
+
+def get_profile_photo(user):
+    profile_photo = None
+    try:
+        profilephoto = user.profile.profilephotos.get(
+            is_active=True)
+        profile_photo = profilephoto.userphoto.photo.url
+    except UserProfilePhoto.DoesNotExist:
+        pass
+    return profile_photo

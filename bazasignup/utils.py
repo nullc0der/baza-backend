@@ -14,7 +14,7 @@ from twilio.rest import Client
 from authclient.utils import AuthHelperClient
 
 from publicusers.views import get_username, get_avatar_color
-from userprofile.views import get_profile_photo
+from userprofile.utils import get_profile_photo
 from grouppost.serializers import UserSerializer
 from notifications.utils import create_user_notification
 
