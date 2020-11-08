@@ -22,6 +22,7 @@ def send_fund_from_proxc_to_real_wallet(proxcaccount, to_address, amount):
 
 
 # TODO: Add email
+# TODO: Refactor this function to baza signup
 def send_daily_distribution():
     bazasignups = BazaSignup.objects.filter(
         status='approved', on_distribution=True, verified_date__isnull=False)
