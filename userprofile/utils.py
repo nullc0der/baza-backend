@@ -107,6 +107,7 @@ def compute_user_tasks(user_id, access_token):
     usertasks.added_and_validated_phone = user_has_verified_phone(user)
     usertasks.uploaded_an_official_document_id = user_uploaded_an_official_document_id(
         user)
+    # TODO: this is not properly updated in websocket
     usertasks.added_location = bool(user.profile.location)
     usertasks.linked_one_social_account = user_has_social_account_linked(
         access_token)

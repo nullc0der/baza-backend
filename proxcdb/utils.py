@@ -8,7 +8,7 @@ from proxcdb.models import ProxcTransaction
 def send_fund_from_proxc_to_real_wallet(proxcaccount, to_address, amount):
     apiwrapper = ApiWrapper()
     res = apiwrapper.send_subwallet_transaction(
-        to_address, settings.PROXC_TO_REAL_FROM_ADDRESS, amount)
+        to_address, settings.PROXC_TO_REAL_FROM_ADDRESS, amount * 1000000)
     if res.status_code == 200:
         data = res.json()
         proxctransaction = ProxcTransaction(
