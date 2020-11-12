@@ -34,4 +34,4 @@ def send_per_minute_distribution():
             should_substract_txfee=False
         )
         transaction.save()
-    return 'sent {} to {} user'.format(bazasignups.count() * 5, bazasignups.count())
+    return 'sent {} to {} user'.format(bazasignups.count() * 0.003472, bazasignups.count())

@@ -172,20 +172,20 @@ def process_after_approval(signup_id):
     if created:
         bazasignupreferralcode.code = referral_code
         bazasignupreferralcode.save()
-    email_template = loader.get_template('bazasignup/approval_mail.html')
-    msg = EmailMultiAlternatives(
-        'You are approved for Baza Distribution',
-        'Your referral code is %s' % bazasignupreferralcode.code,
-        'distsignup-noreply@baza.foundation',
-        [signup.email])
-    msg.attach_alternative(email_template.render({
-        'referral_code': bazasignupreferralcode.code,
-        'referral_url':
-            'https://baza.foundation/profile/'
-            '#!baza-registration?referral-code=%s'
-            % bazasignupreferralcode.code
-    }), "text/html")
-    msg.send()
+    # email_template = loader.get_template('bazasignup/approval_mail.html')
+    # msg = EmailMultiAlternatives(
+    #     'You are approved for Baza Distribution',
+    #     'Your referral code is %s' % bazasignupreferralcode.code,
+    #     'distsignup-noreply@baza.foundation',
+    #     [signup.email])
+    # msg.attach_alternative(email_template.render({
+    #     'referral_code': bazasignupreferralcode.code,
+    #     'referral_url':
+    #         'https://baza.foundation/profile/'
+    #         '#!baza-registration?referral-code=%s'
+    #         % bazasignupreferralcode.code
+    # }), "text/html")
+    # msg.send()
     signup.verified_date = now()
     signup.changed_by = system_user
     signup.save()
