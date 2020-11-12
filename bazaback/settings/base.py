@@ -192,8 +192,8 @@ CELERY_BEAT_SCHEDULE = {
         'schedule': crontab(minute=0, hour=12)
     },
     'send_daily_distribution': {
-        'task': 'proxcdb.tasks.task_send_daily_distribution',
-        'schedule': crontab(minute=0, hour=0)
+        'task': 'proxcdb.tasks.task_send_per_minute_distribution',
+        'schedule': crontab()
     }
 }
 

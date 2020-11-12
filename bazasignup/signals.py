@@ -11,7 +11,8 @@ from bazasignup.tasks import (
 @receiver(post_save, sender=BazaSignup)
 def process_post_approval(sender, **kwargs):
     signup = kwargs['instance']
-    if signup.status != 'approved' and not signup.verified_date:
+    if signup.status != 'approved' and not signup.verified_date\
+            and not signup.autoapproval_processed_on:
         completed_steps = signup.get_completed_steps()
         completed_steps.sort()
         if completed_steps == ['0', '1', '2', '3']:

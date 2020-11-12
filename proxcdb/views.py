@@ -1,4 +1,3 @@
-import re
 from django.db.models import Q
 from django.conf import settings
 
@@ -140,9 +139,22 @@ class SendFundFromProxcToRealWallet(APIView):
             )
             if data['password_valid']:
                 proxcaccount = request.user.proxcaccount
-                tx_hash = send_fund_from_proxc_to_real_wallet(
-                    proxcaccount, to_address, proxcaccount.balance)
-                if tx_hash:
-                    return Response({'transaction_hash': tx_hash})
-                return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+                if proxcaccount.balance >= 5:
+                    tx_hash = send_fund_from_proxc_to_real_wallet(
+                        proxcaccount, to_address, proxcaccount.balance)
+                    if tx_hash:
+                        return Response({'transaction_hash': tx_hash})
+                    return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                else:
+                    return Response(
+                        {'non_field_errors': [
+                            'You need to have atleast 5 BAZA to withdraw']},
+                        status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'non_field_errors': [
+                    'Please ensure you provided correct password']},
+                status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {'non_field_errors': ['You don\'t have a online wallet']},
+            status=status.HTTP_400_BAD_REQUEST
+        )
