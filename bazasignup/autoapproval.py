@@ -4,8 +4,10 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.geoip2 import GeoIP2
 from django.db.models import ObjectDoesNotExist
+from django.utils.timezone import now
 
 from twilio.rest import Client
+from twilio.base.exceptions import TwilioRestException
 from iso3166 import countries
 from geopy.distance import great_circle
 
@@ -30,31 +32,35 @@ class BazaSignupAutoApproval(object):
                 settings.TWILIO_ACCOUNT_SID,
                 settings.TWILIO_AUTH_TOKEN
             )
-            lookup = client.lookups.phone_numbers(
-                self.signup.phone_number).fetch(
+            try:
+                lookup = client.lookups.phone_numbers(
+                    self.signup.phone_number).fetch(
                     add_ons='whitepages_pro_caller_id')
-            if lookup.add_ons['results'][
-                    'whitepages_pro_caller_id']['status'] == 'successful':
-                address_data = lookup.add_ons['results'][
-                    'whitepages_pro_caller_id'][
-                        'result']['current_addresses'][0]
-                lat_long = address_data.get('lat_long', '')
-                bazasignupaddress, created = \
-                    BazaSignupAddress.objects.get_or_create(
-                        signup=self.signup,
-                        address_type='twilio_db',
-                    )
-                bazasignupaddress.changed_by = self.system_user
-                bazasignupaddress.zip_code = address_data.get(
-                    'postal_code', '')
-                bazasignupaddress.city = address_data.get('city', '')
-                bazasignupaddress.state = address_data.get('state_code', '')
-                bazasignupaddress.country = countries.get(address_data.get(
-                    'country_code', '').lower())
-                bazasignupaddress.latitude = lat_long.get('latitude', '')
-                bazasignupaddress.longitude = lat_long.get('longitude', '')
-                bazasignupaddress.save()
-                return True
+                if lookup.add_ons['results'][
+                        'whitepages_pro_caller_id']['status'] == 'successful':
+                    address_data = lookup.add_ons['results'][
+                        'whitepages_pro_caller_id'][
+                            'result']['current_addresses'][0]
+                    lat_long = address_data.get('lat_long', '')
+                    bazasignupaddress, created = \
+                        BazaSignupAddress.objects.get_or_create(
+                            signup=self.signup,
+                            address_type='twilio_db',
+                        )
+                    bazasignupaddress.changed_by = self.system_user
+                    bazasignupaddress.zip_code = address_data.get(
+                        'postal_code', '')
+                    bazasignupaddress.city = address_data.get('city', '')
+                    bazasignupaddress.state = address_data.get(
+                        'state_code', '')
+                    bazasignupaddress.country = countries.get(address_data.get(
+                        'country_code', '').lower())
+                    bazasignupaddress.latitude = lat_long.get('latitude', '')
+                    bazasignupaddress.longitude = lat_long.get('longitude', '')
+                    bazasignupaddress.save()
+                    return True
+            except TwilioRestException:
+                pass
         return False
 
     def __get_geoip_data(self):
@@ -265,6 +271,7 @@ class BazaSignupAutoApproval(object):
         if score >= 3:
             self.signup.status == 'approved'
             self.signup.changed_by = self.system_user
+            self.signup.autoapproval_processed_on = now()
             self.signup.save()
         else:
             for fail_reason in self.autoapproval_fail_reason:
@@ -277,6 +284,7 @@ class BazaSignupAutoApproval(object):
                 autoapprovalfailreason.save()
             self.signup.status = 'pending'
             self.signup.changed_by = self.system_user
+            self.signup.autoapproval_processed_on = now()
             self.signup.save()
         return self.signup.status
 
@@ -286,10 +294,10 @@ class BazaSignupAutoApproval(object):
                 current_assignments = {}
                 site_owner_group = BasicGroup.objects.get(
                     is_site_owner_group=True)
-                # TODO: filter the pending
                 for staff in site_owner_group.staffs.all():
                     current_assignments[staff] = \
-                        staff.assignedbazasignups.count()
+                        staff.assignedbazasignups.filter(
+                            status='pending').count()
                 assigned_to = min(
                     current_assignments, key=lambda k: current_assignments[k])
                 self.signup.assigned_to = assigned_to

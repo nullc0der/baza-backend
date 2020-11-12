@@ -25,12 +25,12 @@ from bazasignup.reset_data import (
 
 class AddressSerializer(serializers.Serializer):
     address_type = serializers.CharField(allow_blank=True, read_only=True)
-    country = serializers.CharField()
-    city = serializers.CharField()
-    state = serializers.CharField()
-    house_number = serializers.CharField()
-    street = serializers.CharField()
-    zip_code = serializers.CharField()
+    country = serializers.CharField(max_length=100)
+    city = serializers.CharField(max_length=100)
+    state = serializers.CharField(max_length=100)
+    house_number = serializers.CharField(max_length=10)
+    street = serializers.CharField(max_length=200)
+    zip_code = serializers.CharField(max_length=10)
     latitude = serializers.CharField(read_only=True)
     longitude = serializers.CharField(read_only=True)
 

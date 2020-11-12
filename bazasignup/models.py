@@ -40,6 +40,7 @@ class BazaSignup(models.Model):
     changed_by = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True,
         related_name='bazasignupchanges')
+    autoapproval_processed_on = models.DateTimeField(null=True)
     history = HistoricalRecords()
 
     def get_completed_steps(self):
