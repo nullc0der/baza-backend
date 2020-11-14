@@ -37,7 +37,7 @@ def create_user_notification(user, obj):
         'data': get_serialized_notification(notification)
     }
     async_to_sync(channel_layer.group_send)(
-        'notifications_for_%s' % user.username,
+        'notifications_for_%s' % user.id,
         {
             'type': 'notification.message',
             'message': websocket_message
