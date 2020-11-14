@@ -40,7 +40,7 @@ def send_per_minute_distribution():
         )
         transaction.save()
         async_to_sync(channel_layer.group_send)(
-            'notifications_for_%s' % bazasignup.user.username,
+            'notifications_for_%s' % bazasignup.user.id,
             {
                 'type': 'notification.message',
                 'message': {

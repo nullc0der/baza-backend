@@ -73,7 +73,7 @@ class ProxcTransactionView(APIView):
                         amount=totalamount
                     )
                     async_to_sync(channel_layer.group_send)(
-                        'notifications_for_%s' % to_user.username,
+                        'notifications_for_%s' % to_user.id,
                         {
                             'type': 'notification.message',
                             'message': {

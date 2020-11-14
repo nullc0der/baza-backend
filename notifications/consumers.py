@@ -7,7 +7,7 @@ from channels.generic.websocket import JsonWebsocketConsumer
 class NotificationConsumer(JsonWebsocketConsumer):
     def connect(self):
         self.user = self.scope['user']
-        self.room_group_name = 'notifications_for_%s' % self.user.username
+        self.room_group_name = 'notifications_for_%s' % self.user.id
         if not isinstance(self.user, AnonymousUser):
             async_to_sync(self.channel_layer.group_add)(
                 self.room_group_name,
