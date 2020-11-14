@@ -191,7 +191,7 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'group.tasks.task_process_flagged_for_delete_group',
         'schedule': crontab(minute=0, hour=12)
     },
-    'send_daily_distribution': {
+    'send_per_minute_distribution': {
         'task': 'proxcdb.tasks.task_send_per_minute_distribution',
         'schedule': crontab()
     }

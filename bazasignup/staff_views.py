@@ -351,3 +351,28 @@ class BazaSignupActivitiesView(views.APIView):
                 {'status': 'requested signup not found'},
                 status=status.HTTP_404_NOT_FOUND
             )
+
+
+class BazaSignupToggleDistributionStatus(views.APIView):
+    """
+    This view will be used to toggle distribution status from 
+    staff side
+    """
+
+    permission_classes = (IsAuthenticated, TokenHasScope,
+                          IsStaffOfSiteOwnerGroup, )
+    required_scopes = [
+        'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
+
+    def post(self, request, signup_id, format=None):
+        try:
+            on_distribution = request.data['on_distribution'] == 'yes'
+            signup = BazaSignup.objects.get(id=signup_id)
+            signup.on_distribution = on_distribution
+            signup.save()
+            return Response()
+        except BazaSignup.DoesNotExist:
+            return Response(
+                {'status': 'requested signup not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )

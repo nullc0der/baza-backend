@@ -1,8 +1,13 @@
 from django.conf import settings
 
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
+
 from bazasignup.models import BazaSignup
 from webwallet.api_wrapper import ApiWrapper
 from proxcdb.models import ProxcTransaction
+
+channel_layer = get_channel_layer()
 
 
 def send_fund_from_proxc_to_real_wallet(proxcaccount, to_address, amount):
@@ -34,4 +39,14 @@ def send_per_minute_distribution():
             should_substract_txfee=False
         )
         transaction.save()
+        async_to_sync(channel_layer.group_send)(
+            'notifications_for_%s' % bazasignup.user.username,
+            {
+                'type': 'notification.message',
+                'message': {
+                    'type': 'add_baza_distribution_balance',
+                    'data': {'balance': 0.003472}
+                }
+            }
+        )
     return 'sent {} to {} user'.format(bazasignups.count() * 0.003472, bazasignups.count())

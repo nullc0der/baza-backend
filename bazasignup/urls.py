@@ -70,5 +70,9 @@ urlpatterns = [
     path(
         'signup/<int:signup_id>/activities/',
         staff_views.BazaSignupActivitiesView.as_view()
+    ),
+    path(
+        'signup/<int:signup_id>/toggledistribution/',
+        staff_views.BazaSignupToggleDistributionStatus.as_view()
     )
 ]

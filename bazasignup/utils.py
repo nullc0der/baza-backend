@@ -187,6 +187,7 @@ def process_after_approval(signup_id):
     }), "text/html")
     msg.send()
     signup.verified_date = now()
+    signup.on_distribution = True
     signup.changed_by = system_user
     signup.save()
     bounty_task_name = BAZA_BAZ_BOUNTY_2[
