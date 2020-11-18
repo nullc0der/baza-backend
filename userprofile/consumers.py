@@ -9,7 +9,7 @@ from userprofile.tasks import task_compute_user_tasks
 class UserProfileConsumer(JsonWebsocketConsumer):
     def connect(self):
         self.user = self.scope['user']
-        self.room_group_name = '%s_tasks' % self.user.username
+        self.room_group_name = '%s_tasks' % self.user.id
         if not isinstance(self.user, AnonymousUser):
             async_to_sync(self.channel_layer.group_add)(
                 self.room_group_name,
