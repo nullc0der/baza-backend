@@ -70,7 +70,7 @@ def send_user_tasks(sender, **kwargs):
         tasks = get_user_tasks(instance)
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(
-            '%s_tasks' % instance.user.username,
+            '%s_tasks' % instance.user.id,
             {
                 'type': 'userprofile.message',
                 'message': tasks
