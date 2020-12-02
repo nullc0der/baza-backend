@@ -1,9 +1,11 @@
+from pyotp import random_base32, totp
+
 from django.db import models
 from django.db.models import Q
 from django.conf import settings
 from django.contrib.auth.models import User
 
-from pyotp import random_base32, totp
+from versatileimagefield.fields import VersatileImageField
 
 
 def user_directory(instance, filename):
@@ -43,7 +45,7 @@ class UserProfile(models.Model):
 class UserPhoto(models.Model):
     profile = models.ForeignKey(
         UserProfile, on_delete=models.CASCADE, related_name='photos')
-    photo = models.ImageField(upload_to=user_directory)
+    photo = VersatileImageField(upload_to=user_directory)
 
 
 class UserProfilePhoto(models.Model):
@@ -58,7 +60,7 @@ class UserProfilePhoto(models.Model):
 class UserDocument(models.Model):
     profile = models.ForeignKey(
         UserProfile, on_delete=models.CASCADE, related_name='documents')
-    document = models.FileField(upload_to=user_directory)
+    document = VersatileImageField(upload_to=user_directory)
 
 
 class UserPhone(models.Model):
