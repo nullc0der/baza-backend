@@ -33,12 +33,14 @@ def convert_image_to_pdf(f):
 
 
 def convert_pdf_to_image(pdf_filepath, img_size):
-    try:
-        images = convert_from_path(pdf_filepath, size=img_size[0])
-        return images[0]
-    except (PDFInfoNotInstalledError, PDFPageCountError, PDFSyntaxError) as e:
-        print(e.message)
-        return None
+    images = convert_from_path(pdf_filepath, size=img_size[0])
+    return images[0]
+    # try:
+    #     images = convert_from_path(pdf_filepath, size=img_size[0])
+    #     return images[0]
+    # except (PDFInfoNotInstalledError, PDFPageCountError, PDFSyntaxError) as e:
+    #     print(e.message)
+    #     return None
 
 
 def rebuild_image_and_remove_exif(image_file):
