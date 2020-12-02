@@ -40,16 +40,12 @@ def convert_pdf_to_image(pdf_filepath, img_size):
         return None
 
 
-def rebuild_image_and_remove_exif(image, filename):
+def rebuild_image_and_remove_exif(image_file):
+    image = Image.open(image_file)
     data = list(image.getdata())
     new_image = Image.new(image.mode, image.size)
     new_image.putdata(data)
-    img_io = BytesIO()
-    new_image.save(img_io, 'JPEG', quality=80)
-    # TODO: Get original file name
-    return ContentFile(
-        img_io.getvalue(),
-        '%s.jpg' % filename if filename else get_random_string(24))
+    new_image.save(image_file, 'JPEG', quality=80)
 
 
 def get_raw_image_name(imagedata_name):
@@ -74,11 +70,17 @@ def sanitize_image(imagedata):
             background = Image.new("RGB", raw_image_size, (255, 255, 255))
             background.paste(img, mask=img.split()[3])
             background.save(raw_image_file_path, 'JPEG', quality=80)
+        rebuild_image_and_remove_exif(raw_image_file_path)
         converted_pdf_path = convert_image_to_pdf(raw_image_file_path)
         converted_image_from_pdf = convert_pdf_to_image(
             converted_pdf_path, raw_image_size)
         if converted_image_from_pdf:
             os.remove(converted_pdf_path)
             os.remove(raw_image_file_path)
-            return rebuild_image_and_remove_exif(converted_image_from_pdf, raw_image_name)
+            img_io = BytesIO()
+            converted_image_from_pdf.save(img_io, 'JPEG', quality=80)
+            return ContentFile(
+                img_io.getvalue(),
+                '%s.jpg' % raw_image_name if raw_image_name else get_random_string(24))
+            # return rebuild_image_and_remove_exif(converted_image_from_pdf, raw_image_name)
     os.remove(raw_image_file_path)
