@@ -8,6 +8,8 @@ from rest_framework.parsers import FormParser, MultiPartParser
 
 from oauth2_provider.contrib.rest_framework import TokenHasScope
 
+from bazaback.imagesanitizer import sanitize_image
+
 from bazasignup.models import (
     BazaSignup,
     BazaSignupAddress,
@@ -510,22 +512,27 @@ class SignupImageUploadView(views.APIView):
     def post(self, request, format=None):
         serializer = SignupImageSerializer(data=request.data)
         if serializer.is_valid():
-            signup = BazaSignup.objects.get(user=request.user)
-            signup.photo = serializer.validated_data['image']
-            signup.completed_steps = get_current_completed_steps(request, "3")
-            signup.logged_ip_address = request.META.get(
-                'HTTP_CF_CONNECTING_IP', '')
-            signup.changed_by = request.user
-            if "3" in signup.get_invalidated_steps():
-                signup.invalidated_steps = remove_invalidated_steps(
+            sanitized_image = sanitize_image(
+                serializer.validated_data['image'])
+            if sanitized_image:
+                signup = BazaSignup.objects.get(user=request.user)
+                signup.photo = sanitized_image
+                signup.completed_steps = get_current_completed_steps(
                     request, "3")
-            signup.save()
-            # NOTE: Moved to signal
-            # if "3" not in signup.get_invalidated_steps():
-            #     task_process_autoapproval.delay(signup.id)
-            save_bazasignup_activity(
-                signup, 'uploaded an image', request.user)
-            return get_step_response(signup)
+                signup.logged_ip_address = request.META.get(
+                    'HTTP_CF_CONNECTING_IP', '')
+                signup.changed_by = request.user
+                if "3" in signup.get_invalidated_steps():
+                    signup.invalidated_steps = remove_invalidated_steps(
+                        request, "3")
+                signup.save()
+                # NOTE: Moved to signal
+                # if "3" not in signup.get_invalidated_steps():
+                #     task_process_autoapproval.delay(signup.id)
+                save_bazasignup_activity(
+                    signup, 'uploaded an image', request.user)
+                return get_step_response(signup)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

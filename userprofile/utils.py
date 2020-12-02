@@ -177,7 +177,7 @@ def get_user_tasks(usertasks):
             'status': 'done' if added_profile_picture else 'pending',
             'href': '#documents',
             'id': 6,
-            'description': 'Add a profile picture'
+            'description': 'Add a profile photo'
         },
         {
             'status': 'done' if two_factor else 'pending',
@@ -240,7 +240,7 @@ def get_profile_photo(user):
     try:
         profilephoto = user.profile.profilephotos.get(
             is_active=True)
-        profile_photo = profilephoto.userphoto.photo.url
+        profile_photo = profilephoto.userphoto.photo.thumbnail['82x82'].url
     except UserProfilePhoto.DoesNotExist:
         pass
     return profile_photo

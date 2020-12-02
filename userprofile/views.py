@@ -12,6 +12,7 @@ from rest_framework.parsers import (
 
 from oauth2_provider.contrib.rest_framework import TokenHasScope
 
+from bazaback.imagesanitizer import sanitize_image
 from bazasignup.models import (
     BazaSignup, BazaSignupEmail, BazaSignupPhone)
 from bazasignup.user_views import (
@@ -86,22 +87,27 @@ class UserDocumentView(views.APIView):
     def post(self, request, format=None):
         serializer = UserDocumentSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(profile=request.user.profile)
-            signup, _ = BazaSignup.objects.get_or_create(user=request.user)
-            if not signup.photo:
-                signup.photo = serializer.validated_data['document']
-                signup.completed_steps = get_current_completed_steps(
-                    request, "3")
-                signup.logged_ip_address = request.META.get(
-                    'HTTP_CF_CONNECTING_IP', '')
-                signup.changed_by = request.user
-                if "3" in signup.get_invalidated_steps():
-                    signup.invalidated_steps = remove_invalidated_steps(
+            sanitized_image = sanitize_image(
+                serializer.validated_data['document'])
+            if sanitized_image:
+                userdocument = UserDocument.objects.create(
+                    profile=request.user.profile, document=sanitized_image)
+                signup, _ = BazaSignup.objects.get_or_create(user=request.user)
+                if not signup.photo:
+                    signup.photo = sanitized_image
+                    signup.completed_steps = get_current_completed_steps(
                         request, "3")
-                signup.save()
-                save_bazasignup_activity(
-                    signup, 'Uploaded a document from profile page', request.user)
-            return Response(serializer.data)
+                    signup.logged_ip_address = request.META.get(
+                        'HTTP_CF_CONNECTING_IP', '')
+                    signup.changed_by = request.user
+                    if "3" in signup.get_invalidated_steps():
+                        signup.invalidated_steps = remove_invalidated_steps(
+                            request, "3")
+                    signup.save()
+                    save_bazasignup_activity(
+                        signup, 'Uploaded a document from profile page', request.user)
+                return Response(UserDocumentSerializer(userdocument).data)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, format=None):
@@ -140,8 +146,13 @@ class UserPhotoView(views.APIView):
     def post(self, request, format=None):
         serializer = UserPhotoSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(profile=request.user.profile)
-            return Response(serializer.data)
+            sanitized_image = sanitize_image(
+                serializer.validated_data['photo'])
+            if sanitized_image:
+                userphoto = UserPhoto.objects.create(
+                    profile=request.user.profile, photo=sanitized_image)
+                return Response(UserPhotoSerializer(userphoto).data)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, format=None):
@@ -179,21 +190,27 @@ class UserProfilePhotoView(views.APIView):
     def post(self, request, format=None):
         userphoto_serializer = UserPhotoSerializer(data=request.data)
         if userphoto_serializer.is_valid():
-            userphoto = userphoto_serializer.save(profile=request.user.profile)
-            data = {
-                'is_active': True
-            }
-            serializer = UserProfilePhotoSerializer(data=data)
-            if serializer.is_valid():
-                for userprofilephoto in UserProfilePhoto.objects.filter(
-                        profile=request.user.profile):
-                    userprofilephoto.is_active = False
-                    userprofilephoto.save()
-                serializer.save(
-                    userphoto=userphoto, profile=request.user.profile)
-                return Response(serializer.data)
-            return Response(serializer.errors,
-                            status=status.HTTP_400_BAD_REQUEST)
+            sanitized_image = sanitize_image(
+                userphoto_serializer.validated_data['photo'])
+            if sanitized_image:
+                userphoto = UserPhoto.objects.create(
+                    profile=request.user.profile,
+                    photo=sanitized_image)
+                data = {
+                    'is_active': True
+                }
+                serializer = UserProfilePhotoSerializer(data=data)
+                if serializer.is_valid():
+                    for userprofilephoto in UserProfilePhoto.objects.filter(
+                            profile=request.user.profile):
+                        userprofilephoto.is_active = False
+                        userprofilephoto.save()
+                    serializer.save(
+                        userphoto=userphoto, profile=request.user.profile)
+                    return Response(serializer.data)
+                return Response(serializer.errors,
+                                status=status.HTTP_400_BAD_REQUEST)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
         return Response(
             userphoto_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
