@@ -152,6 +152,7 @@ class UserPhotoView(views.APIView):
         if serializer.is_valid():
             sanitized_image = sanitize_image(
                 serializer.validated_data['photo'])
+            logger.info('image %s' % sanitized_image)
             if sanitized_image:
                 userphoto = UserPhoto.objects.create(
                     profile=request.user.profile, photo=sanitized_image)
