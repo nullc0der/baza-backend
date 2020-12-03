@@ -1,4 +1,5 @@
 import os
+import logging
 import magic
 import img2pdf
 from io import BytesIO
@@ -14,6 +15,8 @@ from django.conf import settings
 from django.utils.crypto import get_random_string
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
+
+logger = logging.getLogger(__name__)
 
 
 def check_if_image_file(f):
@@ -62,7 +65,9 @@ def sanitize_image(imagedata):
     raw_image_file_path = settings.MEDIA_ROOT + '/' + default_storage.save(
         'tmp/%s-img' % get_random_string(6), imagedata)
     is_image_file = check_if_image_file(raw_image_file_path)
+    logger.info(raw_image_name)
     if is_image_file:
+        logger.info(is_image_file)
         img = Image.open(raw_image_file_path)
         raw_image_size = img.size
         if raw_image_size[0] <= 2000:
