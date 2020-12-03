@@ -99,10 +99,8 @@ LOGGING = {
             'propagate': False,
         },
         'daphne': {
-            'handlers': [
-                'console',
-            ],
-            'level': 'WARNING'
+            'handlers': ['console', ],
+            'level': 'DEBUG'
         },
     },
 }
