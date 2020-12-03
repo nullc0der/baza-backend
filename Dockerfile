@@ -4,7 +4,7 @@ LABEL maintainer Prasanta Kakati <prasantakakati@ekata.social>
 RUN apt-get update && \
     apt-get install --yes build-essential postgresql-client \
     libpq-dev libjpeg-dev zlib1g-dev libffi-dev curl \
-    musl-dev libffi-dev libssl-dev poppler-utils
+    musl-dev libffi-dev libssl-dev poppler-utils libmagic1
 RUN mkdir /baza-back
 WORKDIR /baza-back
 RUN curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
