@@ -1,3 +1,5 @@
+import logging
+
 from django.conf import settings
 from django.template import loader
 from django.http import HttpResponse
@@ -89,6 +91,7 @@ class UserDocumentView(views.APIView):
         if serializer.is_valid():
             sanitized_image = sanitize_image(
                 serializer.validated_data['document'])
+            logging.warning('image %s' % sanitized_image)
             if sanitized_image:
                 userdocument = UserDocument.objects.create(
                     profile=request.user.profile, document=sanitized_image)

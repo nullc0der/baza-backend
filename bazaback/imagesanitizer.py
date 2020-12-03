@@ -33,14 +33,11 @@ def convert_image_to_pdf(f):
 
 
 def convert_pdf_to_image(pdf_filepath, img_size):
-    images = convert_from_path(pdf_filepath, size=img_size[0])
-    return images[0]
-    # try:
-    #     images = convert_from_path(pdf_filepath, size=img_size[0])
-    #     return images[0]
-    # except (PDFInfoNotInstalledError, PDFPageCountError, PDFSyntaxError) as e:
-    #     print(e.message)
-    #     return None
+    try:
+        images = convert_from_path(pdf_filepath, size=img_size[0])
+        return images[0]
+    except (PDFInfoNotInstalledError, PDFPageCountError, PDFSyntaxError) as e:
+        return None
 
 
 def rebuild_image_and_remove_exif(image_file):
@@ -65,7 +62,6 @@ def sanitize_image(imagedata):
     raw_image_file_path = settings.MEDIA_ROOT + '/' + default_storage.save(
         'tmp/%s-img' % get_random_string(6), imagedata)
     is_image_file = check_if_image_file(raw_image_file_path)
-    print(is_image_file)
     if is_image_file:
         img = Image.open(raw_image_file_path)
         raw_image_size = img.size

@@ -98,6 +98,12 @@ LOGGING = {
             'handlers': ['console'],
             'propagate': False,
         },
+        'daphne': {
+            'handlers': [
+                'console',
+            ],
+            'level': 'WARNING'
+        },
     },
 }
 
