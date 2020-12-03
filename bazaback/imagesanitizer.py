@@ -65,22 +65,23 @@ def sanitize_image(imagedata):
     if is_image_file:
         img = Image.open(raw_image_file_path)
         raw_image_size = img.size
-        if img.mode == 'RGBA':
-            img.load()
-            background = Image.new("RGB", raw_image_size, (255, 255, 255))
-            background.paste(img, mask=img.split()[3])
-            background.save(raw_image_file_path, 'JPEG', quality=80)
-        rebuild_image_and_remove_exif(raw_image_file_path)
-        converted_pdf_path = convert_image_to_pdf(raw_image_file_path)
-        converted_image_from_pdf = convert_pdf_to_image(
-            converted_pdf_path, raw_image_size)
-        if converted_image_from_pdf:
-            os.remove(converted_pdf_path)
-            os.remove(raw_image_file_path)
-            img_io = BytesIO()
-            converted_image_from_pdf.save(img_io, 'JPEG', quality=80)
-            return ContentFile(
-                img_io.getvalue(),
-                '%s.jpg' % raw_image_name if raw_image_name else get_random_string(24))
-            # return rebuild_image_and_remove_exif(converted_image_from_pdf, raw_image_name)
+        if raw_image_size[0] <= 2000:
+            if img.mode == 'RGBA':
+                img.load()
+                background = Image.new("RGB", raw_image_size, (255, 255, 255))
+                background.paste(img, mask=img.split()[3])
+                background.save(raw_image_file_path, 'JPEG', quality=80)
+            rebuild_image_and_remove_exif(raw_image_file_path)
+            converted_pdf_path = convert_image_to_pdf(raw_image_file_path)
+            converted_image_from_pdf = convert_pdf_to_image(
+                converted_pdf_path, raw_image_size)
+            if converted_image_from_pdf:
+                os.remove(converted_pdf_path)
+                os.remove(raw_image_file_path)
+                img_io = BytesIO()
+                converted_image_from_pdf.save(img_io, 'JPEG', quality=80)
+                return ContentFile(
+                    img_io.getvalue(),
+                    '%s.jpg' % raw_image_name if raw_image_name else get_random_string(24))
+                # return rebuild_image_and_remove_exif(converted_image_from_pdf, raw_image_name)
     os.remove(raw_image_file_path)
