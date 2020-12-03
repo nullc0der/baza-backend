@@ -45,18 +45,3 @@ MJML_BACKEND_MODE = 'tcpserver'
 MJML_TCPSERVERS = [
     ('127.0.0.1', 28101)
 ]
-
-
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-        },
-    },
-    'root': {
-        'handlers': ['console'],
-        'level': 'INFO',
-    },
-}

@@ -16,10 +16,15 @@ class Command(BaseCommand):
             if userphoto.photo:
                 self.stdout.write(
                     self.style.SUCCESS("Sanitizing UserPhoto %s" % userphoto.id))
-                sanitized_image = sanitize_image(userphoto.photo)
-                if sanitized_image:
-                    userphoto.photo = sanitized_image
-                    userphoto.save()
+                try:
+                    sanitized_image = sanitize_image(userphoto.photo)
+                    if sanitized_image:
+                        userphoto.photo = sanitized_image
+                        userphoto.save()
+                except:
+                    self.stdout.write(
+                        self.style.SUCCESS(
+                            "Couldn't sanitize UserPhoto %s" % userphoto.id))
         self.stdout.write(self.style.SUCCESS("UserPhotos sanitized"))
         self.stdout.write(self.style.SUCCESS(
             "Sanitizing UserDocument..."))
@@ -28,10 +33,16 @@ class Command(BaseCommand):
                 self.stdout.write(
                     self.style.SUCCESS(
                         "Sanitizing UserDocument %s" % userdocument.id))
-                sanitized_image = sanitize_image(userdocument.document)
-                if sanitized_image:
-                    userdocument.document = sanitized_image
-                    userdocument.save()
+                try:
+                    sanitized_image = sanitize_image(userdocument.document)
+                    if sanitized_image:
+                        userdocument.document = sanitized_image
+                        userdocument.save()
+                except:
+                    self.stdout.write(
+                        self.style.SUCCESS(
+                            "Couldn't santize UserDocument %s" % userdocument.id)
+                    )
         self.stdout.write(self.style.SUCCESS("UserDocuments sanitized"))
         self.stdout.write(self.style.SUCCESS(
             "Sanitizing BazaSignup images.."))
@@ -40,8 +51,14 @@ class Command(BaseCommand):
                 self.stdout.write(
                     self.style.SUCCESS(
                         "Sanitizing BazaSignup Image %s" % signup.id))
-                sanitized_image = sanitize_image(signup.photo)
-                if sanitized_image:
-                    signup.photo = sanitized_image
-                    signup.save()
+                try:
+                    sanitized_image = sanitize_image(signup.photo)
+                    if sanitized_image:
+                        signup.photo = sanitized_image
+                        signup.save()
+                except:
+                    self.stdout.write(
+                        self.style.SUCCESS(
+                            "Couldn't sanitize BazaSignup Image %s" % signup, id)
+                    )
         self.stdout.write(self.style.SUCCESS("BazaSignup images sanitized"))

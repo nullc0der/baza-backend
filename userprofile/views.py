@@ -1,5 +1,3 @@
-import logging
-
 from django.conf import settings
 from django.template import loader
 from django.http import HttpResponse
@@ -40,7 +38,6 @@ from userprofile.tasks import (
 
 
 URL_PROTOCOL = 'http://' if settings.SITE_TYPE == 'local' else 'https://'
-logger = logging.getLogger(__name__)
 
 
 class UserProfileView(views.APIView):
@@ -92,7 +89,6 @@ class UserDocumentView(views.APIView):
         if serializer.is_valid():
             sanitized_image = sanitize_image(
                 serializer.validated_data['document'])
-            logger.info('image %s' % sanitized_image)
             if sanitized_image:
                 userdocument = UserDocument.objects.create(
                     profile=request.user.profile, document=sanitized_image)
@@ -152,7 +148,6 @@ class UserPhotoView(views.APIView):
         if serializer.is_valid():
             sanitized_image = sanitize_image(
                 serializer.validated_data['photo'])
-            logger.info('image %s' % sanitized_image)
             if sanitized_image:
                 userphoto = UserPhoto.objects.create(
                     profile=request.user.profile, photo=sanitized_image)
