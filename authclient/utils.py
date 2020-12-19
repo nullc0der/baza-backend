@@ -1,3 +1,8 @@
+import os
+import json
+from itertools import groupby
+from operator import itemgetter
+
 import requests
 
 from django.core.cache import cache
@@ -53,6 +58,32 @@ def delete_user_auth_data(uuid):
     if uuid in user_auths:
         user_auths.pop(uuid)
         cache.set('user_auths', user_auths, None)
+
+
+def save_disposable_email_domain_list() -> bool:
+    disposable_email_domains_dir = settings.BASE_DIR + \
+        '/authclient/datas/disposable_email_domains'
+    if not os.path.isdir(disposable_email_domains_dir):
+        os.makedirs(disposable_email_domains_dir)
+    res = requests.get(
+        'https://raw.githubusercontent.com/ivolo/' +
+        'disposable-email-domains/master/index.json')
+    if res.status_code == 200:
+        splitted_domains = groupby(res.json(), key=itemgetter(0))
+        for char, domains in splitted_domains:
+            f = open(
+                '{}/disposable_email_domains_{}.json'.format(
+                    os.path.join(
+                        settings.BASE_DIR,
+                        'authclient/datas/disposable_email_domains'
+                    ),
+                    char
+                ),
+                'w+'
+            )
+            f.write(json.dumps(list(domains)))
+        return True
+    return False
 
 
 class AuthHelperClient(object):

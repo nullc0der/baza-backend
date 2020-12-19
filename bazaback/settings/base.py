@@ -194,6 +194,10 @@ CELERY_BEAT_SCHEDULE = {
     'send_per_minute_distribution': {
         'task': 'proxcdb.tasks.task_send_per_minute_distribution',
         'schedule': crontab()
+    },
+    'save-disposable-email-list': {
+        'task': 'authclient.tasks.task_save_disposable_email_domain_list',
+        'schedule': crontab(minute=0, hour=0, day_of_week='sun')
     }
 }
 
