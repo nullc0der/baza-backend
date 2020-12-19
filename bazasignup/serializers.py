@@ -9,6 +9,8 @@ from phoneverification.models import PhoneVerification
 
 from grouppost.serializers import UserSerializer
 
+from authclient.validators import EmailDomainValidator
+
 from bazasignup.countries import COUNTRIES
 from bazasignup.models import (
     EmailVerification,
@@ -66,7 +68,7 @@ class UserInfoTabSerializer(serializers.Serializer):
 
 
 class EmailSerializer(serializers.Serializer):
-    email = serializers.EmailField()
+    email = serializers.EmailField(validators=[EmailDomainValidator()])
 
 
 class EmailVerificationSerializer(serializers.Serializer):
