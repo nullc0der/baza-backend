@@ -12,6 +12,7 @@ from webwallet.serializers import (
     UserWebWalletSerializer, UserWebWalletTxSerializer)
 from webwallet.models import UserWebWallet
 from webwallet.permissions import IsOwnerOfWallet
+from webwallet.tasks import task_send_main_wallet_low_balance_email_to_admins
 
 
 class UserWebWalletView(views.APIView):
@@ -76,18 +77,33 @@ class UserWebWalletTxView(views.APIView):
     required_scopes = [
         'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
 
+    def check_main_wallet_have_sufficient_balance(
+            self, requested_amount: str) -> bool:
+        apiwrapper = ApiWrapper()
+        res = apiwrapper.get_subwallet_balance(
+            settings.PROXC_TO_REAL_FROM_ADDRESS)
+        if res.status_code == 200:
+            if res.json()['unlocked'] > requested_amount:
+                return True
+            task_send_main_wallet_low_balance_email_to_admins.delay()
+        return False
+
     def post(self, request, format=None):
         serializer = UserWebWalletTxSerializer(
             data=request.data, context={'request': request})
         if serializer.is_valid():
             apiwrapper = ApiWrapper()
-            res = apiwrapper.send_subwallet_transaction(
-                serializer.validated_data['destination_address'],
-                serializer.validated_data['source_address'],
-                serializer.validated_data['amount']
-            )
-            if res.status_code == 200:
-                data = res.json()
-                return Response({'transaction_hash': data['transactionHash']})
+            if self.check_main_wallet_have_sufficient_balance(
+                    serializer.validated_data['amount']):
+                res = apiwrapper.send_subwallet_transaction(
+                    serializer.validated_data['destination_address'],
+                    serializer.validated_data['source_address'],
+                    serializer.validated_data['amount']
+                )
+                if res.status_code == 200:
+                    data = res.json()
+                    return Response({
+                        'transaction_hash': data['transactionHash']
+                    })
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -240,8 +240,10 @@ class UserInfoTabView(views.APIView):
                 'house_number': address.house_number,
                 'street_name': address.street,
                 'zip_code': address.zip_code,
-                # TODO: Need to remove condition once additional info added to profile
-                'birthdate': signup.bazasignupadditionalinfo.birth_date if hasattr(signup, 'bazasignupadditionalinfo') else '',
+                # TODO: Need to remove condition once additional info
+                #  added to profile
+                'birthdate': signup.bazasignupadditionalinfo.birth_date
+                if hasattr(signup, 'bazasignupadditionalinfo') else '',
                 'referral_code': referral_code,
                 'first_name': signup.user.first_name,
                 'last_name': signup.user.last_name
