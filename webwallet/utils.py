@@ -6,7 +6,7 @@ from django.core.mail import EmailMultiAlternatives
 def send_main_wallet_low_balance_email_to_admins() -> bool:
     email_template = loader.get_template(
         'webwallet/main_wallet_low_balance.html')
-    server = 'Live' if settings.SITE_TYPE == 'live' else 'Beta'
+    server = 'Live' if settings.SITE_TYPE == 'production' else 'Beta'
     wallet_address = settings.PROXC_TO_REAL_FROM_ADDRESS
     msg = EmailMultiAlternatives(
         subject='%s Server Main Wallet Balance Is Low' % server,
