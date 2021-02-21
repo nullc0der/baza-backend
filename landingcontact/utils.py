@@ -22,7 +22,7 @@ def send_email_to_site_owner(contact_id):
             landingcontact.timestamp
         ),
         from_email='system-noreply@baza.foundation',
-        to=settings.SITE_OWNER_EMAILS.split(',')
+        to=settings.SITE_OWNER_EMAILS
     )
     msg.attach_alternative(
         email_template.render({

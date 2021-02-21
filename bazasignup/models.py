@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.timezone import datetime
 from django.contrib.auth.models import User
 
 from simple_history.models import HistoricalRecords
@@ -86,7 +87,8 @@ class BazaSignupAddress(models.Model):
 
 class BazaSignupAdditionalInfo(models.Model):
     signup = models.OneToOneField(BazaSignup, on_delete=models.CASCADE)
-    birth_date = models.DateField(null=True)
+    birth_date = models.DateField(
+        default=datetime.strptime('1/1/1970', '%d/%m/%Y'))
     invalidation_comment = models.TextField(default='')
     changed_by = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True,

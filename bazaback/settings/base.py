@@ -296,7 +296,7 @@ MAXIMUM_ALLOWED_DISTANCE_FOR_SIGNUP = int(get_env_var(
 
 # Baza Site Owners emails
 # If multiple separate by comma
-SITE_OWNER_EMAILS = get_env_var('SITE_OWNER_EMAILS')
+SITE_OWNER_EMAILS = get_env_var('SITE_OWNER_EMAILS').split(',')
 
 # Taiga Issue Creator
 TAIGA_HOST = get_env_var('TAIGA_HOST')
