@@ -82,8 +82,10 @@ class UserWebWalletTxView(views.APIView):
         apiwrapper = ApiWrapper()
         res = apiwrapper.get_subwallet_balance(
             settings.PROXC_TO_REAL_FROM_ADDRESS)
+        print(res.status_code, res.content)
         if res.status_code == 200:
             if res.json()['unlocked'] > requested_amount:
+                print('have balance')
                 return True
             task_send_main_wallet_low_balance_email_to_admins.delay()
         return False
@@ -100,6 +102,7 @@ class UserWebWalletTxView(views.APIView):
                     serializer.validated_data['source_address'],
                     serializer.validated_data['amount']
                 )
+                print("Trans: {}{}".format(res.status_code, res.content))
                 if res.status_code == 200:
                     data = res.json()
                     return Response({
