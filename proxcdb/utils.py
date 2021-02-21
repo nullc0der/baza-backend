@@ -4,26 +4,40 @@ from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 
 from bazasignup.models import BazaSignup
+
 from webwallet.api_wrapper import ApiWrapper
+from webwallet.tasks import task_send_main_wallet_low_balance_email_to_admins
+
 from proxcdb.models import ProxcTransaction
 
 channel_layer = get_channel_layer()
 
 
-def send_fund_from_proxc_to_real_wallet(proxcaccount, to_address, amount):
+def check_main_wallet_have_sufficient_balance(requested_amount: int) -> bool:
     apiwrapper = ApiWrapper()
-    res = apiwrapper.send_subwallet_transaction(
-        to_address, settings.PROXC_TO_REAL_FROM_ADDRESS, amount * 1000000)
+    res = apiwrapper.get_subwallet_balance(settings.PROXC_TO_REAL_FROM_ADDRESS)
     if res.status_code == 200:
-        data = res.json()
-        proxctransaction = ProxcTransaction(
-            account=proxcaccount,
-            message='proxc_to_real_baza_transaction',
-            txid=data['transactionHash'],
-            amount=amount
-        )
-        proxctransaction.save()
-        return data['transactionHash']
+        if res.json()['unlocked'] > requested_amount:
+            return True
+        task_send_main_wallet_low_balance_email_to_admins.delay()
+    return False
+
+
+def send_fund_from_proxc_to_real_wallet(proxcaccount, to_address, amount):
+    if check_main_wallet_have_sufficient_balance(amount * 1000000):
+        apiwrapper = ApiWrapper()
+        res = apiwrapper.send_subwallet_transaction(
+            to_address, settings.PROXC_TO_REAL_FROM_ADDRESS, amount * 1000000)
+        if res.status_code == 200:
+            data = res.json()
+            proxctransaction = ProxcTransaction(
+                account=proxcaccount,
+                message='proxc_to_real_baza_transaction',
+                txid=data['transactionHash'],
+                amount=amount
+            )
+            proxctransaction.save()
+            return data['transactionHash']
 
 
 # TODO: Add email
