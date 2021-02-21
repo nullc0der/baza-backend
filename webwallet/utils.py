@@ -18,5 +18,5 @@ def send_main_wallet_low_balance_email_to_admins() -> bool:
     msg.attach_alternative(email_template.render({
         'server': server,
         'wallet_address': wallet_address
-    }))
+    }), "text/html")
     msg.send()
