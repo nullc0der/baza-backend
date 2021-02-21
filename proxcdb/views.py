@@ -144,7 +144,8 @@ class SendFundFromProxcToRealWallet(APIView):
                         proxcaccount, to_address, proxcaccount.balance)
                     if tx_hash:
                         return Response({'transaction_hash': tx_hash})
-                    return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                    return Response(
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR)
                 else:
                     return Response(
                         {'non_field_errors': [
