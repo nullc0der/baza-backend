@@ -250,7 +250,8 @@ def get_signup_profile_data(signup):
         'username': get_username(signup.user),
         'user_image_url': get_profile_photo(signup.user),
         'user_avatar_color': get_avatar_color(signup.user),
-        'birthdate': signup.bazasignupadditionalinfo.birth_date,
+        'birthdate': signup.bazasignupadditionalinfo.birth_date
+        if hasattr(signup, 'bazasignupadditionalinfo') else '1/1/1970',
         'date_joined': signup.user.date_joined,
         'phones': get_user_phones(signup.user),
         'emails': get_user_emails(signup.user)
