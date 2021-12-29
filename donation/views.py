@@ -10,9 +10,12 @@ from rest_framework.permissions import IsAuthenticated
 
 from oauth2_provider.contrib.rest_framework import TokenHasScope
 
-from coinbasepay.models import Charge
-from coinbasepay.utils import create_charge
-from coinbasepay.dicts import CHARGE
+# from coinbasepay.models import Charge
+# from coinbasepay.utils import create_charge
+# from coinbasepay.dicts import CHARGE
+
+from ekatagp.utils import create_payment_form
+from ekatagp.models import PaymentForm
 
 from userprofile.utils import get_profile_photo
 from authclient.utils import AuthHelperClient
@@ -53,14 +56,9 @@ def get_initiate_donation_response(request, is_anonymous):
     serializer = AnonDonationSerializer(data=request.data) \
         if is_anonymous else DonationSerializer(data=request.data)
     if serializer.is_valid():
-        charge_id = create_charge(
-            amount=request.data.get('amount'),
-            charge_name=CHARGE['2']['name'],
-            charge_description=CHARGE['2']['description'],
-            charged_for=CHARGE['2']['charged_for'],
-            charged_user=None if is_anonymous else request.user)
-        if charge_id:
-            charge = Charge.objects.get(charge_code=charge_id)
+        form_id = create_payment_form(serializer.validated_data['amount'])
+        if form_id:
+            payment_form = PaymentForm.objects.get(form_id=form_id)
             Donation.objects.create(
                 user=None if is_anonymous else request.user,
                 amount=serializer.validated_data['amount'],
@@ -73,11 +71,11 @@ def get_initiate_donation_response(request, is_anonymous):
                     request.META['HTTP_AUTHORIZATION'].split(' ')[1]),
                 logged_ip=request.META.get(
                     'HTTP_CF_CONNECTING_IP', ''),
-                coinbase_charge=charge,
+                ekatagp_form=payment_form,
                 is_anonymous=serializer.validated_data['is_anonymous']
             )
             return Response({
-                'charge_id': charge_id
+                'form_id': form_id
             })
         return Response({
             'non_field_errors': [
@@ -98,7 +96,7 @@ def get_donation_closed_response():
 class InitiateDonationView(views.APIView):
     """
     This view will be used for creating a donation and initiating
-    a coinbase charge
+    a ekatagp form
      * Required logged in user
     """
     permission_classes = (IsAuthenticated, TokenHasScope, )
@@ -113,7 +111,7 @@ class InitiateDonationView(views.APIView):
 class InitiateAnonymousDonationView(views.APIView):
     """
     This view will be used for creating a donation and initiating
-    a coinbase charge
+    a ekatagp form
     """
 
     def post(self, request, format=None):
