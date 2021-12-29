@@ -20,5 +20,6 @@ urlpatterns = [
     path('hashtag/', include('hashtag.urls')),
     path('landing/', include('landing.urls')),
     path('faq/', include('groupfaq.urls')),
-    path('userwebwallet/', include('webwallet.urls'))
+    path('userwebwallet/', include('webwallet.urls')),
+    path('ekatagp/payment-success', include('ekatagp.urls'))
 ]
