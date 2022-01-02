@@ -3,12 +3,8 @@ from rest_framework import serializers
 
 class AnonDonationSerializer(serializers.Serializer):
     amount = serializers.FloatField()
-    name = serializers.CharField(error_messages={
-        'blank': 'This field is required'
-    })
-    email = serializers.EmailField(error_messages={
-        'blank': 'This field is required'
-    })
+    name = serializers.CharField(allow_blank=True)
+    email = serializers.EmailField(allow_blank=True)
     phone_no = serializers.RegexField(
         r'^(\+)(\d{11,15})$',
         allow_blank=True,
@@ -25,6 +21,17 @@ class AnonDonationSerializer(serializers.Serializer):
         if value < 0:
             raise serializers.ValidationError('Negative amount not allowed')
         return value
+
+    def validate(self, values):
+        if not values['is_anonymous'] and not values['name']\
+                and not values['email']:
+            raise serializers.ValidationError(
+                {
+                    'name': 'Name is required if not an anonymous donation',
+                    'email': 'Email id is required if'
+                    ' not an anonymous donation'
+                })
+        return values
 
 
 class DonationSerializer(serializers.Serializer):
