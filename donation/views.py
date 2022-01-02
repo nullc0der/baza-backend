@@ -62,11 +62,11 @@ def get_initiate_donation_response(request, is_anonymous):
             Donation.objects.create(
                 user=None if is_anonymous else request.user,
                 amount=serializer.validated_data['amount'],
-                name=serializer.validated_data['name']
+                name=serializer.validated_data.get('name', '')
                 if is_anonymous else get_users_name(request.user),
-                phone_no=serializer.validated_data['phone_no']
+                phone_no=serializer.validated_data.get('phone_no', '')
                 if is_anonymous else get_users_phone_no(request.user),
-                email=serializer.validated_data['email']
+                email=serializer.validated_data.get('email')
                 if is_anonymous else get_users_primary_email(
                     request.META['HTTP_AUTHORIZATION'].split(' ')[1]),
                 logged_ip=request.META.get(
