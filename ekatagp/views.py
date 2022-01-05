@@ -14,7 +14,7 @@ class PaymentSuccessWebhook(APIView):
     def post(self, request, format=None):
         message = f"{request.data['payment_id']}" + \
             f"{request.data['wallet_address']}" + \
-            f"{request.data['amount_received']}"
+            f"{request.data['currency_name']}"
         signature = hmac.new(
             settings.EKATA_GATEWAY_PROCESSOR_PROJECT_API_SECRET.encode(),
             message.encode(),
