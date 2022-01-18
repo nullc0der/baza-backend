@@ -24,9 +24,11 @@ class TokenAuthMiddleware:
                 token_name, token_key = headers[
                     b'sec-websocket-protocol'].decode(
                 ).split('-')
+                print(token_name, token_key)
                 if token_name == 'Bearer':
                     token = AccessToken.objects.get(token=token_key)
                     scope['user'] = token.user
+                    print(scope['user'])
             except AccessToken.DoesNotExist:
                 scope['user'] = AnonymousUser()
         return self.inner(scope)
