@@ -11,7 +11,8 @@ from group.consumers import GroupConsumer
 from userprofile.consumers import UserProfileConsumer
 from donation.consumers import DonationConsumer
 
-
+# NOTE: AllowedHostsOriginValidator is removed because it was failing to get
+# HOST header, need to do research on it because it is not recommended to remove
 application = ProtocolTypeRouter({
     'websocket': TokenAuthMiddlewareStack(
         URLRouter([
