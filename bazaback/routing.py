@@ -13,16 +13,14 @@ from donation.consumers import DonationConsumer
 
 
 application = ProtocolTypeRouter({
-    'websocket': AllowedHostsOriginValidator(
-        TokenAuthMiddlewareStack(
-            URLRouter([
-                path('ws/notifications/', NotificationConsumer),
-                path('ws/users/', PublicusersConsumer),
-                path('ws/messenger/', MessengerConsumer),
-                path('ws/groupnotifications/', GroupConsumer),
-                path('ws/profiletasks/', UserProfileConsumer),
-                path('ws/donation/', DonationConsumer)
-            ])
-        )
+    'websocket': TokenAuthMiddlewareStack(
+        URLRouter([
+            path('ws/notifications/', NotificationConsumer),
+            path('ws/users/', PublicusersConsumer),
+            path('ws/messenger/', MessengerConsumer),
+            path('ws/groupnotifications/', GroupConsumer),
+            path('ws/profiletasks/', UserProfileConsumer),
+            path('ws/donation/', DonationConsumer)
+        ])
     )
 })
