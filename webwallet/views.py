@@ -1,3 +1,5 @@
+import logging
+
 from django.conf import settings
 
 from rest_framework import views
@@ -12,6 +14,8 @@ from webwallet.serializers import (
     UserWebWalletSerializer, UserWebWalletTxSerializer)
 from webwallet.models import UserWebWallet
 from webwallet.permissions import IsOwnerOfWallet
+
+logger = logging.getLogger(__name__)
 
 
 class UserWebWalletView(views.APIView):
@@ -91,7 +95,7 @@ class UserWebWalletTxView(views.APIView):
                 return Response({
                     'transaction_hash': data['transactionHash']
                 })
-            print(res.status_code)
-            print(res.content)
+            logger.warning(res.content)
+            logger.warning(res.content)
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
