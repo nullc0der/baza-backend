@@ -91,5 +91,7 @@ class UserWebWalletTxView(views.APIView):
                 return Response({
                     'transaction_hash': data['transactionHash']
                 })
+            print(res.status_code)
+            print(res.content)
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
