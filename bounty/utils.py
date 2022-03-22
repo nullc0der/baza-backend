@@ -9,7 +9,7 @@ from coinpurchase.utils import get_user_access_token
 from authclient.utils import AuthHelperClient
 
 from bounty.models import BountyProgram, RewardedBounty
-from bounty.bounties import BAZA_BAZ_BOUNTY_2
+from bounty.bounties import BAZA_BAZ_BOUNTY_3
 
 URL_PROTOCOL = 'http://' if settings.SITE_TYPE == 'local' else 'https://'
 
@@ -72,8 +72,8 @@ def send_reward_email_to_user(bounty_task, user):
 
 
 def send_reward(user_id, task_name, can_have_multiple=False, amount=0):
-    bounty_program = BountyProgram.objects.get(name='BAZA_BAZ_BOUNTY_2')
-    bounty_task = BAZA_BAZ_BOUNTY_2['tasks'][task_name]
+    bounty_program = BountyProgram.objects.get(name='BAZA_BAZ_BOUNTY_3')
+    bounty_task = BAZA_BAZ_BOUNTY_3['tasks'][task_name]
     if amount != 0:
         bounty_task['amount'] = amount
     user = User.objects.get(id=user_id)
