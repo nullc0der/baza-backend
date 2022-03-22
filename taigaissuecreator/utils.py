@@ -9,7 +9,7 @@ from taigaissuecreator.models import (
 API_BASE_URL = 'https://' + settings.TAIGA_HOST + '/api/v1'
 LOGIN_URL = API_BASE_URL + '/auth'
 ISSUE_URL = API_BASE_URL + '/issues'
-ISSUE_TYPE_URL = API_BASE_URL + '/issue-types'
+ISSUE_TYPE_URL = API_BASE_URL + '/issue-types?project=9'
 ATTACHMENT_URL = ISSUE_URL + '/attachments'
 
 
@@ -34,10 +34,7 @@ def get_issue_types():
     headers = {
         "Authorization": "Bearer " + auth_token
     }
-    data = {
-        'project': 9
-    }
-    res = requests.get(ISSUE_TYPE_URL, headers=headers, data=data)
+    res = requests.get(ISSUE_TYPE_URL, headers=headers)
     if res.status_code == 200:
         issue_types = res.json()
         for issue_type in issue_types:
