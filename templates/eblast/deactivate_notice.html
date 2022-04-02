@@ -1,0 +1,14 @@
+{% extends "base_email_template.html" %}
+{% load mjml %}
+{% mjml %}
+{% block content %}
+<mj-section background-color="#fafafa">
+<mj-column width="400px">
+    <mj-text color="#525252"> Hello, {{ username }}</mj-text>
+    <mj-text color="#525252"> A friendly reminder that your account status is incomplete. Please login and complete your account. All accounts that are incomplete and over 90 days inctive will be deactivated and archived for deletion. </mj-text>
+    <mj-text color="#525252"> Any questions, help, or issues with your account please send us a support message on our official social media accounts. </mj-text>
+    <mj-text color="#525252"> Thank you,<br /> Baza Foundation Team </mj-text>
+</mj-column>
+</mj-section>
+{% endblock content %}
+{% endmjml %}

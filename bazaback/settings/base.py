@@ -86,7 +86,8 @@ BAZA_APPS = [
     'phoneverification',
     'bounty',
     'webwallet',
-    'ekatagp'
+    'ekatagp',
+    'eblast'
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + BAZA_APPS

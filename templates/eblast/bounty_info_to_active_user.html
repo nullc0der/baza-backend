@@ -1,0 +1,45 @@
+{% extends "base_email_template.html" %}
+{% load mjml %}
+{% mjml %}
+{% block content %}
+<mj-section background-color="#fafafa">
+    <mj-column width="400px">
+        <mj-text color="#525252"> Hello, {{ username }} </mj-text>
+        <mj-text color="#525252">
+            We, the Baza Foundation Team, are seeing more activity lately and
+            thought you would like to know that for the month of April we are
+            running a 100k $BAZA bounty program!
+        </mj-text>
+        <mj-text color="#525252">
+            We are giving away bounty for completing these tasks below.
+            <ol style="padding-left:0;margin-top:10px">
+                <li>New website signups get 10 $BAZA starting balance.</li>
+                <li>
+                    Complete the registration tasks and get approved for 1000
+                    $BAZA
+                </li>
+                <li>
+                    Referred a new member and get 1000 $BAZA ( New member must
+                    complete Item 2. )
+                </li>
+                <li>
+                    Refer a member and have them donate to get 10 $BAZA for
+                    every $1 USD in crypto. Example: Member must donate minimum
+                    in crypto $27 USD so referrer will get 27*10 $BAZA
+                </li>
+            </ol>
+            Learn more about this bounty program, please visit our website Baza
+            Foundation and find more details about the bounty program in our
+            latest news post.
+            <a href="https://baza.foundation/#!news/10" style="color: #525252"
+                >https://baza.foundation/#!news/10</a
+            >
+        </mj-text>
+        <mj-text color="#525252">
+            Thank you,<br />
+            Baza Foundation Team
+        </mj-text>
+    </mj-column>
+</mj-section>
+{% endblock content %}
+{% endmjml %}
