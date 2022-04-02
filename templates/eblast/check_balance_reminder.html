@@ -1,0 +1,37 @@
+{% extends "base_email_template.html" %}
+{% load mjml %}
+{% mjml %}
+{% block content %}
+<mj-section background-color="#fafafa">
+    <mj-column width="400px">
+        <mj-text color="#525252"> Hello, {{ username }} </mj-text>
+        <mj-text color="#525252">
+            A friendly reminder that you have a $BAZA balance to withdraw from
+            Baza Foundation website.
+        </mj-text>
+        <mj-text color="#525252">
+            Please follow this link below and login to our offical Baza
+            Foundation website and withdraw your $BAZA coins today.
+            <a style="color: #525252" href="https://baza.foundation/wallets"
+                >https://baza.foundation/wallets</a
+            >
+        </mj-text>
+        <mj-text color="#525252">
+            Be sure to also download and install our offical Baza Foundation
+            desktop wallet for Windows and Linux. Store your $BAZA coins safely
+            on your personal computer. Find the desktop wallet downloads here
+            from gitlab.
+            <a
+                style="color: #525252"
+                href="https://gitlab.ekata.io/baza-foundation/baza-fondo-wallet/-/releases"
+                >https://gitlab.ekata.io/baza-foundation/baza-fondo-wallet/-/releases</a
+            >
+        </mj-text>
+        <mj-text color="#525252">
+            Thank you,<br />
+            Baza Foundation Team
+        </mj-text>
+    </mj-column>
+</mj-section>
+{% endblock content %}
+{% endmjml %}
