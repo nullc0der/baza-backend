@@ -60,20 +60,23 @@ class Command(BaseCommand):
             '/authhelper/useremails/'
         )
         for user in users:
-            bazasignup = user.bazasignup
-            if bazasignup.status == 'approved' and bazasignup.on_distribution\
-                    and bool(bazasignup.verified_date) and bool(
+            if hasattr(user, 'bazasignup'):
+                bazasignup = user.bazasignup
+                if bazasignup.status == 'approved' and\
+                    bazasignup.on_distribution and bool(
+                        bazasignup.verified_date) and hasattr(
+                            user, 'proxcaccount') and bool(
                         user.proxcaccount.balance):
-                status_code, data = authhelperclient.get_user_emails(
-                    user.username)
-                if status_code == 200:
-                    for i in data:
-                        if i['primary'] and\
-                                i['email'] != 'carol.chalke546@yahoo.com':
-                            username_and_emails.append({
-                                'email_id': i['email'],
-                                'username': user.username
-                            })
+                    status_code, data = authhelperclient.get_user_emails(
+                        user.username)
+                    if status_code == 200:
+                        for i in data:
+                            if i['primary'] and\
+                                    i['email'] != 'carol.chalke546@yahoo.com':
+                                username_and_emails.append({
+                                    'email_id': i['email'],
+                                    'username': user.username
+                                })
         return username_and_emails
 
     def handle(self, *args: Any, **options: Any) -> Optional[str]:
