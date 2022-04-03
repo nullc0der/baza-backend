@@ -60,19 +60,20 @@ class Command(BaseCommand):
             '/authhelper/useremails/'
         )
         for user in users:
-            bazasignup = user.bazasignup
-            if bazasignup.status == 'pending' \
-                    or bazasignup.status == 'incomplete':
-                status_code, data = authhelperclient.get_user_emails(
-                    user.username)
-                if status_code == 200:
-                    for i in data:
-                        if i['primary'] and\
-                                i['email'] != 'carol.chalke546@yahoo.com':
-                            username_and_emails.append({
-                                'email_id': i['email'],
-                                'username': user.username
-                            })
+            if hasattr(user, 'bazasignup'):
+                bazasignup = user.bazasignup
+                if bazasignup.status == 'pending' \
+                        or bazasignup.status == 'incomplete':
+                    status_code, data = authhelperclient.get_user_emails(
+                        user.username)
+                    if status_code == 200:
+                        for i in data:
+                            if i['primary'] and\
+                                    i['email'] != 'carol.chalke546@yahoo.com':
+                                username_and_emails.append({
+                                    'email_id': i['email'],
+                                    'username': user.username
+                                })
         return username_and_emails
 
     def handle(self, *args: Any, **options: Any) -> Optional[str]:
