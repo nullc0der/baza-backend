@@ -11,6 +11,7 @@ from authclient.utils import AuthHelperClient
 from userprofile.models import (
     UserPhone, UserPhoneValidation, UserProfilePhoto, UserTasks,
     UserTrustPercentage, UserProfilePhoto)
+from proxcdb.models import ProxcTransaction
 
 URL_PROTOCOL = 'http://' if settings.SITE_TYPE == 'local' else 'https://'
 
@@ -244,3 +245,27 @@ def get_profile_photo(user):
     except UserProfilePhoto.DoesNotExist:
         pass
     return profile_photo
+
+
+def add_baza_invitation_reward(username: str):
+    """
+        Check whether an user joined from baza invitation eblast and if so
+        add 1K BAZA reward
+    """
+    authhelperclient = AuthHelperClient(
+        URL_PROTOCOL +
+        settings.CENTRAL_AUTH_INTROSPECT_URL +
+        '/authhelper/checkinvitedtobaza/'
+    )
+    if authhelperclient.check_invited_to_baza(username):
+        try:
+            user = User.objects.get(username=username)
+            transaction = ProxcTransaction(
+                to_account=user.proxcaccount,
+                message='baza_invitation_reward',
+                amount=1000,
+                should_substract_txfee=False
+            )
+            transaction.save()
+        except User.DoesNotExist:
+            pass

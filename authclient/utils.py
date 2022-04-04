@@ -466,3 +466,15 @@ class AuthHelperClient(object):
         }
         res = requests.post(self.url, headers=headers, data=data)
         return res.status_code, res.json()
+
+    def check_invited_to_baza(self, username: str) -> bool:
+        res = requests.get(
+            self.url,
+            headers={
+                "Authorization": f"Bearer {get_authhelper_client_token()}"
+            },
+            data={'username': username}
+        )
+        if res.status_code == 200:
+            return res.json()['invited']
+        return False

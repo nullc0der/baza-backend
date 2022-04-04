@@ -16,6 +16,7 @@ from userprofile.models import (
     UserProfilePhoto
 )
 from userprofile.utils import get_user_tasks
+from userprofile.tasks import task_add_baza_invitation_reward
 
 
 AccessToken = get_access_token_model()
@@ -123,3 +124,10 @@ def update_profile_picture_task(sender, **kwargs):
         usertasks = UserTasks.objects.get(user=profile.user)
         usertasks.added_profile_picture = False
         usertasks.save()
+
+
+@receiver(post_save, sender=User)
+def add_baza_invite_reward(sender, **kwargs):
+    instance = kwargs['instance']
+    if kwargs['created']:
+        task_add_baza_invitation_reward.delay(instance.username)
