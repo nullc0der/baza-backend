@@ -69,7 +69,7 @@ class Command(BaseCommand):
                         user.proxcaccount.balance):
                     email_id = authhelperclient.get_user_primary_email(
                         user.username)
-                    if email_id:
+                    if email_id and email_id != 'carol.chalke546@yahoo.com':
                         username_and_emails.append({
                             'email_id': email_id,
                             'username': user.username
