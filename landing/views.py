@@ -18,6 +18,8 @@ class LandingStats(APIView):
         * Total purchased coins
     """
 
+    # NOTE: This method is very inefficient, disabled until optimized
+    # DON'T ENABLE
     def calculate_total_baza_distributed(self):
         transactions = ProxcTransaction.objects.filter(
             message='per_minute_baza_distribution')

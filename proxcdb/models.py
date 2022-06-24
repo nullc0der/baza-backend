@@ -33,7 +33,7 @@ class ProxcTransaction(models.Model):
     txid = models.TextField(default=get_random_id)
     status = models.CharField(default='success', max_length=20)
     timestamp = models.DateTimeField(auto_now_add=True)
-    amount = models.FloatField()
+    amount = models.FloatField(db_index=True)
     coinpurchase = models.OneToOneField(
         CoinPurchase, null=True, on_delete=models.SET_NULL)
     should_substract_txfee = models.BooleanField(default=True)
