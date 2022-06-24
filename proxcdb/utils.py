@@ -24,6 +24,8 @@ def check_main_wallet_have_sufficient_balance(requested_amount: int) -> bool:
 
 
 def send_fund_from_proxc_to_real_wallet(proxcaccount, to_address, amount):
+    # NOTE: The atomic conversion might not be accurate, need to check
+    # maybe use decimal where appropriate
     if check_main_wallet_have_sufficient_balance(amount * 1000000):
         apiwrapper = ApiWrapper()
         res = apiwrapper.send_subwallet_transaction(
@@ -63,4 +65,5 @@ def send_per_minute_distribution():
                 }
             }
         )
-    return 'sent {} to {} user'.format(bazasignups.count() * 0.003472, bazasignups.count())
+    return 'sent {} to {} user'.format(
+        bazasignups.count() * 0.003472, bazasignups.count())

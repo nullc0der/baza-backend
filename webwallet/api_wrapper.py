@@ -1,3 +1,8 @@
+# NOTE: There is multiple request to open wallet, and sometime the wallet was
+# not actually open or crashes because of
+# some issue which requires a wallet reopen
+from decimal import Decimal
+
 import requests
 
 from django.conf import settings
@@ -8,6 +13,16 @@ data = {
     'filename': settings.WALLET_FILENAME,
     'password': settings.WALLET_PASSWORD
 }
+
+ATOMIC = Decimal('0.000001')
+
+
+def from_atomic(amount: int) -> Decimal:
+    return (Decimal(amount) * ATOMIC).quantize(ATOMIC)
+
+
+def to_atomic(amount: Decimal):
+    return int(amount * 10 ** 6)
 
 
 class ApiWrapper(object):
