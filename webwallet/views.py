@@ -52,6 +52,18 @@ class UserWebWalletDetailsView(views.APIView):
     permission_classes = (IsAuthenticated, TokenHasScope, IsOwnerOfWallet, )
     required_scopes = [
         'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
+    
+    def get_stripped_transactions(self, txs, wallet_address):
+        stripped_txs = []
+        for tx in txs:
+            stripped_tx = {
+                'hash': tx['hash'],
+                'timestamp': tx['timestamp'],
+                'transfers': [
+                    i for i in tx['transfers'] if i['address'] == wallet_address]
+            }
+            stripped_txs.append(stripped_tx)
+        return stripped_txs
 
     def get(self, request, format=None):
         data = {}
@@ -63,7 +75,8 @@ class UserWebWalletDetailsView(views.APIView):
         tx_res = apiwrapper.get_subwallet_transactions(userwebwallet.address)
         if balance_res.status_code == 200 and tx_res.status_code == 200:
             data['balance'] = balance_res.json()
-            data['transactions'] = tx_res.json()['transactions']
+            data['transactions'] = self.get_stripped_transactions(
+                tx_res.json()['transactions'], userwebwallet.address)
             return Response(data)
         return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
