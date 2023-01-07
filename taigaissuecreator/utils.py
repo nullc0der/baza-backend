@@ -31,20 +31,21 @@ def get_auth_token():
 def get_issue_types():
     issue_types = []
     auth_token = get_auth_token()
-    headers = {
-        "Authorization": "Bearer " + auth_token
-    }
-    res = requests.get(ISSUE_TYPE_URL, headers=headers)
-    if res.status_code == 200:
-        issue_types = res.json()
-        for issue_type in issue_types:
-            TaigaIssueType.objects.get_or_create(
-                name=issue_type['name'],
-                color=issue_type['color'],
-                issue_type_id=issue_type['id'],
-                issue_type_order=issue_type['order'],
-                issue_type_project_id=issue_type['project']
-            )
+    if auth_token:
+        headers = {
+            "Authorization": "Bearer " + auth_token
+        }
+        res = requests.get(ISSUE_TYPE_URL, headers=headers)
+        if res.status_code == 200:
+            issue_types = res.json()
+            for issue_type in issue_types:
+                TaigaIssueType.objects.get_or_create(
+                    name=issue_type['name'],
+                    color=issue_type['color'],
+                    issue_type_id=issue_type['id'],
+                    issue_type_order=issue_type['order'],
+                    issue_type_project_id=issue_type['project']
+                )
     return issue_types
 
 
