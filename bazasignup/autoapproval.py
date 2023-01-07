@@ -59,6 +59,11 @@ class BazaSignupAutoApproval(object):
                     bazasignupaddress.longitude = lat_long.get('longitude', '')
                     bazasignupaddress.save()
                     return True
+            # If anything in the lookup data raises KeyError catch and return false
+            # Not a good solution, need to refactor later
+            # https://sentry.io/organizations/ekatasocial/issues/3851549278/?project=1210544
+            except KeyError:
+                pass
             except TwilioRestException:
                 pass
         return False
