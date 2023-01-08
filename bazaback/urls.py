@@ -21,11 +21,17 @@ from django.conf import settings
 
 from hashtag.views import facebook_share_view
 
+
+def trigger_error(request):
+    division_by_zero = 1 / 0
+
+
 urlpatterns = [
     path('api/v1/', include('bazaback.api_urls')),
     # NOTE: This can be enabled in local just in case
     # path('resetsignupform/', reset_signup),
-    path('hashtagimage/<str:uid>/', facebook_share_view)
+    path('hashtagimage/<str:uid>/', facebook_share_view),
+    path('sentry-debug/', trigger_error),
 ]
 
 if settings.DEBUG:

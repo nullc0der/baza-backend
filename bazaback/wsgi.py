@@ -13,9 +13,4 @@ from django.core.wsgi import get_wsgi_application
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "bazaback.settings")
 
-SENTRY_ENABLED_IN = ['production', 'beta', 'api']
 application = get_wsgi_application()
-
-if os.environ.get('SITE_TYPE') in SENTRY_ENABLED_IN:
-    from raven.contrib.django.raven_compat.middleware.wsgi import Sentry
-    application = Sentry(get_wsgi_application())
