@@ -1,4 +1,4 @@
-FROM python:3.6
+FROM python:3.7.1
 LABEL maintainer Prasanta Kakati <prasantakakati@ekata.social>
 # TODO: Needs to check dependency thoroughly
 RUN apt-get update && \
