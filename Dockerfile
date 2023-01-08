@@ -7,7 +7,7 @@ RUN apt-get update && \
     musl-dev libffi-dev libssl-dev poppler-utils libmagic1
 RUN mkdir /baza-back
 WORKDIR /baza-back
-RUN curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
+RUN curl -sSL https://install.python-poetry.org | python3 -
 COPY pyproject.toml poetry.lock /baza-back/
 RUN . $HOME/.poetry/env && \
     poetry config virtualenvs.create false && \
