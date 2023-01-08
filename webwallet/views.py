@@ -1,3 +1,5 @@
+import logging
+
 from django.conf import settings
 
 from rest_framework import views
@@ -12,6 +14,8 @@ from webwallet.serializers import (
     UserWebWalletSerializer, UserWebWalletTxSerializer)
 from webwallet.models import UserWebWallet
 from webwallet.permissions import IsOwnerOfWallet
+
+logger = logging.getLogger(__name__)
 
 
 class UserWebWalletView(views.APIView):
@@ -52,7 +56,7 @@ class UserWebWalletDetailsView(views.APIView):
     permission_classes = (IsAuthenticated, TokenHasScope, IsOwnerOfWallet, )
     required_scopes = [
         'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
-    
+
     def get_stripped_transactions(self, txs, wallet_address):
         stripped_txs = []
         for tx in txs:
@@ -90,6 +94,7 @@ class UserWebWalletTxView(views.APIView):
         'baza' if settings.SITE_TYPE == 'production' else 'baza-beta']
 
     def post(self, request, format=None):
+        logger.info(f"User {request.user.username} requesting tx")
         serializer = UserWebWalletTxSerializer(
             data=request.data, context={'request': request})
         if serializer.is_valid():
@@ -99,6 +104,8 @@ class UserWebWalletTxView(views.APIView):
                 serializer.validated_data['source_address'],
                 serializer.validated_data['amount']
             )
+            logger.info(f"Tx Response code: {res.status_code}")
+            logger.info(f"Tx Response content: {res.content}")
             if res.status_code == 200:
                 data = res.json()
                 return Response({
