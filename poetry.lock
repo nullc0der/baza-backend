@@ -506,18 +506,19 @@ files = [
 
 [[package]]
 name = "django"
-version = "2.1.5"
+version = "2.2"
 description = "A high-level Python Web framework that encourages rapid development and clean, pragmatic design."
 category = "main"
 optional = false
 python-versions = ">=3.5"
 files = [
-    {file = "Django-2.1.5-py3-none-any.whl", hash = "sha256:a32c22af23634e1d11425574dce756098e015a165be02e4690179889b207c7a8"},
-    {file = "Django-2.1.5.tar.gz", hash = "sha256:d6393918da830530a9516bbbcbf7f1214c3d733738779f06b0f649f49cc698c3"},
+    {file = "Django-2.2-py3-none-any.whl", hash = "sha256:a2814bffd1f007805b19194eb0b9a331933b82bd5da1c3ba3d7b7ba16e06dc4b"},
+    {file = "Django-2.2.tar.gz", hash = "sha256:7c3543e4fb070d14e10926189a7fcf42ba919263b7473dceaefce34d54e8a119"},
 ]
 
 [package.dependencies]
 pytz = "*"
+sqlparse = "*"
 
 [package.extras]
 argon2 = ["argon2-cffi (>=16.1.0)"]
@@ -548,18 +549,21 @@ files = [
 
 [[package]]
 name = "django-mjml"
-version = "0.6.0"
+version = "1.0"
 description = "Use MJML in Django templates"
 category = "main"
 optional = false
-python-versions = "*"
+python-versions = ">=3.6"
 files = [
-    {file = "django-mjml-0.6.0.tar.gz", hash = "sha256:15747ddc3eff0017024548c431e63f90d369c7d8ab543589862b97c3b6fac694"},
-    {file = "django_mjml-0.6.0-py2.py3-none-any.whl", hash = "sha256:3c5793c984423606f00d78079fa2cfdaba74a17bc1a3a5b6f924c13e4e849127"},
+    {file = "django-mjml-1.0.tar.gz", hash = "sha256:512dc52380088ac877f78124c4c17d67f4a2c0a58880d53787a4c48e2b37e682"},
+    {file = "django_mjml-1.0-py3-none-any.whl", hash = "sha256:1543e77aad168885ad6ce2be5866b26d76e4b5b70cc6debd43e1893ee245f5f6"},
 ]
 
 [package.dependencies]
-django = ">=1.8,<2.2"
+django = ">=2.2,<4.2"
+
+[package.extras]
+requests = ["requests (>=2.24)"]
 
 [[package]]
 name = "django-oauth-toolkit"
@@ -1855,6 +1859,18 @@ files = [
 ]
 
 [[package]]
+name = "sqlparse"
+version = "0.4.3"
+description = "A non-validating SQL parser."
+category = "main"
+optional = false
+python-versions = ">=3.5"
+files = [
+    {file = "sqlparse-0.4.3-py3-none-any.whl", hash = "sha256:0323c0ec29cd52bceabc1b4d9d579e311f3e4961b98d174201d5622a23b85e34"},
+    {file = "sqlparse-0.4.3.tar.gz", hash = "sha256:69ca804846bb114d2ec380e4360a8a340db83f0ccf3afceeb1404df028f57268"},
+]
+
+[[package]]
 name = "toml"
 version = "0.10.2"
 description = "Python Library for Tom's Obvious, Minimal Language"
@@ -2285,4 +2301,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.6"
-content-hash = "84753d010bc6b5adfba0f74967de1950952f3b269afa62a1a09945eee11b2d4b"
+content-hash = "f9d5af1a37340f4003588654daee400815157cef8ec54de739259798033371d7"
